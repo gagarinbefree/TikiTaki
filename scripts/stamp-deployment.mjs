@@ -1,4 +1,4 @@
-import { access, readFile, writeFile } from 'node:fs/promises';
+import { access, appendFile, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import process from 'node:process';
 import { URL } from 'node:url';
@@ -15,4 +15,7 @@ const metadata = createDeploymentMetadata(
 const directory = process.argv[2] ?? VERSION_CONFIG.outputDirectory;
 await access(join(directory, 'index.html'));
 await writeFile(join(directory, VERSION_CONFIG.filename), `${JSON.stringify(metadata, null, 2)}\n`);
+if (process.env.GITHUB_OUTPUT) {
+  await appendFile(process.env.GITHUB_OUTPUT, `version=${metadata.version}\n`);
+}
 process.stdout.write(`Deployment version: ${metadata.version}\n`);

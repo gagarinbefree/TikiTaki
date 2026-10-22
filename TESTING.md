@@ -578,7 +578,10 @@ stamping script produced `0.1.0-alpha.0.deploy.7.1` and then
 `0.1.0-alpha.0.deploy.7.2` for a retry, with the tested commit recorded in JSON.
 
 README badges now report the independent `Tests` and `Build and Pages` workflows;
-the version badge reads the published `version.json`. Successful main-branch tests
+the version badge includes GitHub prereleases. After successful Pages deployment,
+the workflow tags the tested commit and creates a matching GitHub Release with
+the demo link and metadata attached. Failed deployments cannot reach this step.
+Successful main-branch tests
 transfer their exact demo artifact to the build/deploy workflow. Only deployment
 metadata is stamped afterwards. Each deployment attempt uses a distinct Pages
 artifact name, so a deploy-only retry can publish a new version without rebuilding
