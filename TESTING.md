@@ -586,6 +586,9 @@ transfer their exact demo artifact to the build/deploy workflow. Only deployment
 metadata is stamped afterwards. Each deployment attempt uses a distinct Pages
 artifact name, so a deploy-only retry can publish a new version without rebuilding
 or replacing the application assets. The npm package version is unchanged.
+Both workflows use the same repository/branch concurrency group. New commits
+cancel older test and build/deploy runs; cancelled or stale upstream completions
+are isolated and cannot cancel the replacement pipeline.
 
 ## Deferred device verification
 

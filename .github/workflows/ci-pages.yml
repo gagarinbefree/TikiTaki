@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-pages-${{ github.ref }}
+  group: pipeline-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
