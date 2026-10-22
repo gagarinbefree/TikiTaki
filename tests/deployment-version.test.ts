@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createDeploymentMetadata } from '../scripts/deployment-version.mjs';
+import { createDeploymentMetadata, updateReadmeRelease } from '../scripts/deployment-version.mjs';
 
 const commit = 'a'.repeat(40);
 
@@ -24,4 +24,19 @@ it.each(['0', '-1', '1.5', '', '1/2', '01'])('rejects invalid deployment identif
 it('rejects invalid package versions and source commits', () => {
   expect(() => createDeploymentMetadata('invalid', '1', '1', commit)).toThrow();
   expect(() => createDeploymentMetadata('0.1.0', '1', '1', 'missing')).toThrow();
+});
+
+it('updates only the marked README release version and stays idempotent', () => {
+  const source = 'Before\n<!-- release-version -->Not published yet<!-- /release-version -->\nAfter';
+  const version = '0.1.0-alpha.0.deploy.8.2';
+  const result = updateReadmeRelease(source, version);
+  expect(result).toBe(`Before\n<!-- release-version -->v${version}<!-- /release-version -->\nAfter`);
+  expect(updateReadmeRelease(result, version)).toBe(result);
+});
+
+it('rejects missing and duplicated release markers instead of editing arbitrary README content', () => {
+  const marker = '<!-- release-version -->old<!-- /release-version -->';
+  expect(() => updateReadmeRelease('No marker', '0.1.0')).toThrow();
+  expect(() => updateReadmeRelease(marker + marker, '0.1.0')).toThrow();
+  expect(() => updateReadmeRelease(marker, 'invalid-version')).toThrow();
 });

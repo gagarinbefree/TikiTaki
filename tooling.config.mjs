@@ -36,6 +36,9 @@ export const VERSION_CONFIG = Object.freeze({
   invalidVersion: 'Invalid package version',
   invalidIdentifier: 'Deployment identifiers must be positive decimal integers',
   invalidCommit: 'A full source commit SHA is required',
+  readmePath: 'README.md',
+  readmeMarker: /<!-- release-version -->[\s\S]*?<!-- \/release-version -->/g,
+  invalidReadme: 'README must contain exactly one release-version marker',
 });
 
 /** Google Chrome verification settings, independent of application runtime configuration. */

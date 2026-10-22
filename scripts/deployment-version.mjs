@@ -24,3 +24,22 @@ export function createDeploymentMetadata(baseVersion, runNumber, attempt, commit
   return metadata;
 
 }
+
+/**
+ * Update the marked version while preserving all other README content.
+ * @param {string} source Original README content.
+ * @param {string} version Successfully deployed release version.
+ */
+export function updateReadmeRelease(source, version) {
+  if (!/^\d+\.\d+\.\d+(?:-[A-Za-z\d.-]+)?$/.test(version)) {
+    throw new Error(VERSION_CONFIG.invalidVersion);
+  }
+  const matches = [...source.matchAll(VERSION_CONFIG.readmeMarker)];
+  if (matches.length !== 1) {
+    throw new Error(VERSION_CONFIG.invalidReadme);
+  }
+  const result = source.replace(VERSION_CONFIG.readmeMarker, `<!-- release-version -->v${version}<!-- /release-version -->`);
+
+  return result;
+
+}

@@ -590,6 +590,28 @@ Both workflows use the same repository/branch concurrency group. New commits
 cancel older test and build/deploy runs; cancelled or stale upstream completions
 are isolated and cannot cancel the replacement pipeline.
 
+## AvaWeather workflow structure (2026-10-22)
+
+Inspected `gagarinbefree/AvaWeather` at its current HEAD, including the complete
+`.github/workflows/dotnet-tests.yml`. TikiTaki now uses the same single-workflow
+structure: test/build, prepare release, publish Pages, create GitHub Release, and
+update the marked README version with a `[skip ci]` bot commit. A single
+repository/branch concurrency group cancels the whole older pipeline.
+
+The README updater started with two failing tests for the missing export, then
+passed marker replacement, idempotence, and missing/duplicate marker checks.
+An invalid-version assertion failed before adding input validation. Existing
+deployment version generation and deploy-only retry semantics are retained.
+Final local verification passed all **305 unit/integration tests in 12 files**,
+typecheck, ESLint, and canonical formatting.
+Release downloads include the tested demo ZIP and version metadata. Pull requests
+stop after verification; the README bot checks that the branch has not advanced.
+
+Previous GitHub tests and builds passed; Pages publication stopped at
+`Configure Pages`. As in AvaWeather, initial Pages enablement is a repository
+setting and cannot be replaced by the standard workflow token. A successful live
+Pages deployment and GitHub Release are not claimed until that step succeeds.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

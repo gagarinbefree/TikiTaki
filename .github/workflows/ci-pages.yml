@@ -1,4 +1,4 @@
-name: Tests
+name: Test, build and release
 
 on:
   push:
@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Test and build
+  build-and-test:
+    name: Tests and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -63,6 +63,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
           overwrite: true
+
       - name: Upload the tested demo
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
@@ -72,3 +73,136 @@ jobs:
           if-no-files-found: error
           retention-days: 7
           overwrite: true
+
+  prepare-release:
+    name: Prepare release version
+    needs: build-and-test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-demo
+          path: demos/dist
+      - name: Prepare the deployment metadata
+        id: version
+        run: node scripts/stamp-deployment.mjs
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: prepared-demo
+          path: demos/dist
+          if-no-files-found: error
+          overwrite: true
+
+  web-pages:
+    name: Deploy demo to Pages
+    needs: [build-and-test, prepare-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      page-url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: prepared-demo
+          path: demos/dist
+      - name: Assign a unique version, including deploy-only retries
+        id: version
+        run: node scripts/stamp-deployment.mjs
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: demos/dist
+      - id: deploy
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Assemble release downloads
+        run: |
+          mkdir -p release-assets
+          cp demos/dist/version.json release-assets/
+          (cd demos/dist && zip -qr "$GITHUB_WORKSPACE/release-assets/tikitaki-demo.zip" .)
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ steps.version.outputs.version }}
+          path: release-assets
+          if-no-files-found: error
+          overwrite: true
+
+  release:
+    name: Publish GitHub Release
+    needs: [prepare-release, web-pages]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-${{ needs.web-pages.outputs.version }}
+          path: release-assets
+      - name: Create GitHub Release for the deployed version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.web-pages.outputs.version }}
+          DEMO_URL: ${{ needs.web-pages.outputs.page-url }}
+        run: |
+          printf 'Demo: %s\n\nSource commit: %s\n' "$DEMO_URL" "$GITHUB_SHA" > release-notes.md
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release upload "v$VERSION" release-assets/* --clobber
+          else
+            gh release create "v$VERSION" release-assets/* --target "$GITHUB_SHA" --title "TikiTaki v$VERSION" --notes-file release-notes.md --prerelease
+          fi
+      - name: Update the latest release in README
+        env:
+          VERSION: ${{ needs.web-pages.outputs.version }}
+        run: |
+          git fetch origin "$GITHUB_REF_NAME"
+          git checkout -B "$GITHUB_REF_NAME" "origin/$GITHUB_REF_NAME"
+          if [ "$(git rev-parse HEAD)" != "$GITHUB_SHA" ]; then
+            exit 0
+          fi
+          node scripts/update-readme-release.mjs "$VERSION"
+          if ! git diff --quiet -- README.md; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add README.md
+            git commit -m "Update release version to v$VERSION [skip ci]"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
