@@ -7,6 +7,8 @@ import type { Grid, Position } from 'tikitaki';
 import { controls, cellMapRows, createMetrics, hasInitialCell, initialGrid, INITIAL_POSITION } from '../shared';
 import '../style.css';
 import type { CellMapProps } from '../shared';
+import { showDeploymentVersion } from '../version';
+void showDeploymentVersion();
 const metrics = createMetrics();
 const Cell = defineComponent({
   props: { item: { type: String, required: true }, position: { type: Object as PropType<Position>, required: true } },

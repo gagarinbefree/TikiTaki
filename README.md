@@ -1,5 +1,9 @@
 # TikiTaki
 
+[![Tests](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml)
+[![Build and Pages](https://github.com/gagarinbefree/TikiTaki/actions/workflows/build-pages.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/build-pages.yml)
+[![Demo version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgagarinbefree.github.io%2FTikiTaki%2Fversion.json&query=%24.version&label=demo&color=blue)](https://gagarinbefree.github.io/TikiTaki/)
+
 A zero-runtime-dependency TypeScript engine for swipe navigation across a ragged two-dimensional grid. Each row can have a different positive length. The engine provides navigation, pointer gestures, bounded DOM rendering, and optional React/Vue adapters.
 
 The project is a private alpha. Google Chrome Desktop and Chrome touch emulation are tested. Physical Android verification is deferred at the user's request. There is no video player, backend, recommendation service, or media upload system.
@@ -139,9 +143,11 @@ Use the project formatter for single-line imports and function signatures, named
 
 ## GitHub Actions and Pages
 
-[The workflow](.github/workflows/ci-pages.yml) runs on pull requests, pushes to `main`, and manual dispatch. Node.js 24 installs the lockfile with `npm ci`, then runs typecheck, ESLint, formatting checks, unit/integration tests, production library and adapter builds, and the independent packaged-core consumer audit. It builds the demos and runs Google Chrome E2E in desktop and touch configurations, including navigation from the Pages home page to both framework demos under `/TikiTaki/`.
+[Tests](.github/workflows/ci-pages.yml) runs on pull requests, pushes to `main`, and manual dispatch. Node.js 24 installs the lockfile with `npm ci`, then runs typecheck, ESLint, formatting checks, unit/integration tests, production library and adapter builds, and the independent packaged-core consumer audit. It builds the demos and runs Google Chrome E2E in desktop and touch configurations, including navigation from the Pages home page to both framework demos under `/TikiTaki/`. Hosted runners use their installed Google Chrome when available.
 
-Only a successful verification job on `main` uploads `demos/dist` for deployment. The deployment job depends on verification and publishes that same tested artifact to GitHub Pages. Pull requests never deploy. Failure screenshots, traces, and the Chrome JSON report are retained as workflow artifacts for seven days.
+Only successful tests on `main` trigger [Build and Pages](.github/workflows/build-pages.yml). It checks out the exact tested commit, builds the library/adapters, and downloads the demo artifact from that successful test run. Deployment waits for this build. Pull requests never deploy. Failure screenshots, traces, and the Chrome JSON report are retained as workflow artifacts for seven days. The two workflow badges report test and build/deployment results independently.
+
+Every deployment stamps `version.json` with a unique semantic prerelease, for example `0.1.0-alpha.0.deploy.7.1`. The final two numbers are the deployment workflow run number and attempt, so rerunning only the deploy job also changes the version. The source commit is recorded alongside it. All three demo pages display the version, and the README version badge reads the published metadata. Only this metadata changes after Chrome verification; the application assets are the exact tested artifact. Local development displays `Version: development`. The npm package version remains under explicit release control; deployment does not create bot commits or publish packages.
 
 The production base path is configured in `DEPLOYMENT_CONFIG` in `tooling.config.mjs`; development keeps `/`. Change the production base path if the repository is renamed. The expected published address is [gagarinbefree.github.io/TikiTaki](https://gagarinbefree.github.io/TikiTaki/), with `react/` and `vue/` demos below it. This address becomes available after the first successful deployment.
 

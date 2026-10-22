@@ -561,6 +561,29 @@ cannot deploy. Remote Actions execution and the live Pages site remain unverifie
 until repository write access and the initial Pages configuration are available;
 local browser coverage is not a claim that GitHub has deployed the site.
 
+## Status badges and deployment versions (2026-10-22)
+
+The deployment-version module started with a failing suite import because the
+module did not exist. GREEN passed nine cases covering unique run/attempt pairs,
+stable and prerelease package versions, invalid identifiers, and commit validation.
+The UI started with two failing desktop Pages cases because no version output
+existed. GREEN passed six desktop/touch Pages cases, including published metadata
+on the home, React, and Vue entry points.
+
+The full unit/integration run passed **303 tests in 12 files**. The full Chrome run
+passed **66 cases**, followed by all **6 focused Pages/version cases** after adding
+the two published-version cases. Typecheck, ESLint, formatting, library/adapter
+builds, and the production demo build passed. A separate execution of the actual
+stamping script produced `0.1.0-alpha.0.deploy.7.1` and then
+`0.1.0-alpha.0.deploy.7.2` for a retry, with the tested commit recorded in JSON.
+
+README badges now report the independent `Tests` and `Build and Pages` workflows;
+the version badge reads the published `version.json`. Successful main-branch tests
+transfer their exact demo artifact to the build/deploy workflow. Only deployment
+metadata is stamped afterwards. Each deployment attempt uses a distinct Pages
+artifact name, so a deploy-only retry can publish a new version without rebuilding
+or replacing the application assets. The npm package version is unchanged.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

@@ -22,6 +22,22 @@ export const SERVER_CONFIG = Object.freeze({ host: '127.0.0.1', testPort: 4177, 
 /** Repository subpath used by the production demo and its Pages browser checks. */
 export const DEPLOYMENT_CONFIG = Object.freeze({ basePath: '/TikiTaki/', developmentBasePath: '/' });
 
+/** Public deployment metadata and its shared display contract. */
+export const VERSION_CONFIG = Object.freeze({
+  filename: 'version.json',
+  outputDirectory: 'demos/dist',
+  tag: 'deploy',
+  development: 'development',
+  element: 'output',
+  attribute: 'data-demo-version',
+  className: 'deployment-version',
+  label: 'Version: ',
+  cache: 'no-store',
+  invalidVersion: 'Invalid package version',
+  invalidIdentifier: 'Deployment identifiers must be positive decimal integers',
+  invalidCommit: 'A full source commit SHA is required',
+});
+
 /** Google Chrome verification settings, independent of application runtime configuration. */
 export const BROWSER_CONFIG = Object.freeze({
   channel: 'chrome',

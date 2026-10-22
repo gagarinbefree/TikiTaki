@@ -7,6 +7,8 @@ import type { Grid, Position } from 'tikitaki';
 import { controls, cellMapRows, createMetrics, hasInitialCell, initialGrid, INITIAL_POSITION } from '../shared';
 import '../style.css';
 import type { CellMapProps } from '../shared';
+import { showDeploymentVersion } from '../version';
+void showDeploymentVersion();
 const metrics = createMetrics();
 const Context = createContext<string>(DEMO_TEXT.empty);
 /**
