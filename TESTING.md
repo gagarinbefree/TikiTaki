@@ -530,6 +530,37 @@ isolated framework peers. Declaration output includes English operation JSDoc.
 The aggregate `npm run check` is not reported as passing because it includes the
 blocked nested package runner. No packages were published.
 
+## GitHub Pages and guarded-return formatting (2026-10-22)
+
+The Pages regression test was written before changing the build and test server.
+RED: both desktop framework cases failed on the `/TikiTaki/` HTTP 404 response.
+GREEN: all four desktop/touch cases passed after configuring the production base
+path and serving the production tree under that prefix. These tests open the home
+page, follow each framework link, verify rendered geometry and pointer styles,
+select a cell, check its current highlight, and return home without console errors.
+
+Two formatter regressions failed before implementing the revised guard convention.
+The six formatter cases then passed, including comment preservation and idempotence.
+A single `if` body containing a return now omits braces, puts the return directly
+below the condition, and leaves an empty line afterwards. Multi-statement branches
+keep their braces. The same formatter handles source files and documentation
+examples; GitHub workflow YAML is included in formatting checks.
+
+Final local checks: `npm test` passed all **294 tests in 11 files**;
+`npm run test:browser` built all packages and demos and passed **66/66 Google Chrome
+desktop/touch tests**. Typecheck, ESLint, and formatting checks passed. The aggregate
+package runner still encounters the documented nested `spawnSync node.exe EPERM`
+restriction in this local sandbox; this is not reported as a passing command.
+Fresh packing, offline installation, both strict NodeNext consumer compilations,
+and `node scripts/check-package.mjs verify` passed when run as individual commands.
+
+`.github/workflows/ci-pages.yml` runs verification on pull requests, `main` pushes,
+and manual dispatch. Its deployment job requires successful verification on `main`
+and deploys the exact production demo directory exercised by Chrome. Pull requests
+cannot deploy. Remote Actions execution and the live Pages site remain unverified
+until repository write access and the initial Pages configuration are available;
+local browser coverage is not a claim that GitHub has deployed the site.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению
