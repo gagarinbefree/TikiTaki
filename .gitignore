@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.artifacts/
+coverage/
+playwright-report/
+test-results/
+*.tgz
+.idea/
+.env
+.env.*
+!.env.example
+.agents/
+.codex/
+.aws/

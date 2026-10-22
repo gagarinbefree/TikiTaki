@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TikiTaki public engine test fixture</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: sans-serif;
+      }
+      #grid {
+        width: 300px;
+        height: 600px;
+      }
+      .content {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        font-size: 40px;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="grid"></div>
+    <script type="module">
+import { createSwipeEngine } from '/dist/dom';
+const container = document.querySelector('#grid');
+const state = { errors: [], changes: [], taps: 0, mounts: 0, unmounts: 0 };
+let lastInput = null;
+container.addEventListener(
+  'pointerdown',
+  (event) => {
+    lastInput = { id: event.pointerId, target: event.target };
+  },
+  true,
+);
+const initialGrid = [Array.from({ length: 10 }, (_, i) => `A${i + 1}`), ['B1'], ['C1', 'C2', 'C3'], ['D1', 'D2']];
+const adapter = {
+  mount(host, item, position) {
+    host.dataset.mountId = String(++state.mounts);
+    const button = document.createElement('button');
+    button.className = 'content';
+    const click = () => {
+      state.taps += 1;
+    };
+    button.addEventListener('click', click);
+    host.append(button);
+    const update = (value, pos) => {
+      button.textContent = value;
+      button.style.background = ['#1b4965', '#825b23', '#5e3370', '#245c3c'][pos.row];
+    };
+    update(item, position);
+    const result = {
+      update,
+      unmount() {
+        state.unmounts += 1;
+        button.removeEventListener('click', click);
+        button.remove();
+      },
+    };
+
+    return result;
+
+  },
+};
+function create() {
+  const result = createSwipeEngine({
+    container,
+    grid: initialGrid,
+    initialPosition: { row: 0, col: 9 },
+    adapter,
+    gesture: { animationDuration: 200 },
+    onPositionChange(position, previous) {
+      state.changes.push({ position, previous });
+    },
+    onError(error) {
+      state.errors.push(error.message);
+    },
+  });
+
+  return result;
+
+}
+let engine = create();
+window.swipeFixture = {
+  state,
+  position: () => engine.getPosition(),
+  navigate: (direction) => engine.navigate(direction),
+  goTo: (position) => engine.goTo(position),
+  update: (grid) => {
+    engine.updateGrid(grid);
+  },
+  resize(width, height) {
+    container.style.width = `${width}px`;
+    container.style.height = `${height}px`;
+  },
+  captured: () => lastInput !== null && lastInput.target.hasPointerCapture(lastInput.id),
+  release() {
+    if (lastInput !== null && lastInput.target.hasPointerCapture(lastInput.id)) {
+      lastInput.target.releasePointerCapture(lastInput.id);
+    }
+  },
+  cancel() {
+    if (lastInput !== null) {
+      lastInput.target.dispatchEvent(new PointerEvent('pointercancel', { pointerId: lastInput.id, bubbles: true }));
+    }
+  },
+  destroy: () => {
+    engine.destroy();
+  },
+  reinit() {
+    engine.destroy();
+    engine = create();
+  },
+};
+</script>
+  </body>
+</html>
