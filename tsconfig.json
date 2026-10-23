@@ -19,7 +19,8 @@
       "tikitaki": ["./src/index.ts"],
       "tikitaki/dom": ["./src/dom.ts"],
       "@tikitaki/react": ["./packages/react/src/index.ts"],
-      "@tikitaki/vue": ["./packages/vue/src/index.ts"]
+      "@tikitaki/vue": ["./packages/vue/src/index.ts"],
+      "@tikitaki/svelte": ["./packages/svelte/src/index.ts"]
     },
     "jsx": "react-jsx"
   },
