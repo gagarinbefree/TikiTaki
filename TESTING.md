@@ -707,6 +707,23 @@ Final verification: **301/301 unit/integration tests and 76/76 Chrome E2E passed
 Typecheck, ESLint, Prettier, core/adapter builds, and the demo production build
 passed. The vendored CSS SHA-256 matches the official tag checkout.
 
+## Portrait demo without a control panel (2026-10-23)
+
+RED: the new presentation assertion failed against the existing React aside.
+Both demos now omit the control panel and center a 9:16 swipe viewport. Shared
+geometry caps its width at 360px and height at 70svh while preserving the ratio
+on narrow screens. The interactive map remains below the field.
+
+Chrome assertions check the absence of the panel/navigation controls, portrait
+geometry, initial A1, map selection, gestures, and no horizontal page overflow.
+Lifecycle and grid-update coverage uses the existing browser diagnostics bridge
+instead of visible buttons. Reload coverage verifies the public demo resets to
+A1. The engine and adapters are unchanged.
+
+GREEN: all **76 Chrome desktop/touch E2E cases passed**. Typecheck, ESLint,
+Prettier, library/adapter builds, and the production demo build passed. Desktop
+and mobile screenshots confirmed the portrait field and absence of the panel.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

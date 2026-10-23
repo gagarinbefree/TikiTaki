@@ -1,13 +1,13 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
-import { DEMO_TEXT, DEMO_LABELS } from '../config';
-import { controls, hasNavigationTarget, initialGrid, INITIAL_POSITION, NAVIGATION_TARGET_POSITION } from '../shared';
+import { DEMO_TEXT } from '../config';
+import { initialGrid, INITIAL_POSITION } from '../shared';
 import { Context, metrics } from './context';
 import EngineView from './EngineView';
 import CellMap from './CellMap';
 
-/** Coordinate demo controls, live data, and the engine's mount lifecycle. */
+/** Render a portrait swipe view and its interactive cell map. */
 export default function App() {
   const [grid, setGrid] = useState(initialGrid);
   const [visible, setVisible] = useState(true);
@@ -21,6 +21,26 @@ export default function App() {
     }
     setVisible(!visible);
   }
+  useEffect(() => {
+    window.tikitakiDemo.commands = {
+      navigate: (direction) => {
+        void engineRef.current?.navigate(direction).catch(metrics.error);
+      },
+      goTo: (target) => {
+        void engineRef.current?.goTo(target).catch(metrics.error);
+      },
+      update: () => {
+        setGrid((previous) => previous.map((row) => row.map((item) => item + DEMO_TEXT.updateSuffix)));
+      },
+      shrink: () => {
+        setGrid([[DEMO_TEXT.only]]);
+      },
+      toggle: remount,
+    };
+    return () => {
+      window.tikitakiDemo.commands = null;
+    };
+  });
   return (
     <Context.Provider value={DEMO_TEXT.reactContextRoot}>
       <main className={DEMO_TEXT.container}>
@@ -41,76 +61,6 @@ export default function App() {
               <p data-unmounted="">{DEMO_TEXT.destroyedMessage}</p>
             )}
           </div>
-          <aside className={DEMO_TEXT.controls}>
-            <div className={DEMO_TEXT.panel}>
-              <h3>{DEMO_TEXT.controlsTitle}</h3>
-              <p>
-                <output className={DEMO_TEXT.positionLabel} data-position="">
-                  {DEMO_LABELS.coordinates(position)}
-                </output>
-              </p>
-              {controls.map(({ direction, label }) => (
-                <p key={direction}>
-                  <button
-                    className={DEMO_TEXT.buttonDefault}
-                    data-navigate={direction}
-                    disabled={!visible}
-                    onClick={() => {
-                      void engineRef.current?.navigate(direction).catch(metrics.error);
-                    }}
-                  >
-                    {label}
-                  </button>
-                </p>
-              ))}
-              <p>
-                <button
-                  data-action={DEMO_TEXT.goto}
-                  className={DEMO_TEXT.buttonPrimary}
-                  disabled={!visible || !hasNavigationTarget(grid)}
-                  onClick={() => {
-                    void engineRef.current?.goTo(NAVIGATION_TARGET_POSITION).catch(metrics.error);
-                  }}
-                >
-                  {DEMO_TEXT.goToTargetLabel}
-                </button>
-              </p>
-              <p>
-                <button
-                  data-action={DEMO_TEXT.update}
-                  className={DEMO_TEXT.buttonSuccess}
-                  disabled={!visible}
-                  onClick={() => {
-                    setGrid((previous) => previous.map((row) => row.map((item) => item + DEMO_TEXT.updateSuffix)));
-                  }}
-                >
-                  {DEMO_TEXT.updateLabel}
-                </button>
-              </p>
-              <p>
-                <button
-                  data-action={DEMO_TEXT.shrink}
-                  className={DEMO_TEXT.buttonWarning}
-                  disabled={!visible}
-                  onClick={() => {
-                    setGrid([[DEMO_TEXT.only]]);
-                  }}
-                >
-                  {DEMO_TEXT.shrinkLabel}
-                </button>
-              </p>
-              <p>
-                <button
-                  className={visible ? DEMO_TEXT.buttonDanger : DEMO_TEXT.buttonSuccess}
-                  data-action={DEMO_TEXT.toggle}
-                  onClick={remount}
-                >
-                  {visible ? DEMO_TEXT.destroyLabel : DEMO_TEXT.remountLabel}
-                </button>
-              </p>
-              <p className={DEMO_TEXT.hint}>{DEMO_TEXT.counterHint}</p>
-            </div>
-          </aside>
         </div>
         <hr />
         <CellMap

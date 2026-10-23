@@ -1,4 +1,4 @@
-import type { Direction, Grid, Position } from 'tikitaki';
+import type { Grid, Position } from 'tikitaki';
 /** Centralized protocol tokens, DOM attributes, styles, labels, and validation messages. */
 export const DEMO_TEXT = Object.freeze({
   homePath: '../',
@@ -16,7 +16,7 @@ export const DEMO_TEXT = Object.freeze({
   dataAction: 'data-action',
   count: 'count',
   div: 'div',
-  viewport: 'border rounded-7 overflow-hidden bg-1 shadow-sm',
+  viewport: 'border rounded-7 overflow-hidden bg-1 shadow-sm mx-auto',
   dataDemoContainer: 'data-demo-container',
   ariaLabel: 'aria-label',
   viewportLabel: 'Свайп-сетка',
@@ -47,10 +47,10 @@ export const DEMO_TEXT = Object.freeze({
   cellTitle: 'fs-6xl fw-bold mb-0 fg-primary',
   headline: 'Два измерения. Один жест.',
   intro: 'Живые компоненты внутри сетки с разной длиной строк. Начало — A1.',
-  layout: 'row g-5 align-items-start',
+  layout: 'd-flex justify-content-center',
   dataDemoLayout: 'data-demo-layout',
   container: 'container py-5',
-  viewportColumn: 'col-12 md:col-8',
+  viewportColumn: 'w-100 text-center',
   controls: 'col-12 md:col-4',
   panel: 'card p-5 bg-1',
   h3: 'h3',
@@ -106,9 +106,9 @@ export const DEMO_TEXT = Object.freeze({
   previousCellLabel: '→ Предыдущая ячейка',
 });
 
-/** Only engine geometry is specified locally; Bootstrap supplies all demo appearance. */
+/** A 9:16 portrait viewport, at most 360px wide and 70svh tall; Bootstrap supplies its appearance. */
 export const DEMO_GEOMETRY = Object.freeze({
-  viewport: Object.freeze({ height: 'min(60vh, 480px)', minHeight: '320px' }),
+  viewport: Object.freeze({ width: 'min(100%, 360px, 39.375svh)', aspectRatio: '9 / 16' }),
   cell: Object.freeze({ height: '100%', boxSizing: 'border-box' as const }),
 });
 
@@ -120,17 +120,9 @@ export const DEMO_LABELS = Object.freeze({
 });
 
 export const INITIAL_POSITION: Position = Object.freeze({ row: 0, col: 0 });
-/** Separate direct-navigation example from the demo's initial position. */
-export const NAVIGATION_TARGET_POSITION: Position = Object.freeze({ row: 0, col: 9 });
 export const initialGrid: Grid<string> = [
   Array.from({ length: 10 }, (_, i) => `A${String(i + 1)}`),
   [DEMO_TEXT.b1],
   [DEMO_TEXT.c1, DEMO_TEXT.c2, DEMO_TEXT.c3],
   [DEMO_TEXT.d1, DEMO_TEXT.d2, DEMO_TEXT.d3, DEMO_TEXT.d4, DEMO_TEXT.d5],
-];
-export const controls: readonly { readonly direction: Direction; readonly label: string }[] = [
-  { direction: DEMO_TEXT.up, label: DEMO_TEXT.nextRowLabel },
-  { direction: DEMO_TEXT.down, label: DEMO_TEXT.previousRowLabel },
-  { direction: DEMO_TEXT.left, label: DEMO_TEXT.nextCellLabel },
-  { direction: DEMO_TEXT.right, label: DEMO_TEXT.previousCellLabel },
 ];

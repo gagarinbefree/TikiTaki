@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import type { Direction } from 'tikitaki';
 const current = '[data-tikitaki-role="current"]';
 const messages = new WeakMap<Page, string[]>();
 test.beforeEach(({ page, browser }, info) => {
@@ -19,6 +20,27 @@ test.afterEach(async ({ page }) => {
   expect(await page.evaluate(() => window.tikitakiDemo.metrics().errors)).toEqual([]);
   expect(messages.get(page)).toEqual([]);
 });
+/** Exercise lifecycle operations without exposing a control panel in the demo. */
+async function command(page: Page, name: 'goto' | 'update' | 'shrink' | 'toggle') {
+  await page.evaluate((name) => {
+    const commands = window.tikitakiDemo.commands;
+    if (!commands) throw new Error('Demo commands are not mounted');
+    if (name === 'goto') commands.goTo({ row: 0, col: 9 });
+    else commands[name]();
+  }, name);
+}
+/** Start navigation without awaiting settling so conflicting commands remain testable. */
+async function navigate(page: Page, direction: Direction, repeat = false) {
+  await page.evaluate(
+    ({ direction, repeat }) => {
+      const commands = window.tikitakiDemo.commands;
+      if (!commands) throw new Error('Demo commands are not mounted');
+      commands.navigate(direction);
+      if (repeat) commands.navigate(direction);
+    },
+    { direction, repeat },
+  );
+}
 async function centered(page: Page) {
   await expect
     .poll(async () => {
@@ -32,7 +54,7 @@ async function centered(page: Page) {
 }
 async function item(page: Page, name: string, row: number, col: number) {
   await expect(page.locator(`${current} [data-item]`)).toHaveAttribute('data-item', name);
-  await expect(page.locator('[data-position]')).toHaveText(`row: ${String(row)}, col: ${String(col)}`);
+  await expect(page.locator('[aria-current="true"]')).toHaveAttribute('title', `row: ${String(row)}, col: ${String(col)}`);
   await centered(page);
   expect(await page.locator('[data-tikitaki-cell]').count()).toBeLessThanOrEqual(5);
 }
@@ -41,20 +63,20 @@ for (const framework of ['react', 'vue'] as const) {
     test.beforeEach(async ({ page }) => {
       await page.goto(`/demos/${framework}/`);
       await item(page, 'A1', 0, 0);
-      await page.locator('[data-action="goto"]').click();
+      await command(page, 'goto');
       await item(page, 'A10', 0, 9);
     });
     test('commands obey ragged boundaries and rapid input does not queue transitions', async ({ page }) => {
-      await page.locator('[data-navigate="down"]').click();
+      await navigate(page, 'down');
       await item(page, 'A10', 0, 9);
-      await page.locator('[data-navigate="up"]').dblclick({ delay: 20 });
+      await navigate(page, 'up', true);
       await item(page, 'B1', 1, 0);
-      await page.locator('[data-navigate="left"]').click();
-      await page.locator('[data-navigate="right"]').click();
+      await navigate(page, 'left');
+      await navigate(page, 'right');
       await item(page, 'B1', 1, 0);
-      await page.locator('[data-navigate="down"]').click();
+      await navigate(page, 'down');
       await item(page, 'A1', 0, 0);
-      await page.locator('[data-action="goto"]').click();
+      await command(page, 'goto');
       await item(page, 'A10', 0, 9);
     });
     test('cell-map selects cells and follows navigation, grid updates, and remount', async ({ page, isMobile }) => {
@@ -88,7 +110,7 @@ for (const framework of ['react', 'vue'] as const) {
       }
       await item(page, 'C3', 2, 2);
       await expect(active).toHaveText('C3');
-      await page.locator('[data-navigate="up"]').click();
+      await navigate(page, 'up');
       await item(page, 'D1', 3, 0);
       await expect(active).toHaveText('D1');
       const keyboardCell = map.getByRole('button', { name: 'B1', exact: true });
@@ -96,17 +118,17 @@ for (const framework of ['react', 'vue'] as const) {
       await keyboardCell.press('Enter');
       await item(page, 'B1', 1, 0);
       await expect(active).toHaveText('B1');
-      await page.locator('[data-action="update"]').click();
+      await command(page, 'update');
       await item(page, 'B1!', 1, 0);
       await expect(active).toHaveText('B1!');
-      await page.locator('[data-action="shrink"]').click();
+      await command(page, 'shrink');
       await item(page, 'Only', 0, 0);
       await expect(map.getByRole('button')).toHaveCount(1);
       await expect(active).toHaveText('Only');
-      await page.locator('[data-action="toggle"]').click();
+      await command(page, 'toggle');
       await expect(map.getByRole('button')).toBeDisabled();
       await expect(active).toHaveCount(0);
-      await page.locator('[data-action="toggle"]').click();
+      await command(page, 'toggle');
       await item(page, 'A1', 0, 0);
       await expect(map.getByRole('button')).toHaveCount(19);
       await expect(active).toHaveText('A1');
@@ -159,38 +181,33 @@ for (const framework of ['react', 'vue'] as const) {
       await expect(page.locator(`${current} small`)).toContainText(framework === 'react' ? 'React context' : 'Vue context');
       await page.locator(`${current} [data-action="count"]`).click();
       await expect(page.locator(`${current} button`)).toHaveText('Нажатий: 1');
-      await page.locator('[data-action="update"]').click();
+      await command(page, 'update');
       await item(page, 'A10!', 0, 9);
       await expect(page.locator(`${current} button`)).toHaveText('Нажатий: 1');
-      await page.locator('[data-action="shrink"]').click();
+      await command(page, 'shrink');
       await item(page, 'Only', 0, 0);
       await expect(page.locator('[data-tikitaki-cell]')).toHaveCount(1);
     });
-    test('unavailable commands are disabled after shrink and destroy', async ({ page }) => {
-      await page.locator('[data-action="shrink"]').click();
+    test('cell map disables selection after destroy and restores it on remount', async ({ page }) => {
+      await command(page, 'shrink');
       await item(page, 'Only', 0, 0);
-      await expect(page.locator('[data-action="goto"]')).toBeDisabled();
-      await page.locator('[data-action="toggle"]').click();
-      for (const direction of ['up', 'down', 'left', 'right']) {
-        await expect(page.locator(`[data-navigate="${direction}"]`)).toBeDisabled();
-      }
-      await expect(page.locator('[data-action="update"]')).toBeDisabled();
-      await expect(page.locator('[data-action="shrink"]')).toBeDisabled();
-      await page.locator('[data-action="toggle"]').click();
+      await command(page, 'toggle');
+      await expect(page.locator('[data-tikitaki-viewport]')).toHaveCount(0);
+      await expect(page.getByRole('navigation', { name: 'Карта ячеек' }).getByRole('button')).toBeDisabled();
+      await command(page, 'toggle');
       await item(page, 'A1', 0, 0);
-      await expect(page.locator('[data-action="goto"]')).toBeEnabled();
-      await expect(page.locator('[data-navigate="up"]')).toBeEnabled();
+      await expect(page.getByRole('navigation', { name: 'Карта ячеек' }).getByRole('button')).toHaveCount(19);
     });
     test('unmount during settling pairs all lifecycles and repeated remounts leave one viewport', async ({ page }) => {
       for (let i = 0; i < 3; i++) {
-        await page.locator('[data-navigate="up"]').click();
-        await page.locator('[data-action="toggle"]').click();
+        await navigate(page, 'up');
+        await command(page, 'toggle');
         await expect(page.locator('[data-tikitaki-viewport]')).toHaveCount(0);
         await expect.poll(() => page.evaluate(() => window.tikitakiDemo.metrics().live)).toBe(0);
         const metrics = await page.evaluate(() => window.tikitakiDemo.metrics());
         expect(metrics.mounted).toBe(metrics.unmounted);
         expect(metrics.enginesCreated).toBe(metrics.enginesDestroyed);
-        await page.locator('[data-action="toggle"]').click();
+        await command(page, 'toggle');
         await item(page, 'A1', 0, 0);
         await expect(page.locator('[data-tikitaki-viewport]')).toHaveCount(1);
       }
@@ -201,7 +218,7 @@ for (const framework of ['react', 'vue'] as const) {
       const metrics = await page.evaluate(() => window.tikitakiDemo.metrics());
       expect(metrics.enginesCreated).toBe(framework === 'react' ? 2 : 1);
       expect(metrics.enginesCreated - metrics.enginesDestroyed).toBe(1);
-      await page.locator('[data-action="toggle"]').click();
+      await command(page, 'toggle');
       await expect.poll(() => page.evaluate(() => window.tikitakiDemo.metrics().live)).toBe(0);
       expect(
         await page.evaluate(() => {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { provide, ref, shallowRef } from 'vue';
+import { onMounted, onUnmounted, provide, ref, shallowRef } from 'vue';
 import type { Direction, Grid, Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
-import { DEMO_TEXT, DEMO_LABELS } from '../config';
-import { controls, hasNavigationTarget, initialGrid, INITIAL_POSITION, NAVIGATION_TARGET_POSITION } from '../shared';
+import { DEMO_TEXT } from '../config';
+import { initialGrid, INITIAL_POSITION } from '../shared';
 import EngineView from './EngineView.vue';
 import CellMap from './CellMap.vue';
 import { metrics } from './metrics';
@@ -34,6 +34,20 @@ function remount() {
   }
   visible.value = !visible.value;
 }
+onMounted(() => {
+  window.tikitakiDemo.commands = {
+    navigate,
+    goTo: select,
+    update,
+    shrink: () => {
+      grid.value = [[DEMO_TEXT.only]];
+    },
+    toggle: remount,
+  };
+});
+onUnmounted(() => {
+  window.tikitakiDemo.commands = null;
+});
 </script>
 
 <template>
@@ -52,50 +66,6 @@ function remount() {
         <EngineView v-if="visible" :grid="grid" @engine="engine = $event" @position="position = $event" />
         <p v-else data-unmounted="">{{ DEMO_TEXT.destroyedMessage }}</p>
       </div>
-      <aside :class="DEMO_TEXT.controls">
-        <div :class="DEMO_TEXT.panel">
-          <h3>{{ DEMO_TEXT.controlsTitle }}</h3>
-          <p>
-            <output :class="DEMO_TEXT.positionLabel" data-position="">{{ DEMO_LABELS.coordinates(position) }}</output>
-          </p>
-          <p v-for="{ direction, label } in controls" :key="direction">
-            <button :class="DEMO_TEXT.buttonDefault" :data-navigate="direction" :disabled="!visible" @click="navigate(direction)">
-              {{ label }}
-            </button>
-          </p>
-          <p>
-            <button
-              :data-action="DEMO_TEXT.goto"
-              :class="DEMO_TEXT.buttonPrimary"
-              :disabled="!visible || !hasNavigationTarget(grid)"
-              @click="select(NAVIGATION_TARGET_POSITION)"
-            >
-              {{ DEMO_TEXT.goToTargetLabel }}
-            </button>
-          </p>
-          <p>
-            <button :data-action="DEMO_TEXT.update" :class="DEMO_TEXT.buttonSuccess" :disabled="!visible" @click="update">
-              {{ DEMO_TEXT.updateLabel }}
-            </button>
-          </p>
-          <p>
-            <button
-              :data-action="DEMO_TEXT.shrink"
-              :class="DEMO_TEXT.buttonWarning"
-              :disabled="!visible"
-              @click="grid = [[DEMO_TEXT.only]]"
-            >
-              {{ DEMO_TEXT.shrinkLabel }}
-            </button>
-          </p>
-          <p>
-            <button :class="visible ? DEMO_TEXT.buttonDanger : DEMO_TEXT.buttonSuccess" :data-action="DEMO_TEXT.toggle" @click="remount">
-              {{ visible ? DEMO_TEXT.destroyLabel : DEMO_TEXT.remountLabel }}
-            </button>
-          </p>
-          <p :class="DEMO_TEXT.hint">{{ DEMO_TEXT.counterHint }}</p>
-        </div>
-      </aside>
     </div>
     <hr />
     <CellMap :grid="grid" :position="position" :enabled="visible" @select="select" />

@@ -1,15 +1,6 @@
-import { NAVIGATION_TARGET_POSITION } from './config';
-export { INITIAL_POSITION, NAVIGATION_TARGET_POSITION, initialGrid, controls } from './config';
+export { INITIAL_POSITION, initialGrid } from './config';
 
-import type { Grid, Position } from 'tikitaki';
-/**
- * Check that the direct-navigation example still exists in a replacement grid.
- */
-export function hasNavigationTarget(grid: Grid<unknown>): boolean {
-  const result = (grid[NAVIGATION_TARGET_POSITION.row]?.length ?? 0) > NAVIGATION_TARGET_POSITION.col;
-
-  return result;
-}
+import type { Direction, Grid, Position } from 'tikitaki';
 /** Current demo data, committed coordinates, availability, and the direct-navigation callback. */
 export interface CellMapProps {
   readonly grid: Grid<string>;
@@ -56,16 +47,26 @@ export function createMetrics() {
     },
     snapshot: () => ({ mounted, unmounted, live: mounted - unmounted, enginesCreated, enginesDestroyed, errors: [...errors] }),
   };
-  window.tikitakiDemo = { metrics: metrics.snapshot };
+  window.tikitakiDemo = { metrics: metrics.snapshot, commands: null };
 
   return metrics;
 }
+/** Browser-test operations kept outside the visible demo interface. */
+export interface DemoCommands {
+  readonly navigate: (direction: Direction) => void;
+  readonly goTo: (position: Position) => void;
+  readonly update: () => void;
+  readonly shrink: () => void;
+  readonly toggle: () => void;
+}
+
 declare global {
   /**
    * Expose read-only demo lifecycle diagnostics for browser verification.
    */
   interface Window {
     tikitakiDemo: {
+      commands: DemoCommands | null;
       readonly metrics: () => {
         readonly mounted: number;
         readonly unmounted: number;

@@ -11,11 +11,14 @@ for (const framework of ['react', 'vue']) {
     });
     await page.goto(`/demos/${framework}/`);
     await expect(page.locator('.navbar .navbar-brand')).toHaveText('TikiTaki');
-    await expect(page.locator('main.container [data-demo-layout] > .md\\:col-8')).toBeVisible();
-    await expect(page.locator('main.container [data-demo-layout] > .md\\:col-4 .card')).toBeVisible();
+    await expect(page.locator('main aside')).toHaveCount(0);
+    const field = await page.locator('[data-demo-container]').boundingBox();
+    expect(field).not.toBeNull();
+    expect(field && field.height > field.width).toBe(true);
+    expect(field && Math.abs(field.width / field.height - 9 / 16) < 0.01).toBe(true);
     await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveAttribute('data-item', 'A1');
     await expect(page.locator('[aria-current="true"]')).toHaveClass(/theme-success/);
-    await expect(page.locator('.btn-outline[data-navigate="up"]')).toBeVisible();
+    await expect(page.locator('[data-navigate]')).toHaveCount(0);
     await page.getByRole('button', { name: 'C3', exact: true }).click();
     await expect(page.locator('[aria-current="true"]')).toHaveText('C3');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
