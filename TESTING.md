@@ -612,6 +612,14 @@ Previous GitHub tests and builds passed; Pages publication stopped at
 setting and cannot be replaced by the standard workflow token. A successful live
 Pages deployment and GitHub Release are not claimed until that step succeeds.
 
+## Release visibility (2026-10-23)
+
+The first deployment created a published, non-draft prerelease with the demo ZIP
+and metadata attached. GitHub did not mark it Latest. The workflow now publishes
+regular releases with `--latest` and promotes an existing release on an idempotent
+retry. The README badge links to `releases/latest` and no longer selects prereleases.
+This changes GitHub release visibility, while retaining the alpha version string.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

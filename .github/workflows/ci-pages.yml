@@ -186,8 +186,9 @@ jobs:
           printf 'Demo: %s\n\nSource commit: %s\n' "$DEMO_URL" "$GITHUB_SHA" > release-notes.md
           if gh release view "v$VERSION" >/dev/null 2>&1; then
             gh release upload "v$VERSION" release-assets/* --clobber
+            gh release edit "v$VERSION" --prerelease=false --latest
           else
-            gh release create "v$VERSION" release-assets/* --target "$GITHUB_SHA" --title "TikiTaki v$VERSION" --notes-file release-notes.md --prerelease
+            gh release create "v$VERSION" release-assets/* --target "$GITHUB_SHA" --title "TikiTaki v$VERSION" --notes-file release-notes.md --latest
           fi
       - name: Update the latest release in README
         env:
