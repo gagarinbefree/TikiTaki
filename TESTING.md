@@ -620,6 +620,24 @@ regular releases with `--latest` and promotes an existing release on an idempote
 retry. The README badge links to `releases/latest` and no longer selects prereleases.
 This changes GitHub release visibility, while retaining the alpha version string.
 
+## A1 demo start and repository-owned release badge (2026-10-23)
+
+RED: both new desktop demo cases failed while expecting A1 at startup. The demos
+now start and remount at A1, while their A10 command uses a separate configured
+target. Existing boundary tests explicitly select A10 before exercising the
+original nonzero-column scenarios. GREEN: all **72 Chrome desktop/touch E2E cases**
+passed, including the four new startup/remount cases. Typecheck and ESLint passed.
+
+The external release badge showed `no releases or repo not found` while GitHub
+reported an existing published, regular Latest release. A failing badge-rendering
+test preceded the repository-owned SVG implementation. The release updater now
+writes README and `docs/badges/release.svg` together; the bot stages both files.
+The CI badge keeps its working GitHub endpoint. The local release image is seeded
+with the verified published version, not a fabricated status.
+Final checks passed all **306 unit/integration tests**, typecheck, ESLint, and
+formatting. A Google Chrome screenshot confirmed that the generated SVG displays
+the release label and complete version without clipping.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

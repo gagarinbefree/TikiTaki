@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createDeploymentMetadata, updateReadmeRelease } from '../scripts/deployment-version.mjs';
+import { createDeploymentMetadata, createReleaseBadge, updateReadmeRelease } from '../scripts/deployment-version.mjs';
 
 const commit = 'a'.repeat(40);
 
@@ -39,4 +39,13 @@ it('rejects missing and duplicated release markers instead of editing arbitrary 
   expect(() => updateReadmeRelease('No marker', '0.1.0')).toThrow();
   expect(() => updateReadmeRelease(marker + marker, '0.1.0')).toThrow();
   expect(() => updateReadmeRelease(marker, 'invalid-version')).toThrow();
+});
+
+it('renders a repository-owned release badge with the published version', () => {
+  const badge = createReleaseBadge('0.1.0-alpha.0.deploy.7.1');
+  expect(badge).toContain('xmlns="http://www.w3.org/2000/svg"');
+  expect(badge).toContain('v0.1.0-alpha.0.deploy.7.1');
+  expect(badge).toContain('role="img"');
+  expect(badge).not.toContain('shields.io');
+  expect(() => createReleaseBadge('<script>')).toThrow();
 });

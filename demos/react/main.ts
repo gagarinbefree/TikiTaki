@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { createReactCellAdapter, ReactCellPortals } from '@tikitaki/react';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
-import { controls, cellMapRows, createMetrics, hasInitialCell, initialGrid, INITIAL_POSITION } from '../shared';
+import { controls, cellMapRows, createMetrics, hasNavigationTarget, initialGrid, INITIAL_POSITION, NAVIGATION_TARGET_POSITION } from '../shared';
 import '../style.css';
 import type { CellMapProps } from '../shared';
 import { showDeploymentVersion } from '../version';
@@ -206,12 +206,12 @@ function App() {
             DEMO_TEXT.button,
             {
               [DEMO_TEXT.dataAction]: DEMO_TEXT.goto,
-              disabled: !visible || !hasInitialCell(grid),
+              disabled: !visible || !hasNavigationTarget(grid),
               onClick: () => {
-                void engineRef.current?.goTo(INITIAL_POSITION).catch(metrics.error);
+                void engineRef.current?.goTo(NAVIGATION_TARGET_POSITION).catch(metrics.error);
               },
             },
-            DEMO_TEXT.goToInitialLabel,
+            DEMO_TEXT.goToTargetLabel,
           ),
           h(
             DEMO_TEXT.button,

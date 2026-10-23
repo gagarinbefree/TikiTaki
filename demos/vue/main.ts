@@ -4,7 +4,7 @@ import type { PropType } from 'vue';
 import { createVueCellAdapter, VueCellPortals } from '@tikitaki/vue';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
-import { controls, cellMapRows, createMetrics, hasInitialCell, initialGrid, INITIAL_POSITION } from '../shared';
+import { controls, cellMapRows, createMetrics, hasNavigationTarget, initialGrid, INITIAL_POSITION, NAVIGATION_TARGET_POSITION } from '../shared';
 import '../style.css';
 import type { CellMapProps } from '../shared';
 import { showDeploymentVersion } from '../version';
@@ -180,12 +180,12 @@ const App = defineComponent({
               DEMO_TEXT.button,
               {
                 [DEMO_TEXT.dataAction]: DEMO_TEXT.goto,
-                disabled: !visible.value || !hasInitialCell(grid.value),
+                disabled: !visible.value || !hasNavigationTarget(grid.value),
                 onClick: () => {
-                  void engine.value?.goTo(INITIAL_POSITION).catch(metrics.error);
+                  void engine.value?.goTo(NAVIGATION_TARGET_POSITION).catch(metrics.error);
                 },
               },
-              DEMO_TEXT.goToInitialLabel,
+              DEMO_TEXT.goToTargetLabel,
             ),
             h(
               DEMO_TEXT.button,

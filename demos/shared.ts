@@ -1,12 +1,12 @@
-import { INITIAL_POSITION } from './config';
-export { INITIAL_POSITION, initialGrid, controls } from './config';
+import { NAVIGATION_TARGET_POSITION } from './config';
+export { INITIAL_POSITION, NAVIGATION_TARGET_POSITION, initialGrid, controls } from './config';
 
 import type { Grid, Position } from 'tikitaki';
 /**
- * Check that the configured initial demo position still exists in a replacement grid.
+ * Check that the direct-navigation example still exists in a replacement grid.
  */
-export function hasInitialCell(grid: Grid<unknown>): boolean {
-  const result = (grid[INITIAL_POSITION.row]?.length ?? 0) > INITIAL_POSITION.col;
+export function hasNavigationTarget(grid: Grid<unknown>): boolean {
+  const result = (grid[NAVIGATION_TARGET_POSITION.row]?.length ?? 0) > NAVIGATION_TARGET_POSITION.col;
 
   return result;
 

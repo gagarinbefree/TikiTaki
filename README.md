@@ -1,13 +1,15 @@
 # TikiTaki
 
 [![Tests and build](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml)
-[![Release](https://img.shields.io/github/v/release/gagarinbefree/TikiTaki)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
+[![Release](docs/badges/release.svg)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
 
 **Latest release:** <!-- release-version -->v0.1.0-alpha.0.deploy.7.1<!-- /release-version -->
 
 A zero-runtime-dependency TypeScript engine for swipe navigation across a ragged two-dimensional grid. Each row can have a different positive length. The engine provides navigation, pointer gestures, bounded DOM rendering, and optional React/Vue adapters.
 
 The project is a private alpha. Google Chrome Desktop and Chrome touch emulation are tested. Physical Android verification is deferred at the user's request. There is no video player, backend, recommendation service, or media upload system.
+
+Both framework demos open at **A1** and return to A1 after remount. The **Go to A10** control remains available for trying navigation from the end of the first row.
 
 ## Functional API
 
@@ -146,7 +148,7 @@ Use the project formatter for single-line imports and function signatures, named
 
 [The workflow](.github/workflows/ci-pages.yml) follows the AvaWeather repository's structure: `build-and-test → prepare-release → web-pages → release`. It runs on pull requests, pushes to `main`, and manual dispatch. Node.js 24 installs the lockfile with `npm ci`, then runs typecheck, ESLint, formatting checks, unit/integration tests, production library and adapter builds, and the independent packaged-core consumer audit. It builds the demos and runs Google Chrome E2E in desktop and touch configurations, including navigation from the Pages home page to both framework demos under `/TikiTaki/`. Hosted runners use their installed Google Chrome when available.
 
-Only successful tests and builds on `main` allow release preparation and Pages publication. Jobs exchange the exact demo artifact verified by Chrome. Pull requests never deploy or create releases. Failure screenshots, traces, and the Chrome JSON report are retained as workflow artifacts for seven days. The CI badge reports the complete test/build/release pipeline. Published deployments are regular GitHub Releases marked **Latest**, so the newest version appears in the repository sidebar and at `releases/latest`; the version string still identifies the alpha package.
+Only successful tests and builds on `main` allow release preparation and Pages publication. Jobs exchange the exact demo artifact verified by Chrome. Pull requests never deploy or create releases. Failure screenshots, traces, and the Chrome JSON report are retained as workflow artifacts for seven days. The CI badge reports the complete test/build/release pipeline. The release badge is an SVG stored in this repository and updated by the release job together with README. Published deployments are regular GitHub Releases marked **Latest**, so the newest version appears in the repository sidebar and at `releases/latest`; the version string still identifies the alpha package.
 
 One workflow-level concurrency group covers the repository and branch with `cancel-in-progress: true`. A new commit cancels the entire earlier pipeline, including tests, builds, deployment, and release work. There are no cross-workflow completion events to restart an outdated pipeline.
 

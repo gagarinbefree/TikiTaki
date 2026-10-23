@@ -37,8 +37,26 @@ export const VERSION_CONFIG = Object.freeze({
   invalidIdentifier: 'Deployment identifiers must be positive decimal integers',
   invalidCommit: 'A full source commit SHA is required',
   readmePath: 'README.md',
+  badgePath: 'docs/badges/release.svg',
+  versionPattern: /^\d+\.\d+\.\d+(?:-[A-Za-z\d.-]+)?$/,
   readmeMarker: /<!-- release-version -->[\s\S]*?<!-- \/release-version -->/g,
   invalidReadme: 'README must contain exactly one release-version marker',
+});
+
+/** Geometry and colors for the repository-owned release status image. */
+export const RELEASE_BADGE_CONFIG = Object.freeze({
+  label: 'release',
+  height: 20,
+  labelWidth: 54,
+  characterWidth: 7,
+  valuePadding: 16,
+  cornerRadius: 3,
+  fontSize: 11,
+  textY: 14,
+  background: '#555',
+  valueBackground: '#007ec6',
+  foreground: '#fff',
+  fontFamily: 'Verdana,Geneva,DejaVu Sans,sans-serif',
 });
 
 /** Google Chrome verification settings, independent of application runtime configuration. */

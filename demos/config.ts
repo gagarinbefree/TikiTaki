@@ -44,7 +44,7 @@ export const DEMO_TEXT = Object.freeze({
   tikiTakiReactStrictMode: 'TikiTaki / React / StrictMode',
   h1: 'h1',
   headline: 'Два измерения. Один жест.',
-  intro: 'Живые компоненты внутри сетки с разной длиной строк. Начало — A10.',
+  intro: 'Живые компоненты внутри сетки с разной длиной строк. Начало — A1.',
   layout: 'layout',
   dataUnmounted: 'data-unmounted',
   destroyedMessage: 'Движок уничтожен, компоненты размонтированы.',
@@ -54,7 +54,7 @@ export const DEMO_TEXT = Object.freeze({
   dataPosition: 'data-position',
   dataNavigate: 'data-navigate',
   goto: 'goto',
-  goToInitialLabel: 'Перейти к A10',
+  goToTargetLabel: 'Перейти к A10',
   update: 'update',
   updateLabel: 'Обновить данные',
   shrink: 'shrink',
@@ -96,7 +96,9 @@ export const DEMO_LABELS = Object.freeze({
   row: (row: number) => `Строка ${String(row)}`,
 });
 
-export const INITIAL_POSITION: Position = Object.freeze({ row: 0, col: 9 });
+export const INITIAL_POSITION: Position = Object.freeze({ row: 0, col: 0 });
+/** Separate direct-navigation example from the demo's initial position. */
+export const NAVIGATION_TARGET_POSITION: Position = Object.freeze({ row: 0, col: 9 });
 export const initialGrid: Grid<string> = [
   Array.from({ length: 10 }, (_, i) => `A${String(i + 1)}`),
   [DEMO_TEXT.b1],

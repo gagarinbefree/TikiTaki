@@ -25,7 +25,7 @@ for (const framework of ['react', 'vue']) {
     await page.getByRole('link', { name: framework === 'react' ? 'React / StrictMode' : 'Vue 3 / Composition API' }).click();
     await expect(page).toHaveURL(new RegExp(`/TikiTaki/${framework}/$`));
     const current = page.locator('[data-tikitaki-role="current"]');
-    await expect(current.locator('[data-item]')).toHaveAttribute('data-item', 'A10');
+    await expect(current.locator('[data-item]')).toHaveAttribute('data-item', 'A1');
     await expect(page.locator('[data-demo-version]')).toContainText('Version: development');
     await expect(page.locator('[data-demo-container]')).toHaveCSS('touch-action', 'none');
     await page.getByRole('button', { name: 'C3', exact: true }).click();

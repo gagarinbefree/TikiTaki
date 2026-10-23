@@ -41,6 +41,8 @@ for (const framework of ['react', 'vue'] as const) {
   test.describe(`${framework} demo`, () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(`/demos/${framework}/`);
+      await item(page, 'A1', 0, 0);
+      await page.locator('[data-action="goto"]').click();
       await item(page, 'A10', 0, 9);
     });
     test('commands obey ragged boundaries and rapid input does not queue transitions', async ({ page }) => {
@@ -106,9 +108,9 @@ for (const framework of ['react', 'vue'] as const) {
       await expect(map.getByRole('button')).toBeDisabled();
       await expect(active).toHaveCount(0);
       await page.locator('[data-action="toggle"]').click();
-      await item(page, 'A10', 0, 9);
+      await item(page, 'A1', 0, 0);
       await expect(map.getByRole('button')).toHaveCount(19);
-      await expect(active).toHaveText('A10');
+      await expect(active).toHaveText('A1');
       await expect(active).toBeEnabled();
       await map.screenshot({ path: `.artifacts/cell-map-${framework}-${isMobile ? 'touch' : 'desktop'}.png` });
     });
@@ -178,7 +180,7 @@ for (const framework of ['react', 'vue'] as const) {
       await expect(page.locator('[data-action="update"]')).toBeDisabled();
       await expect(page.locator('[data-action="shrink"]')).toBeDisabled();
       await page.locator('[data-action="toggle"]').click();
-      await item(page, 'A10', 0, 9);
+      await item(page, 'A1', 0, 0);
       await expect(page.locator('[data-action="goto"]')).toBeEnabled();
       await expect(page.locator('[data-navigate="up"]')).toBeEnabled();
     });
@@ -192,13 +194,13 @@ for (const framework of ['react', 'vue'] as const) {
         expect(metrics.mounted).toBe(metrics.unmounted);
         expect(metrics.enginesCreated).toBe(metrics.enginesDestroyed);
         await page.locator('[data-action="toggle"]').click();
-        await item(page, 'A10', 0, 9);
+        await item(page, 'A1', 0, 0);
         await expect(page.locator('[data-tikitaki-viewport]')).toHaveCount(1);
       }
     });
     test('Vite development mode keeps one engine after StrictMode or Vue setup', async ({ page }) => {
       await page.goto(`http://127.0.0.1:4178/${framework}/`);
-      await item(page, 'A10', 0, 9);
+      await item(page, 'A1', 0, 0);
       const metrics = await page.evaluate(() => window.tikitakiDemo.metrics());
       expect(metrics.enginesCreated).toBe(framework === 'react' ? 2 : 1);
       expect(metrics.enginesCreated - metrics.enginesDestroyed).toBe(1);
