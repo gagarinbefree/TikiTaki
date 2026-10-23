@@ -20,7 +20,8 @@
       "tikitaki/dom": ["./src/dom.ts"],
       "@tikitaki/react": ["./packages/react/src/index.ts"],
       "@tikitaki/vue": ["./packages/vue/src/index.ts"]
-    }
+    },
+    "jsx": "react-jsx"
   },
   "include": [
     "src/**/*.ts",
@@ -29,6 +30,9 @@
     "demos/**/*.ts",
     "vite.config.ts",
     "vitest.config.ts",
-    "playwright.config.ts"
-  ]
+    "playwright.config.ts",
+    "demos/**/*.tsx",
+    "demos/**/*.vue"
+  ],
+  "vueCompilerOptions": { "strictTemplates": true }
 }

@@ -1,3 +1,4 @@
+import vue from '@vitejs/plugin-vue';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { DEPLOYMENT_CONFIG, SERVER_CONFIG } from './tooling.config.mjs';
@@ -6,6 +7,7 @@ const path = (relative: string) => fileURLToPath(new URL(relative, import.meta.u
 
 export default defineConfig(({ command }) => {
   const config = {
+    plugins: [vue()],
     base: command === 'build' ? DEPLOYMENT_CONFIG.basePath : DEPLOYMENT_CONFIG.developmentBasePath,
     server: { host: SERVER_CONFIG.host },
     preview: { host: SERVER_CONFIG.host },
@@ -20,8 +22,6 @@ export default defineConfig(({ command }) => {
     },
     define: { __VUE_OPTIONS_API__: false, __VUE_PROD_DEVTOOLS__: false, __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false },
     build: {
-      /** Preserve the upstream Bootstrap 2 stylesheet, including declarations for old IE. */
-      cssMinify: false,
       outDir: 'dist',
       rolldownOptions: {
         input: { home: path('./demos/index.html'), react: path('./demos/react/index.html'), vue: path('./demos/vue/index.html') },

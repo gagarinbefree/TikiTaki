@@ -7,22 +7,19 @@
     <title>TikiTaki · React</title>
   </head>
   <body>
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="../"><i class="icon-th icon-white" aria-hidden="true"></i> TikiTaki</a>
-          <p class="navbar-text pull-right">Twitter Bootstrap 2.0.2</p>
-        </div>
+    <header class="border-bottom bg-1">
+      <nav class="navbar container gap-3 py-3" aria-label="Основная навигация">
+        <a class="navbar-brand fw-bold" href="../">TikiTaki</a><span class="badge theme-secondary">Bootstrap 6</span>
+      </nav>
+    </header>
+    <nav class="container pt-4" aria-label="Демонстрации">
+      <div class="nav nav-pills d-inline-flex">
+        <a class="nav-link" href="../">Обзор</a>
+        <a class="nav-link active" aria-current="page" href="../react/">React</a>
+        <a class="nav-link" href="../vue/">Vue 3</a>
       </div>
-    </div>
-    <nav class="container" aria-label="Демонстрации">
-      <ul class="nav nav-pills">
-        <li><a href="../">Обзор</a></li>
-        <li class="active"><a href="../react/">React</a></li>
-        <li><a href="../vue/">Vue 3</a></li>
-      </ul>
     </nav>
     <div id="app"></div>
-    <script type="module" src="./main.ts"></script>
+    <script type="module" src="./main.tsx"></script>
   </body>
 </html>

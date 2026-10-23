@@ -676,6 +676,37 @@ All 76 Google Chrome desktop/touch E2E tests passed after formatting.
 The default local Vitest fork pool could not spawn workers (EPERM); this is an
 environment failure before tests execute, rather than a failing assertion.
 
+## JSX, Vue templates, and Bootstrap 6 (2026-10-23)
+
+React markup now lives in separate App, EngineView, Cell, and CellMap TSX
+components. Vue uses matching single-file components with script setup and
+compiled templates; Teleports render cells inside the parent application.
+Existing Chrome lifecycle checks cover context, counter state, updateGrid,
+destroy, remount, and React StrictMode without per-cell roots.
+
+The Bootstrap 6 presentation assertion first failed against the previous navbar
+(RED). After replacing Bootstrap 2 markup and CSS, all four framework/viewport
+presentation cases passed (GREEN). Bootstrap 6.0.0-alpha.1 CSS, its source map,
+and MIT license come from official tag commit
+780627306eb517ca210310a24e10f8186003c127. The CSS remains unmodified; Vite bundles
+and minifies it for production. No Bootstrap JavaScript or optional peers are
+needed. Native Bootstrap utilities and themes supply the responsive layout.
+
+vue-tsc checks TS, TSX, and Vue scripts/templates; type-aware ESLint checks TS
+and TSX. Prettier 3.9.10 formats all three file types. The local unit run using
+the supported thread pool passed all 301 tests in 11 files. The previous
+Prettier-only commit also completed the full GitHub Actions pipeline.
+
+The first full Bootstrap 6 Chrome run had 73 passes and three failures: two
+mobile A10 visibility assertions and one artifact write failure from a full
+disk. Compact map buttons fixed A10 visibility; disk space was freed. The
+subsequent 32 framework/presentation cases passed, including light/dark color
+adaptation, RTL, gestures, state preservation, and cleanup in both viewport modes.
+
+Final verification: **301/301 unit/integration tests and 76/76 Chrome E2E passed**.
+Typecheck, ESLint, Prettier, core/adapter builds, and the demo production build
+passed. The vendored CSS SHA-256 matches the official tag checkout.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

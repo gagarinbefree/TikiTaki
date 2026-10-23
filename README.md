@@ -11,7 +11,7 @@ The project is a private alpha. Google Chrome Desktop and Chrome touch emulation
 
 Both framework demos open at **A1** and return to A1 after remount. The **Go to A10** control remains available for trying navigation from the end of the first row.
 
-The demo interface uses the original **Twitter Bootstrap 2.0.2** styles, responsive grid, buttons, labels, wells, and Glyphicons. Assets are vendored locally with their notices in `demos/vendor/bootstrap-2.0.2`; no CDN, Bootstrap JavaScript, or jQuery is required. Only the swipe viewport dimensions and cell sizing are local geometry settings. Demo styling does not add runtime dependencies to the core package.
+The demos use locally bundled Bootstrap 6.0.0-alpha.1 CSS from the official release tag. Layout uses Bootstrap cards, responsive columns, utility classes, and theme-aware buttons. No Bootstrap JavaScript is included. The core remains free of runtime dependencies.
 
 ## Functional API
 
@@ -115,6 +115,8 @@ npm ci
 npm run demo
 ```
 
+The demos use locally bundled Bootstrap 6.0.0-alpha.1 CSS from the official release tag, with responsive columns, cards, utility classes, and theme-aware buttons. Bootstrap JavaScript is not included.
+
 Open `/react/` or `/vue/` at the Vite address printed in the terminal. Both demos show live component counters, navigation, grid replacement, destruction, and remounting. The interactive cell map below each view highlights the committed cell and supports pointer selection and keyboard activation.
 
 ```sh
@@ -122,7 +124,7 @@ npm run demo:build
 npm run demo:preview
 ```
 
-The production demos are generated in `demos/dist`. React runs under StrictMode; Vue uses Composition API mount and cleanup hooks.
+The production demos are generated in `demos/dist`. React uses separate App, EngineView, Cell, and CellMap JSX components in `.tsx` under StrictMode; Vue uses `.vue` single-file components with `<script setup lang="ts">`, templates, and Teleports. Both pair engine creation with framework cleanup. `npm run typecheck` uses vue-tsc to check TypeScript, JSX, and Vue templates.
 
 ## Development and validation
 

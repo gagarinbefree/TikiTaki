@@ -1,5 +1,4 @@
-import './vendor/bootstrap-2.0.2/css/bootstrap.css';
-import './vendor/bootstrap-2.0.2/css/bootstrap-responsive.css';
+import './vendor/bootstrap-6.0.0-alpha.1/bootstrap.css';
 import { showDeploymentVersion } from './version';
 
 void showDeploymentVersion();

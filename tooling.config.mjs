@@ -22,7 +22,7 @@ export const VERSION_CONFIG = Object.freeze({
   development: 'development',
   element: 'p',
   attribute: 'data-demo-version',
-  className: 'container muted pagination-centered',
+  className: 'container fg-3 fs-sm text-center py-4 border-top',
   label: 'Version: ',
   cache: 'no-store',
   invalidVersion: 'Invalid package version',

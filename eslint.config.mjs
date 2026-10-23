@@ -43,12 +43,12 @@ export default tseslint.config(
   },
   js.configs.recommended,
   {
-    files: ['**/*.ts', '**/*.mjs'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.mjs'],
     plugins: { local: { rules: { functional: functionalStyle } } },
     rules: { 'local/functional': 'error' },
   },
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
   },
