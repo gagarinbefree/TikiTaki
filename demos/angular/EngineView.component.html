@@ -1,0 +1,9 @@
+<div
+  #container
+  [class]="text.viewport"
+  [style.width]="geometry.viewport.width"
+  [style.aspect-ratio]="geometry.viewport.aspectRatio"
+  data-demo-container=""
+  [attr.aria-label]="text.viewportLabel"
+></div>
+<ng-template #cell let-item let-position="position"><tikitaki-angular-cell [item]="item" [position]="position" /></ng-template>

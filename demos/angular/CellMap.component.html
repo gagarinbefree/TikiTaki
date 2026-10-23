@@ -1,0 +1,23 @@
+<div [class]="text.gridMapHeader">
+  <h2>{{ text.cellMapTitle }}</h2>
+  <span [class]="text.gridMapLegend">{{ text.currentCellLegend }}</span>
+</div>
+<p [class]="text.hint">{{ text.cellMapHint }}</p>
+<div [class]="text.gridMapScroll">
+  @for (cells of rows(); track $index; let row = $index) {
+    <p [class]="text.gridMapRow" [attr.data-map-row]="row" role="group" [attr.aria-label]="labels.row(row)">
+      @for (cell of cells; track cell.position.col) {
+        <button
+          type="button"
+          [class]="cell.current ? text.gridMapCurrentCell : text.gridMapCell"
+          [disabled]="!enabled()"
+          [title]="labels.coordinates(cell.position)"
+          [attr.aria-current]="cell.current ? text.true : null"
+          (click)="selectCell.emit(cell.position)"
+        >
+          {{ cell.label }}
+        </button>
+      }
+    </p>
+  }
+</div>

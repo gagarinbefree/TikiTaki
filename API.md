@@ -500,3 +500,14 @@ The page does not scroll while vertical wheel input is consumed over the viewpor
 including at boundaries. Outside the viewport, page and map scrolling remain native.
 Horizontal gestures, Shift-wheel, Ctrl/Meta-wheel zoom, and events already cancelled
 by child content are ignored. destroy() removes the non-passive wheel listener.
+
+## Svelte and Angular adapters
+
+`@tikitaki/svelte` exports `createSvelteCellAdapter<T>()`, a readonly cell store,
+and the `portal` action. Render keyed cells under the parent Svelte application.
+`@tikitaki/angular` exports `createAngularCellAdapter<T>(createView)`. Its factory
+receives `{ $implicit: item, position }` and must return a parent-owned embedded
+view, normally from `ViewContainerRef.createEmbeddedView`. Both implement the
+core CellAdapter contract, preserve surviving component identity during updates,
+and clean up owned content on unmount. Framework commits remain asynchronous:
+use Svelte tick or Angular rendering stabilization before assertions.

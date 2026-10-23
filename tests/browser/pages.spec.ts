@@ -3,14 +3,14 @@ import { expect, test } from '@playwright/test';
 test('all Pages entry points display the published deployment version', async ({ page }) => {
   const version = '0.1.0-alpha.0.deploy.7.2';
   await page.route('**/version.json', (route) => route.fulfill({ json: { version } }));
-  for (const entry of ['', 'react/', 'vue/', 'svelte/']) {
+  for (const entry of ['', 'react/', 'vue/', 'svelte/', 'angular/']) {
     await page.goto(`/TikiTaki/${entry}`);
     await expect(page.locator('[data-demo-version]')).toHaveAttribute('data-demo-version', version);
     await expect(page.locator('[data-demo-version]')).toHaveText(`Version: ${version}`);
   }
 });
 
-for (const framework of ['react', 'vue', 'svelte']) {
+for (const framework of ['react', 'vue', 'svelte', 'angular']) {
   test(`Pages project path opens the ${framework} demo with working assets and cell selection`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -24,7 +24,14 @@ for (const framework of ['react', 'vue', 'svelte']) {
     await expect(page.locator('[data-demo-version]')).toContainText('Version: development');
     await page
       .getByRole('link', {
-        name: framework === 'react' ? 'React / StrictMode' : framework === 'vue' ? 'Vue 3 / Composition API' : 'Svelte 5 / Runes',
+        name:
+          framework === 'react'
+            ? 'React / StrictMode'
+            : framework === 'vue'
+              ? 'Vue 3 / Composition API'
+              : framework === 'svelte'
+                ? 'Svelte 5 / Runes'
+                : 'Angular / Signals',
       })
       .click();
     await expect(page).toHaveURL(new RegExp(`/TikiTaki/${framework}/$`));

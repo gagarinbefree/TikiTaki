@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-for (const framework of ['react', 'vue', 'svelte']) {
+for (const framework of ['react', 'vue', 'svelte', 'angular']) {
   test(`${framework} navigates rows with the native wheel only over a cell`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => {

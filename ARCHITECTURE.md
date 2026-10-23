@@ -2,7 +2,9 @@
 
 Текущая реализация функциональная: createNavigationModel/createGestureEngine/
 createDOMRenderer/createSwipeEngine возвращают readonly интерфейсы операций.
-Состояние экземпляра изолировано в замыканиях, собственных классов и this нет.
+Состояние ядра и адаптеров изолировано в замыканиях, классов и this в них нет.
+Angular demo использует стандартные standalone component classes; это локальное
+исключение, которое не распространяется на ядро или другие адаптеры.
 События и API-функции сохраняют владение состоянием при отдельном вызове.
 Публичные фабрики и операции документированы английским JSDoc.
 
@@ -223,3 +225,13 @@ Desktop/touch emulation. Отдельные browser fixtures проверяют 
 Chrome E2E включает production demos и проверку development lifecycle.
 Физический Android не проверен и пока отложен по решению пользователя.
 Пакеты остаются private alpha; фактические проверки и ограничения — в TESTING.md.
+
+## Svelte and Angular ownership
+
+Svelte cells subscribe to immutable store snapshots and remain keyed descendants
+of one parent application. A portal action moves only their owned wrappers.
+Angular cells are embedded template views attached through the parent
+ViewContainerRef; the adapter updates view context and destroys each view once.
+Both preserve framework context and component state, and neither creates a root
+per cell. Optional peer dependencies are isolated in their adapter packages.
+The Angular demo is AOT compiled with ngc and its libraries use the official linker.

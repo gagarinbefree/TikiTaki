@@ -20,7 +20,9 @@
       "tikitaki/dom": ["./src/dom.ts"],
       "@tikitaki/react": ["./packages/react/src/index.ts"],
       "@tikitaki/vue": ["./packages/vue/src/index.ts"],
-      "@tikitaki/svelte": ["./packages/svelte/src/index.ts"]
+      "@tikitaki/svelte": ["./packages/svelte/src/index.ts"],
+      "@tikitaki/angular": ["./packages/angular/src/index.ts"],
+      "@demo/angular": ["./demos/angular/App.ts"]
     },
     "jsx": "react-jsx"
   },
@@ -35,5 +37,6 @@
     "demos/**/*.tsx",
     "demos/**/*.vue"
   ],
-  "vueCompilerOptions": { "strictTemplates": true, "dataAttributes": ["data-*"] }
+  "vueCompilerOptions": { "strictTemplates": true, "dataAttributes": ["data-*"] },
+  "exclude": ["demos/angular/**"]
 }

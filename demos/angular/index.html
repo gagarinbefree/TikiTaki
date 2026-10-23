@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>TikiTaki · Angular</title>
+  </head>
+  <body>
+    <header class="border-bottom bg-1">
+      <nav class="navbar container gap-3 py-3" aria-label="Основная навигация">
+        <a class="navbar-brand fw-bold" href="../">TikiTaki</a><span class="badge theme-secondary">Bootstrap 6</span>
+      </nav>
+    </header>
+    <nav class="container pt-4" aria-label="Демонстрации">
+      <div class="nav nav-pills d-inline-flex">
+        <a class="nav-link" href="../">Обзор</a>
+        <a class="nav-link" href="../react/">React</a>
+        <a class="nav-link" href="../vue/">Vue 3</a>
+        <a class="nav-link" href="../svelte/">Svelte</a>
+        <a class="nav-link active" aria-current="page" href="../angular/">Angular</a>
+      </div>
+    </nav>
+    <tikitaki-angular-app></tikitaki-angular-app>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

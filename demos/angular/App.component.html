@@ -1,0 +1,21 @@
+<main [class]="text.container">
+  <a [href]="text.homePath">{{ text.demos }}</a>
+  <p>
+    <span [class]="text.badge">{{ text.tikiTakiAngular }}</span>
+  </p>
+  <div [class]="text.pageHeader">
+    <h1>{{ text.headline }}</h1>
+  </div>
+  <p>{{ text.intro }}</p>
+  <h3>{{ text.liveTitle }}</h3>
+  <div [class]="text.layout" data-demo-layout="">
+    <div [class]="text.viewportColumn" [style.width]="geometry.phoneColumn.width">
+      @if (visible()) {
+        <tikitaki-angular-view [grid]="grid()" [onengine]="receiveEngine" (positionChange)="position.set($event)" />
+      } @else {
+        <p data-unmounted="">{{ text.destroyedMessage }}</p>
+      }
+    </div>
+    <nav tikitakiAngularMap [grid]="grid()" [position]="position()" [enabled]="visible()" (selectCell)="select($event)"></nav>
+  </div>
+</main>

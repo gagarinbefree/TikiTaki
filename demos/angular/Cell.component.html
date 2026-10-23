@@ -1,0 +1,12 @@
+<article
+  [class]="text.cell"
+  [style.height]="geometry.cell.height"
+  [style.box-sizing]="geometry.cell.boxSizing"
+  [attr.data-item]="item()"
+  [attr.data-row]="position().row"
+>
+  <small>{{ context }}</small>
+  <h1 [class]="text.cellTitle">{{ item() }}</h1>
+  <p>{{ text.swipeHint }}</p>
+  <button [attr.data-action]="text.count" [class]="text.buttonPrimary" (click)="increment()">{{ labels.counter(count()) }}</button>
+</article>

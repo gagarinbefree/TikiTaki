@@ -84,6 +84,8 @@ export const DEMO_TEXT = Object.freeze({
   app: 'app',
   missingDemoRoot: 'Missing demo root',
   context: 'context',
+  angularContext: 'Angular context · родительский injector',
+  tikiTakiAngular: 'TikiTaki / Angular / Signals',
   svelteContext: 'Svelte context · один родительский root',
   tikiTakiSvelte: 'TikiTaki / Svelte 5 / Runes',
   vueContextCompositionAPI: 'Vue context · Composition API',

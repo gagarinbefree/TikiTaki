@@ -52,4 +52,5 @@ export default tseslint.config(
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
   },
+  { files: ['demos/angular/**/*.ts'], rules: { 'local/functional': 'off' } },
 );

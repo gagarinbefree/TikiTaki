@@ -757,6 +757,35 @@ Final wheel verification: 80/80 Chrome E2E passed. The full unit run passed
 306 tests before the final bottom-boundary case; the expanded controller suite
 then passed all 52 cases. Typecheck, ESLint, Prettier, and production builds passed.
 
+## Svelte and Angular demos (2026-10-23)
+
+Svelte adapter RED: three explicit lifecycle stubs failed; GREEN: all three
+snapshot/portal ownership cases passed. The Svelte startup browser test first
+failed with a missing route, then all 22 framework-specific desktop/touch cases
+passed after implementation. The demo uses native Svelte 5 templates and runes.
+
+Angular adapter RED: all three lifecycle stubs failed; GREEN: mount/update/
+unmount, duplicate ownership, and failed-render cleanup cases passed. Angular
+startup first failed before the route existed. Production browser cases passed;
+dev-mode cases exposed partial declarations with version-query URLs and duplicate
+metrics from mixing source/compiled imports. The linker now normalizes URLs and
+the entry point shares the compiled application's diagnostics. Destroyed output
+notifications were replaced by an ownership callback. Angular uses AOT templates,
+zoneless change detection, parent-owned embedded views, and isolated peers.
+
+All four demos are included in shared geometry, mouse/touch gesture, wheel,
+map, updateGrid, context, counter-state, cleanup, remount, and Pages checks.
+Svelte and Angular templates are checked by their official compilers; Prettier
+3.9.10 uses the Svelte plugin and the Angular HTML parser for the new files.
+
+Final checks passed **313 unit/integration tests in 13 files and 124 Chrome E2E**.
+vue-tsc, svelte-check (zero warnings), ngc strict templates, ESLint, Prettier,
+all four adapter builds, and the five-entry demo build passed. Desktop/mobile
+screenshots were inspected. Fresh Svelte/Angular tarballs were installed with
+their peers into an independent NodeNext TypeScript consumer; compilation,
+readonly-contract assertions, and ESM imports passed. The core manifest has
+neither runtime dependencies nor framework peer dependencies.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

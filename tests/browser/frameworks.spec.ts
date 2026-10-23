@@ -58,7 +58,7 @@ async function item(page: Page, name: string, row: number, col: number) {
   await centered(page);
   expect(await page.locator('[data-tikitaki-cell]').count()).toBeLessThanOrEqual(5);
 }
-for (const framework of ['react', 'vue', 'svelte'] as const) {
+for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
   test.describe(`${framework} demo`, () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(`/demos/${framework}/`);
@@ -179,7 +179,13 @@ for (const framework of ['react', 'vue', 'svelte'] as const) {
     });
     test('framework context and component state survive updateGrid, then a shorter grid clamps coordinates', async ({ page }) => {
       await expect(page.locator(`${current} small`)).toContainText(
-        framework === 'react' ? 'React context' : framework === 'vue' ? 'Vue context' : 'Svelte context',
+        framework === 'react'
+          ? 'React context'
+          : framework === 'vue'
+            ? 'Vue context'
+            : framework === 'svelte'
+              ? 'Svelte context'
+              : 'Angular context',
       );
       await page.locator(`${current} [data-action="count"]`).click();
       await expect(page.locator(`${current} button`)).toHaveText('Нажатий: 1');
@@ -214,7 +220,7 @@ for (const framework of ['react', 'vue', 'svelte'] as const) {
         await expect(page.locator('[data-tikitaki-viewport]')).toHaveCount(1);
       }
     });
-    test('Vite development mode keeps one engine after StrictMode or Vue setup', async ({ page }) => {
+    test('Vite development mode keeps one engine and releases it on unmount', async ({ page }) => {
       await page.goto(`http://127.0.0.1:4178/${framework}/`);
       await item(page, 'A1', 0, 0);
       const metrics = await page.evaluate(() => window.tikitakiDemo.metrics());
