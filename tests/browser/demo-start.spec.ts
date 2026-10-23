@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-for (const framework of ['react', 'vue']) {
+for (const framework of ['react', 'vue', 'svelte']) {
   test(`${framework} starts at A1 and supports map selection after reload`, async ({ page }) => {
     await page.goto(`/demos/${framework}/`);
     const current = page.locator('[data-tikitaki-role="current"] [data-item]');

@@ -58,7 +58,7 @@ async function item(page: Page, name: string, row: number, col: number) {
   await centered(page);
   expect(await page.locator('[data-tikitaki-cell]').count()).toBeLessThanOrEqual(5);
 }
-for (const framework of ['react', 'vue'] as const) {
+for (const framework of ['react', 'vue', 'svelte'] as const) {
   test.describe(`${framework} demo`, () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(`/demos/${framework}/`);
@@ -178,7 +178,9 @@ for (const framework of ['react', 'vue'] as const) {
       await session?.detach();
     });
     test('framework context and component state survive updateGrid, then a shorter grid clamps coordinates', async ({ page }) => {
-      await expect(page.locator(`${current} small`)).toContainText(framework === 'react' ? 'React context' : 'Vue context');
+      await expect(page.locator(`${current} small`)).toContainText(
+        framework === 'react' ? 'React context' : framework === 'vue' ? 'Vue context' : 'Svelte context',
+      );
       await page.locator(`${current} [data-action="count"]`).click();
       await expect(page.locator(`${current} button`)).toHaveText('Нажатий: 1');
       await command(page, 'update');

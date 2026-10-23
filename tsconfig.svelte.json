@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": ["node", "svelte"], "noEmit": true },
+  "include": [
+    "demos/svelte/**/*.svelte",
+    "demos/svelte/**/*.ts",
+    "packages/svelte/src/**/*.ts",
+    "demos/env.d.ts",
+    "demos/shared.ts",
+    "demos/config.ts"
+  ]
+}

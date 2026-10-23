@@ -97,11 +97,12 @@ The public `DEFAULT_GESTURE_OPTIONS` object is immutable. Override supported val
 
 Velocity uses a bounded recent history and accounts for reversals and pauses. Pointer cancellation or capture loss rolls back. Resize and valid grid replacement cancel the old transaction and invalidate stale animation completions.
 
-## React and Vue
+## Framework adapters
 
 Framework integrations are isolated packages with peer dependencies:
 
 - [@tikitaki/react](./packages/react/README.md): one parent React root, `useSyncExternalStore`, and portals. StrictMode setup/cleanup/setup is tested.
+- [@tikitaki/svelte](./packages/svelte/README.md): keyed Svelte 5 components, a readonly store, and owned portals under one parent application.
 - [@tikitaki/vue](./packages/vue/README.md): Composition API, a readonly shallow cell store, and Teleport inside the parent application.
 
 Create one bridge per engine view. Pass `bridge.adapter` to `createSwipeEngine` and render its Portals component under the parent framework tree. Adapters retain context and component state for surviving hosts. They do not create a separate framework root per cell.
@@ -117,7 +118,7 @@ npm run demo
 
 The demos use locally bundled Bootstrap 6.0.0-alpha.1 CSS from the official release tag, with responsive columns, cards, utility classes, and theme-aware buttons. Bootstrap JavaScript is not included.
 
-Open `/react/` or `/vue/` at the Vite address printed in the terminal. Both demos show a left-aligned 9:16 portrait swipe field with live component counters. Swipe or use the mouse wheel over a cell to navigate; the former control panel has been removed. Wheel down opens the next row, wheel up opens the previous row, always at its first cell after a successful transition. The interactive cell map beside each view (below it on narrow screens) highlights the committed cell and supports pointer selection and keyboard activation.
+Open `/react/`, `/vue/`, or `/svelte/` at the Vite address printed in the terminal. Both demos show a left-aligned 9:16 portrait swipe field with live component counters. Swipe or use the mouse wheel over a cell to navigate; the former control panel has been removed. Wheel down opens the next row, wheel up opens the previous row, always at its first cell after a successful transition. The interactive cell map beside each view (below it on narrow screens) highlights the committed cell and supports pointer selection and keyboard activation.
 
 ```sh
 npm run demo:build

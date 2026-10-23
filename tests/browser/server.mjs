@@ -12,7 +12,7 @@ const server = createServer((request, response) => {
       ? `demos/dist/${VERSION_CONFIG.filename}`
       : publishedPath === ''
         ? 'demos/dist/index.html'
-        : publishedPath !== null && /^(react|vue)\/$/.test(publishedPath)
+        : publishedPath !== null && /^(react|vue|svelte)\/$/.test(publishedPath)
           ? `demos/dist/${publishedPath}index.html`
           : publishedPath !== null && /^assets\/[a-zA-Z0-9_-]+\.(js|css|png)$/.test(publishedPath)
             ? `demos/dist/${publishedPath}`
@@ -20,7 +20,7 @@ const server = createServer((request, response) => {
               ? 'tests/browser/renderer.html'
               : path === '/swipe'
                 ? 'tests/browser/swipe.html'
-                : /^\/demos\/(react|vue)\/$/.test(path)
+                : /^\/demos\/(react|vue|svelte)\/$/.test(path)
                   ? `demos/dist/${path.split('/')[2]}/index.html`
                   : /^\/assets\/[a-zA-Z0-9_-]+\.(js|css|png)$/.test(path)
                     ? `demos/dist${path}`

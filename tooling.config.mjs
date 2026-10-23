@@ -1,6 +1,8 @@
 /** Standard Prettier options shared by the CLI and editor integrations. */
 export const PRETTIER_CONFIG = Object.freeze({
   singleQuote: true,
+  plugins: ['prettier-plugin-svelte'],
+  overrides: [{ files: '*.svelte', options: { parser: 'svelte' } }],
   trailingComma: 'all',
   printWidth: 140,
   objectWrap: 'collapse',
