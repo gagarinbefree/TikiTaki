@@ -660,6 +660,22 @@ assets, A1 startup, cell-map selection, real gestures, updates, and remount.
 An additional failing unit assertion preceded version-specific release-image
 URLs, preventing a browser from reusing an older badge URL after a new release.
 
+## Standard Prettier migration (2026-10-23)
+
+Prettier 3.9.10 is installed with an exact development dependency. The format
+and format:check scripts now invoke the standard Prettier CLI directly. The
+previous formatting conventions described above are historical and have been
+superseded: there is no custom return layout, one-line import/signature rule,
+or formatting postprocessor. Six tests of the removed formatter were removed;
+behavioral engine and adapter tests remain unchanged.
+
+The initial formatting pass encountered a locked Visual Studio index file;
+.vs/ is now excluded from formatting and version control. The subsequent write
+and check passes succeeded. Typecheck, ESLint, and production builds passed.
+All 76 Google Chrome desktop/touch E2E tests passed after formatting.
+The default local Vitest fork pool could not spawn workers (EPERM); this is an
+environment failure before tests execute, rather than a failing assertion.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

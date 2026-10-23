@@ -45,14 +45,12 @@ async function startInput(page: Page, context: BrowserContext, touch: boolean, x
     await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] });
 
     return session;
-
   }
   await page.mouse.move(x, y);
   await page.mouse.down();
   const result = null;
 
   return result;
-
 }
 async function moveInput(page: Page, session: CDPSession | null, x: number, y: number) {
   if (session !== null) {
@@ -78,7 +76,6 @@ async function centered(page: Page) {
         box !== null && grid !== null && box.x === grid.x && box.y === grid.y && box.width === grid.width && box.height === grid.height;
 
       return result;
-
     })
     .toBe(true);
 }
@@ -99,7 +96,8 @@ test('public commands preserve A10 at the edge, animate B1, and return to A1', a
 });
 test('goTo jumps directly and busy commands return false without queuing', async ({ page }) => {
   expect(
-    await page.evaluate(() => Promise.all([window.swipeFixture.navigate('up'), window.swipeFixture.navigate('up'), window.swipeFixture.goTo({ row: 2, col: 2 })]),
+    await page.evaluate(() =>
+      Promise.all([window.swipeFixture.navigate('up'), window.swipeFixture.navigate('up'), window.swipeFixture.goTo({ row: 2, col: 2 })]),
     ),
   ).toEqual([true, false, false]);
   await expect(page.locator(current)).toHaveText('B1');
@@ -178,7 +176,6 @@ test('grid replacement cancels a Promise and invalid replacement preserves anoth
       window.swipeFixture.update([['only']]);
 
       return pending;
-
     }),
   ).toBe(false);
   await expect(page.locator(current)).toHaveText('only');
@@ -197,7 +194,6 @@ test('grid replacement cancels a Promise and invalid replacement preserves anoth
     const result = { error, completed: await pending, position: window.swipeFixture.position() };
 
     return result;
-
   });
   expect(result.error).toContain('RangeError');
   expect(result.completed).toBe(true);
@@ -211,7 +207,6 @@ test('resize and hiding cancel safely and allow a fresh navigation after showing
     window.swipeFixture.resize(320, 680);
 
     return pending;
-
   });
   expect(cancelled).toBe(false);
   expect(await page.evaluate(() => window.swipeFixture.position())).toEqual({ row: 0, col: 9 });
@@ -242,7 +237,6 @@ test('destroy during a captured drag removes resources and supports reinitializa
     const result = window.swipeFixture.state;
 
     return result;
-
   });
   expect(stats.mounts).toBe(stats.unmounts);
   expect(await page.evaluate(() => window.swipeFixture.captured())).toBe(false);

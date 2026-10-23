@@ -38,7 +38,8 @@ async function setup() {
       onUnmounted(() => {
         unmounted.push(initial);
       });
-      const result = () => h(
+      const result = () =>
+        h(
           'button',
           {
             onClick: () => {
@@ -49,7 +50,6 @@ async function setup() {
         );
 
       return result;
-
     },
   });
   const App = defineComponent({
@@ -72,13 +72,13 @@ async function setup() {
       onUnmounted(() => {
         engines.at(-1)?.destroy();
       });
-      const result = () => h(Fragment, [
+      const result = () =>
+        h(Fragment, [
           h('div', { ref: container, 'data-container': '' }),
           h(VueCellPortals<string>, { bridge, renderCell: (item: string) => h(Cell, { item }) }),
         ]);
 
       return result;
-
     },
   });
   const app = createApp(App);
@@ -101,7 +101,6 @@ async function setup() {
   const result = { parent, app, bridge, mounted, unmounted, errors, changes, container, engine, current };
 
   return result;
-
 }
 describe('Vue parent-app Teleports', () => {
   it('inherits provide/inject and renders only valid interactive neighbors', async () => {

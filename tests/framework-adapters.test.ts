@@ -13,7 +13,6 @@ for (const framework of ['react', 'vue'] as const) {
           : { adapter: vue.adapter, snapshot: () => vue.cells.value };
 
       return result;
-
     }
     it('mounts a readonly entry into the given host with copied coordinates', () => {
       const { adapter, snapshot } = setup();

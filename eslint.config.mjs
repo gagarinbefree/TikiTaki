@@ -7,8 +7,6 @@ const functionalStyle = {
     schema: [],
     messages: {
       receiver: 'Use closure-backed functions instead of classes or this.',
-      returnValue: 'Assign the return expression to a variable before returning it.',
-      importLayout: 'Keep each import on one line.',
       extension: 'Use extensionless relative imports in source modules.',
     },
   },
@@ -20,15 +18,7 @@ const functionalStyle = {
       ClassDeclaration: receiver,
       ClassExpression: receiver,
       ThisExpression: receiver,
-      ReturnStatement(node) {
-        if (node.argument && node.argument.type !== 'Identifier') {
-          context.report({ node, messageId: 'returnValue' });
-        }
-      },
       ImportDeclaration(node) {
-        if (node.loc.start.line !== node.loc.end.line) {
-          context.report({ node, messageId: 'importLayout' });
-        }
         if (/^\..*\.js$/.test(node.source.value)) {
           context.report({ node, messageId: 'extension' });
         }
@@ -36,7 +26,6 @@ const functionalStyle = {
     };
 
     return visitors;
-
   },
 };
 export default tseslint.config(

@@ -41,7 +41,6 @@ function viewport(width = 300, height = 600) {
   const result = { container, size, captured, capture, release };
 
   return result;
-
 }
 function setup(extra: Partial<SwipeEngineOptions<string>> = {}, width = 300, height = 600) {
   const view = viewport(width, height);
@@ -52,7 +51,6 @@ function setup(extra: Partial<SwipeEngineOptions<string>> = {}, width = 300, hei
     button.textContent = item;
 
     return button;
-
   });
   const engine = createSwipeEngine<string>({
     container: view.container,
@@ -67,16 +65,21 @@ function setup(extra: Partial<SwipeEngineOptions<string>> = {}, width = 300, hei
   const result = { ...view, engine, changes, errors, render };
 
   return result;
-
 }
 function current(container: HTMLElement) {
   const element = container.querySelector<HTMLElement>('[data-tikitaki-role="current"]');
   assert(element !== null);
 
   return element;
-
 }
-function pointer( target: EventTarget, type: string, x = 0, y = 0, time = 0, overrides: { pointerId?: number; pointerType?: string; isPrimary?: boolean; button?: number } = {}, ) {
+function pointer(
+  target: EventTarget,
+  type: string,
+  x = 0,
+  y = 0,
+  time = 0,
+  overrides: { pointerId?: number; pointerType?: string; isPrimary?: boolean; button?: number } = {},
+) {
   const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: overrides.button ?? 0 });
   Object.defineProperties(event, {
     pointerId: { value: overrides.pointerId ?? 1 },
@@ -87,7 +90,6 @@ function pointer( target: EventTarget, type: string, x = 0, y = 0, time = 0, ove
   target.dispatchEvent(event);
 
   return event;
-
 }
 beforeEach(() => {
   frames = new Map();
@@ -100,7 +102,6 @@ beforeEach(() => {
     frames.set(frameId, callback);
 
     return frameId;
-
   });
   vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((id) => {
     frames.delete(id);
@@ -514,7 +515,6 @@ describe('grid, resize, and cleanup', () => {
         node.textContent = item;
 
         return node;
-
       },
     });
     engines.push(fresh);
@@ -534,7 +534,6 @@ describe('grid, resize, and cleanup', () => {
         node.textContent = item;
 
         return node;
-
       },
     });
     engines.push(nested);
@@ -560,7 +559,6 @@ describe('grid, resize, and cleanup', () => {
         const result = { update: vi.fn(), unmount };
 
         return result;
-
       },
     };
     const engine = createSwipeEngine({ container: view.container, grid: [['A'], ['B']], adapter });
@@ -588,7 +586,6 @@ describe('grid, resize, and cleanup', () => {
         };
 
         return result;
-
       },
     };
     const engine = createSwipeEngine({ container: view.container, grid: [['A'], ['B']], adapter });
@@ -621,7 +618,8 @@ describe('grid, resize, and cleanup', () => {
     [{ adapter: {} }, TypeError],
   ] as const)('rejects invalid options %j without mounting', (extra, ErrorType) => {
     const view = viewport();
-    expect(() => createSwipeEngine({
+    expect(() =>
+      createSwipeEngine({
         container: view.container,
         grid: [['A']],
         renderCell: () => document.createElement('div'),
@@ -635,7 +633,8 @@ describe('grid, resize, and cleanup', () => {
     const view = viewport();
     const mount = vi.fn<CellAdapter<string>['mount']>();
     const adapter: CellAdapter<string> = { mount };
-    expect(() => createSwipeEngine({
+    expect(() =>
+      createSwipeEngine({
         container: view.container,
         grid: [['A']],
         adapter,

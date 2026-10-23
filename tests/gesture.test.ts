@@ -6,13 +6,11 @@ function context(): GestureContext {
   const result: GestureContext = { width: 300, height: 600, neighbors: { up: true, down: true, left: true, right: true } };
 
   return result;
-
 }
 function point(x = 0, y = 0, time = 0, pointerId = 1): PointerSample {
   const result: PointerSample = { x, y, time, pointerId };
 
   return result;
-
 }
 describe('GestureEngine', () => {
   it('starts idle with immutable defaults and snapshots', () => {

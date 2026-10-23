@@ -56,7 +56,6 @@ function object(value: unknown, label: string): Record<string, unknown> {
   const result = value as Record<string, unknown>;
 
   return result;
-
 }
 /**
  * Normalize an unknown failure without discarding its original cause.
@@ -65,7 +64,6 @@ function errorFrom(value: unknown): Error {
   const result = value instanceof Error ? value : new Error(CORE_TEXT.swipeEngineOperationFailed, { cause: value });
 
   return result;
-
 }
 /**
  * Recognize pointer capture races reported as NotFoundError.
@@ -74,7 +72,6 @@ function isNotFound(value: unknown): boolean {
   const result = typeof value === 'object' && value !== null && CORE_TEXT.name in value && value.name === CORE_TEXT.notFoundError;
 
   return result;
-
 }
 /**
  * Require exactly one rendering strategy and resolve the framework-independent adapter.
@@ -92,7 +89,6 @@ function resolveAdapter<T>(options: SwipeEngineOptions<T>): CellAdapter<T> {
     const result = options.adapter;
 
     return result;
-
   }
   if (typeof input.renderCell !== 'function') {
     throw new TypeError(CORE_TEXT.renderCellMustBeAFunction);
@@ -100,7 +96,6 @@ function resolveAdapter<T>(options: SwipeEngineOptions<T>): CellAdapter<T> {
   const result = createDOMAdapter(options.renderCell);
 
   return result;
-
 }
 /**
  * Normalize a browser pointer event into a gesture sample.
@@ -109,7 +104,6 @@ function sample(event: PointerEvent): PointerSample {
   const result: PointerSample = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp };
 
   return result;
-
 }
 /**
  * Functional public controller operations with terminal, idempotent cleanup.
@@ -164,14 +158,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       )
         return;
 
-      if (!gesture.pointerDown(sample(pointer)))
-        return;
+      if (!gesture.pointerDown(sample(pointer))) return;
 
       stateSuppressClick = false;
       const view = stateView;
       const container = stateContainer;
-      if (view === null || container === null)
-        return;
+      if (view === null || container === null) return;
 
       const target =
         event
@@ -229,8 +221,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     guardEvent(() => {
       const pointer = event as PointerEvent;
       const capture = stateCapture;
-      if (capture?.id !== pointer.pointerId)
-        return;
+      if (capture?.id !== pointer.pointerId) return;
 
       // A removed pending capture target may disappear without a lostcapture event.
       if (!capture.element.isConnected || !capture.element.hasPointerCapture(capture.id)) {
@@ -257,9 +248,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
    * Read the immutable last committed grid position.
    */
   function getPosition(): Position {
-
     return statePosition;
-
   }
   /**
    * Request one neighboring transition without queuing conflicting commands.
@@ -269,7 +258,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       const result = Promise.resolve(false);
 
       return result;
-
     }
     try {
       const target = stateModel.getNeighbor(direction);
@@ -277,14 +265,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
         const result = Promise.resolve(false);
 
         return result;
-
       }
       const size = stateRenderer?.getSize();
       if (size === undefined) {
         const result = Promise.resolve(false);
 
         return result;
-
       }
       const to = {
         x: direction === CORE_TEXT.left ? -size.width : direction === CORE_TEXT.right ? size.width : 0,
@@ -297,12 +283,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       );
 
       return result;
-
     } catch (error) {
       const result = Promise.reject(errorFrom(error));
 
       return result;
-
     }
   }
   /**
@@ -313,7 +297,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       const result = Promise.resolve(false);
 
       return result;
-
     }
     try {
       stateModel.getItem(position); // Validate without changing or interrupting state.
@@ -321,25 +304,21 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
         const result = Promise.resolve(false);
 
         return result;
-
       }
       const result = Promise.resolve(commit(position));
 
       return result;
-
     } catch (error) {
       const result = Promise.reject(errorFrom(error));
 
       return result;
-
     }
   }
   /**
    * Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources.
    */
   function updateGrid(grid: Grid<T>): void {
-    if (stateDestroyed || stateModel === null || stateRenderer === null)
-      return;
+    if (stateDestroyed || stateModel === null || stateRenderer === null) return;
 
     if (stateMutating) {
       throw new Error(CORE_TEXT.cannotUpdateGridDuringCellLifecycle);
@@ -352,13 +331,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     try {
       model.updateGrid(grid);
       applied = true;
-      if (!isAlive())
-        return;
+      if (!isAlive()) return;
 
       interrupt(false);
       renderer.sync();
-      if (!isAlive())
-        return;
+      if (!isAlive()) return;
 
       statePosition = model.getPosition();
       refreshGesture();
@@ -378,8 +355,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
    * Release owned resources once and settle pending work without leaving stale callbacks.
    */
   function destroy(): void {
-    if (stateDestroyed)
-      return;
+    if (stateDestroyed) return;
 
     stateDestroyed = true;
     const transaction = stateTransaction;
@@ -441,7 +417,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     const result = !stateDestroyed;
 
     return result;
-
   }
   /**
    * Check cached viewport dimensions before accepting animated input.
@@ -451,7 +426,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     const result = size !== undefined && size.width > 0 && size.height > 0;
 
     return result;
-
   }
   /**
    * Check structural mutation, gesture tracking, and pending transition ownership.
@@ -461,7 +435,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       stateMutating || stateTransaction !== null || (stateGesture !== null && stateGesture.getSnapshot().state !== CORE_TEXT.idle);
 
     return result;
-
   }
   /**
    * Build a positive gesture context from cached size and currently available neighbors.
@@ -481,7 +454,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     };
 
     return result;
-
   }
   /**
    * Reset gesture ownership against the latest viewport and navigation snapshot.
@@ -511,7 +483,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       const result = Promise.resolve(false);
 
       return result;
-
     }
     const result = new Promise<boolean>((resolve, reject) => {
       const transaction: Transition = { target, gesture, resolve, reject };
@@ -531,21 +502,18 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     });
 
     return result;
-
   }
   /**
    * Commit only the current successfully completed transition or finish its rollback.
    */
   function finish(transaction: Transition, completed: boolean): void {
-    if (stateTransaction !== transaction || stateDestroyed)
-      return;
+    if (stateTransaction !== transaction || stateDestroyed) return;
 
     try {
       if (!completed || (transaction.gesture !== null && !stateGesture?.finishSettling(transaction.gesture))) {
         interrupt(true);
 
         return;
-
       }
       if (transaction.target === null) {
         stateTransaction = null;
@@ -553,7 +521,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
         transaction.resolve(false);
 
         return;
-
       }
       transaction.resolve(commit(transaction.target, transaction));
     } catch (error) {
@@ -564,8 +531,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
    * Reject the current failed animation and release all controller resources.
    */
   function animationError(transaction: Transition, error: unknown): void {
-    if (stateTransaction !== transaction)
-      return;
+    if (stateTransaction !== transaction) return;
 
     stateTransaction = null;
     transaction.reject(fatal(error));
@@ -580,7 +546,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       const result = false;
 
       return result;
-
     }
     const previous = statePosition;
     stateMutating = true;
@@ -591,7 +556,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
         const result = false;
 
         return result;
-
       }
       statePosition = model.getPosition();
       if (transaction !== undefined) {
@@ -610,7 +574,6 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     const result = true;
 
     return result;
-
   }
   /**
    * Release the original pointer capture while tolerating native NotFoundError races.
@@ -618,8 +581,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
   function releaseCapture(): void {
     const capture = stateCapture;
     stateCapture = null;
-    if (capture === null)
-      return;
+    if (capture === null) return;
 
     try {
       if (capture.element.hasPointerCapture(capture.id)) {
@@ -635,8 +597,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
    * Invalidate lost pointer ownership and launch a rollback when dragging had begun.
    */
   function dropCapture(id: number): void {
-    if (stateCapture?.id !== id)
-      return;
+    if (stateCapture?.id !== id) return;
 
     const plan = stateGesture?.lostPointerCapture(id) ?? null;
     releaseCapture();
@@ -652,19 +613,18 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       const result = false;
 
       return result;
-
     }
     const owner = event
       .composedPath()
       .find(
-        (node) => node instanceof view.HTMLElement &&
+        (node) =>
+          node instanceof view.HTMLElement &&
           node.hasAttribute(CORE_TEXT.dataTikitakiEngine) &&
           node.querySelector(CORE_TEXT.scopeDataTikitakiViewport) !== null,
       );
     const result = owner === container;
 
     return result;
-
   }
   /**
    * Register a removable listener and record its exact target and capture mode.
@@ -677,8 +637,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
    * Report browser event failures after completing terminal resource cleanup.
    */
   function guardEvent(callback: () => void): void {
-    if (stateDestroyed)
-      return;
+    if (stateDestroyed) return;
 
     const reporter = stateReporter;
     try {
@@ -691,8 +650,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
    * Start a gesture-owned settlement and route asynchronous failures to the error reporter.
    */
   function launch(plan: GestureSettlement | null): void {
-    if (plan === null)
-      return;
+    if (plan === null) return;
 
     const reporter = stateReporter;
     const target = plan.direction === null ? null : (stateModel?.getNeighbor(plan.direction) ?? null);
@@ -711,19 +669,16 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       const result = new AggregateError([failure, cleanupError], CORE_TEXT.swipeEngineOperationAndCleanupFailed, { cause: cleanupError });
 
       return result;
-
     }
 
     return failure;
-
   }
   /**
    * Complete or cancel the owned pointer, release capture, and launch its settlement.
    */
   function finishPointer(pointer: PointerEvent, cancelled: boolean): void {
     const gesture = stateGesture;
-    if (gesture?.getSnapshot().pointerId !== pointer.pointerId)
-      return;
+    if (gesture?.getSnapshot().pointerId !== pointer.pointerId) return;
 
     const plan = cancelled ? gesture.pointerCancel(pointer.pointerId) : gesture.pointerUp(sample(pointer));
     if (plan !== null && !cancelled) {
@@ -814,5 +769,4 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
   const api: SwipeEngine<T> = { getPosition, navigate, goTo, updateGrid, destroy };
 
   return api;
-
 }

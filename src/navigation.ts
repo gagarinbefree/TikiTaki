@@ -35,12 +35,10 @@ function snapshotGrid<T>(grid: Grid<T>): Grid<T> {
       const result = Object.freeze([...row]);
 
       return result;
-
     }),
   );
 
   return result;
-
 }
 /**
  * Validate coordinates and return an immutable position snapshot.
@@ -66,7 +64,6 @@ function checkedPosition<T>(grid: Grid<T>, position: unknown): Position {
   const result = Object.freeze({ row: position.row, col: position.col });
 
   return result;
-
 }
 /**
  * Apply strict ragged-grid navigation, resetting the column only on successful vertical movement.
@@ -95,12 +92,10 @@ function findNeighbor<T>(grid: Grid<T>, position: Position, direction: Direction
     const result = null;
 
     return result;
-
   }
   const result = Object.freeze(target);
 
   return result;
-
 }
 /**
  * Functional synchronous navigation operations; methods do not depend on a receiver.
@@ -132,9 +127,7 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
    * Read the immutable last committed grid position.
    */
   function getPosition(): Position {
-
     return statePosition;
-
   }
   /**
    * Read an item after validating its coordinates against the owned grid snapshot.
@@ -144,7 +137,6 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
     const result = stateGrid[checked.row]?.[checked.col] as T;
 
     return result;
-
   }
   /**
    * Resolve one adjacent position without changing navigation state.
@@ -153,7 +145,6 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
     const result = findNeighbor(stateGrid, statePosition, direction);
 
     return result;
-
   }
   /**
    * Request one neighboring transition without queuing conflicting commands.
@@ -164,13 +155,11 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
       const result = false;
 
       return result;
-
     }
     statePosition = target;
     const result = true;
 
     return result;
-
   }
   /**
    * Commit a valid target position without traversing intermediate cells.
@@ -181,13 +170,11 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
       const result = false;
 
       return result;
-
     }
     statePosition = target;
     const result = true;
 
     return result;
-
   }
   /**
    * Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources.
@@ -208,5 +195,4 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
   const api: NavigationModel<T> = { getPosition, getItem, getNeighbor, navigate, goTo, updateGrid };
 
   return api;
-
 }

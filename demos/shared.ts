@@ -9,7 +9,6 @@ export function hasNavigationTarget(grid: Grid<unknown>): boolean {
   const result = (grid[NAVIGATION_TARGET_POSITION.row]?.length ?? 0) > NAVIGATION_TARGET_POSITION.col;
 
   return result;
-
 }
 /** Current demo data, committed coordinates, availability, and the direct-navigation callback. */
 export interface CellMapProps {
@@ -23,11 +22,11 @@ export interface CellMapProps {
  * Describe map buttons from current data and the committed controller position.
  */
 export function cellMapRows({ grid, position, enabled }: Pick<CellMapProps, 'grid' | 'position' | 'enabled'>) {
-  const result = grid.map((items, row) => items.map((label, col) => ({ label, position: { row, col }, current: enabled && position.row === row && position.col === col })),
+  const result = grid.map((items, row) =>
+    items.map((label, col) => ({ label, position: { row, col }, current: enabled && position.row === row && position.col === col })),
   );
 
   return result;
-
 }
 /**
  * Create independent lifecycle counters for browser verification.
@@ -60,7 +59,6 @@ export function createMetrics() {
   window.tikitakiDemo = { metrics: metrics.snapshot };
 
   return metrics;
-
 }
 declare global {
   /**

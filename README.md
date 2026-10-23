@@ -30,7 +30,6 @@ export function mount(container: HTMLElement) {
       element.textContent = item;
 
       return element;
-
     },
     onPositionChange(position, previous) {
       console.log(previous, position);
@@ -41,7 +40,6 @@ export function mount(container: HTMLElement) {
   });
 
   return engine;
-
 }
 ```
 
@@ -135,8 +133,8 @@ Dependencies are development-only and locked in `package-lock.json`. The verifie
 | `npm test`               | Unit and integration tests                                                     |
 | `npm run typecheck`      | Strict TypeScript, including unchecked indexes and exact optional properties   |
 | `npm run lint`           | Type-aware ESLint and functional source rules                                  |
-| `npm run format`         | Prettier followed by the requested source layout                               |
-| `npm run format:check`   | Check canonical source layout and Prettier formatting                          |
+| `npm run format`         | Format project files with Prettier 3.9.10                                      |
+| `npm run format:check`   | Check Prettier formatting                                                      |
 | `npm run build`          | Build core and both optional adapters with declarations and source maps        |
 | `npm run build:core`     | Build only the zero-dependency core                                            |
 | `npm run build:adapters` | Build adapters after core declarations exist                                   |
@@ -144,7 +142,7 @@ Dependencies are development-only and locked in `package-lock.json`. The verifie
 | `npm run test:package`   | Pack, install, compile, and import an independent core consumer                |
 | `npm run check`          | Run the aggregate validation sequence                                          |
 
-Use the project formatter for single-line imports and function signatures, named return values, and blank lines around returns. A single guarded return has no braces or empty line between the condition and the return; an empty line follows the return. Multi-statement branches keep their braces. The formatter preserves literal contents and is checked for idempotence. English JSDoc describes factories, operations, ownership, units, and validation. Boundary values in behavioral tests remain explicit so defaults are verified independently of their implementation.
+Prettier 3.9.10 is pinned as a development dependency and controls all formatting, including imports, function signatures, and returns. There is no custom formatting postprocessor. Run `npm run format` before committing; CI runs `npm run format:check`. Generated files, third-party Bootstrap assets, and the mandatory AGENTS.md specification are excluded. English JSDoc describes factories, operations, ownership, units, and validation.
 
 ## GitHub Actions and Pages
 

@@ -44,7 +44,6 @@ async function setup(strict = false) {
       };
 
       return result;
-
     }, []);
     const result = h(
       'button',
@@ -57,7 +56,6 @@ async function setup(strict = false) {
     );
 
     return result;
-
   }
   function App() {
     const ref = useRef<HTMLDivElement>(null);
@@ -77,7 +75,6 @@ async function setup(strict = false) {
       };
 
       return result;
-
     }, []);
     const result = h(
       Context.Provider,
@@ -91,7 +88,6 @@ async function setup(strict = false) {
     );
 
     return result;
-
   }
   let alive = true;
   cleanup = async () => {
@@ -113,7 +109,6 @@ async function setup(strict = false) {
   const result = { parent, root, bridge, mounted, unmounted, engines, changes, container, engine, current };
 
   return result;
-
 }
 describe('React parent-root portals', () => {
   it('inherits context and renders only the existing window as interactive components', async () => {

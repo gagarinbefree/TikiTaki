@@ -1,18 +1,10 @@
-/** Shared formatting conventions; use the project formatter to preserve custom return layout. */
-export const SOURCE_STYLE_CONFIG = Object.freeze({
-  lineWidth: 140,
-  returnBindingName: 'result',
-  firstDuplicateSuffix: 2,
-  defaultPath: 'module.ts',
-});
-
-/** Standard Prettier options used before applying the repository's explicit layout rules. */
+/** Standard Prettier options shared by the CLI and editor integrations. */
 export const PRETTIER_CONFIG = Object.freeze({
   singleQuote: true,
   trailingComma: 'all',
-  printWidth: SOURCE_STYLE_CONFIG.lineWidth,
+  printWidth: 140,
   objectWrap: 'collapse',
-  embeddedLanguageFormatting: 'off',
+  embeddedLanguageFormatting: 'auto',
   endOfLine: 'lf',
 });
 
@@ -69,10 +61,4 @@ export const BROWSER_CONFIG = Object.freeze({
   serverTimeout: 10000,
   workers: 1,
   reportPath: '.artifacts/chrome.json',
-});
-
-/** Paths excluded from formatting, including the unchanged mandatory specification. */
-export const FORMAT_IGNORE = Object.freeze({
-  directories: Object.freeze(['node_modules', 'dist', 'coverage', 'test-results', 'playwright-report', 'vendor']),
-  files: Object.freeze(['AGENTS.md', 'package-lock.json']),
 });

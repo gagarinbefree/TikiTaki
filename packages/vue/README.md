@@ -19,8 +19,7 @@ export const GridView = defineComponent({
     const engine = shallowRef<SwipeEngine<string> | null>(null);
     const bridge = createVueCellAdapter<string>();
     onMounted(() => {
-      if (!container.value)
-        return;
+      if (!container.value) return;
 
       engine.value = createSwipeEngine({ container: container.value, grid: props.grid, adapter: bridge.adapter });
     });
@@ -34,13 +33,13 @@ export const GridView = defineComponent({
       engine.value?.destroy();
       engine.value = null;
     });
-    const render = () => h(Fragment, [
+    const render = () =>
+      h(Fragment, [
         h('div', { ref: container, style: { height: '100dvh' } }),
         h(VueCellPortals<string>, { bridge, renderCell: (item: string) => h('button', item) }),
       ]);
 
     return render;
-
   },
 });
 ```

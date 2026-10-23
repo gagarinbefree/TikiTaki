@@ -4,7 +4,15 @@ import { createRoot } from 'react-dom/client';
 import { createReactCellAdapter, ReactCellPortals } from '@tikitaki/react';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
-import { controls, cellMapRows, createMetrics, hasNavigationTarget, initialGrid, INITIAL_POSITION, NAVIGATION_TARGET_POSITION } from '../shared';
+import {
+  controls,
+  cellMapRows,
+  createMetrics,
+  hasNavigationTarget,
+  initialGrid,
+  INITIAL_POSITION,
+  NAVIGATION_TARGET_POSITION,
+} from '../shared';
 import '../vendor/bootstrap-2.0.2/css/bootstrap.css';
 import '../vendor/bootstrap-2.0.2/css/bootstrap-responsive.css';
 import type { CellMapProps } from '../shared';
@@ -25,7 +33,6 @@ function Cell({ item, position }: { readonly item: string; readonly position: Po
     };
 
     return result;
-
   }, []);
   const result = h(
     DEMO_TEXT.article,
@@ -47,7 +54,6 @@ function Cell({ item, position }: { readonly item: string; readonly position: Po
   );
 
   return result;
-
 }
 /** React demo data, controller ownership ref, and committed-position notification. */
 interface ViewProps {
@@ -63,8 +69,7 @@ function EngineView({ grid, engineRef, onPosition }: ViewProps) {
   const container = useRef<HTMLDivElement>(null);
   const [bridge] = useState(createReactCellAdapter<string>);
   useEffect(() => {
-    if (container.current === null)
-      return;
+    if (container.current === null) return;
 
     const engine = createSwipeEngine({
       container: container.current,
@@ -83,7 +88,6 @@ function EngineView({ grid, engineRef, onPosition }: ViewProps) {
     };
 
     return result;
-
   }, [bridge, engineRef, onPosition]);
   useEffect(() => {
     engineRef.current?.updateGrid(grid);
@@ -102,7 +106,6 @@ function EngineView({ grid, engineRef, onPosition }: ViewProps) {
   );
 
   return result;
-
 }
 /**
  * Render an accessible ragged-grid map with the committed position highlighted.
@@ -121,7 +124,8 @@ function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
     h(
       DEMO_TEXT.div,
       { className: DEMO_TEXT.gridMapScroll },
-      ...cellMapRows({ grid, position, enabled }).map((cells, row) => h(
+      ...cellMapRows({ grid, position, enabled }).map((cells, row) =>
+        h(
           DEMO_TEXT.p,
           {
             key: row,
@@ -130,7 +134,8 @@ function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
             role: DEMO_TEXT.group,
             [DEMO_TEXT.ariaLabel]: DEMO_LABELS.row(row),
           },
-          ...cells.map((cell) => h(
+          ...cells.map((cell) =>
+            h(
               DEMO_TEXT.button,
               {
                 key: cell.position.col,
@@ -152,7 +157,6 @@ function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
   );
 
   return result;
-
 }
 /**
  * Render demo controls and keep the grid, committed position, and controller lifecycle synchronized.
@@ -209,7 +213,8 @@ function App() {
                 DEMO_LABELS.coordinates(position),
               ),
             ),
-            ...controls.map(({ direction, label }) => h(
+            ...controls.map(({ direction, label }) =>
+              h(
                 DEMO_TEXT.p,
                 { key: direction },
                 h(
@@ -305,7 +310,6 @@ function App() {
   );
 
   return result;
-
 }
 const root = document.getElementById(DEMO_TEXT.app);
 if (root === null) {

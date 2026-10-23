@@ -34,14 +34,12 @@ const server = createServer((request, response) => {
     response.end();
 
     return;
-
   }
   if (file === null) {
     response.writeHead(404);
     response.end();
 
     return;
-
   }
   readFile(fileURLToPath(new URL(file, root))).then(
     (content) => {

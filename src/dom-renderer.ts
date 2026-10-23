@@ -76,7 +76,6 @@ function object(value: unknown, label: string): Record<string, unknown> {
   const result = value as Record<string, unknown>;
 
   return result;
-
 }
 /**
  * Validate coordinates and return an immutable position snapshot.
@@ -93,7 +92,6 @@ function checkedPosition(input: unknown): Position {
   const result = Object.freeze({ row, col });
 
   return result;
-
 }
 /**
  * Snapshot and validate only the current cell and its existing immediate neighbors.
@@ -126,7 +124,6 @@ function readWindow<T>(source: NavigationSource<T>): Descriptor<T>[] {
   }
 
   return result;
-
 }
 /**
  * Read container geometry once and return a validated immutable size.
@@ -147,7 +144,6 @@ function measure(container: HTMLElement): RendererSize {
   const result = Object.freeze({ width, height });
 
   return result;
-
 }
 /**
  * Validate axis-aligned viewport-relative motion before scheduling a frame.
@@ -164,7 +160,6 @@ function checkedOffset(input: unknown, size: RendererSize): GestureOffset {
   const result = Object.freeze({ x: x === 0 ? 0 : x, y: y === 0 ? 0 : y });
 
   return result;
-
 }
 /**
  * Calculate the single-viewport target offset for a direction.
@@ -176,7 +171,6 @@ function targetOffset(direction: Direction | null, size: RendererSize): GestureO
   });
 
   return result;
-
 }
 /**
  * Validate a settlement plan before interrupting an existing animation.
@@ -202,7 +196,6 @@ function checkedPlan(input: unknown, size: RendererSize): GestureSettlement {
   const result = Object.freeze({ direction, from, to, duration: plan.duration });
 
   return result;
-
 }
 /**
  * Validate adapter update and unmount operations before accepting host ownership.
@@ -214,7 +207,6 @@ function checkedHandle<T>(input: MountedCell<T>): MountedCell<T> {
   }
 
   return input;
-
 }
 /**
  * Functional renderer operations with bounded cell ownership and cancellable animation.
@@ -260,9 +252,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
    * Read cached viewport dimensions without triggering layout.
    */
   function getSize(): RendererSize {
-
     return stateSize;
-
   }
   /**
    * Schedule an axis-aligned offset update without reading layout.
@@ -272,7 +262,6 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
       const result = false;
 
       return result;
-
     }
     const next = checkedOffset(offset, stateSize);
     stateOffset = next;
@@ -280,7 +269,6 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     const result = true;
 
     return result;
-
   }
   /**
    * Animate one settlement plan and resolve every completion or cancellation.
@@ -290,7 +278,6 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
       const result = Promise.resolve(false);
 
       return result;
-
     }
     let checked: GestureSettlement;
     try {
@@ -299,13 +286,11 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
       const result = Promise.reject(error instanceof Error ? error : new Error(CORE_TEXT.animationValidationFailed, { cause: error }));
 
       return result;
-
     }
     if (checked.direction !== null && ![...stateCells.values()].some((cell) => cell.role === checked.direction)) {
       const result = Promise.resolve(false);
 
       return result;
-
     }
     stateOffset = checked.from;
     const result = new Promise<boolean>((resolve) => {
@@ -314,14 +299,12 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     });
 
     return result;
-
   }
   /**
    * Reconcile the bounded rendering window with the current navigation snapshot.
    */
   function sync(): void {
-    if (stateDestroyed || stateSource === null)
-      return;
+    if (stateDestroyed || stateSource === null) return;
 
     if (stateSyncing) {
       throw new Error(CORE_TEXT.cannotSyncDuringAdapterLifecycle);
@@ -344,8 +327,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
    * Cancel pending motion and restore the viewport origin.
    */
   function reset(): void {
-    if (stateDestroyed)
-      return;
+    if (stateDestroyed) return;
 
     cancelWork();
     stateOffset = ZERO;
@@ -358,8 +340,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
    * Release owned resources once and settle pending work without leaving stale callbacks.
    */
   function destroy(): void {
-    if (stateDestroyed)
-      return;
+    if (stateDestroyed) return;
 
     stateDestroyed = true;
     cancelWork();
@@ -428,24 +409,20 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
    * Read disposal state across potentially reentrant adapter lifecycle operations.
    */
   function readDestroyed(): boolean {
-
     return stateDestroyed;
-
   }
   /** Guard against motion during cleanup, reconciliation, and active animation. */
   function readAcceptsMotion(): boolean {
     const result = !stateDestroyed && !stateSyncing && stateAnimation === null && stateSize.width > 0 && stateSize.height > 0;
 
     return result;
-
   }
   /**
    * Apply a local container style while retaining the original value and priority.
    */
   function applyStyle(property: string, applied: string): void {
     const style = stateContainer?.style;
-    if (style === undefined)
-      return;
+    if (style === undefined) return;
 
     stateStyles.set(property, { value: style.getPropertyValue(property), priority: style.getPropertyPriority(property), applied });
     style.setProperty(property, applied);
@@ -456,8 +433,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
   function reconcile(descriptors: readonly Descriptor<T>[]): void {
     const root = stateRoot;
     const adapter = stateAdapter;
-    if (root === null || adapter === null)
-      return;
+    if (root === null || adapter === null) return;
 
     stateSyncing = true;
     try {
@@ -472,9 +448,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
         } finally {
           cell.host.remove();
         }
-        if (stateDestroyed)
-          return;
-
+        if (stateDestroyed) return;
       }
       for (const descriptor of descriptors) {
         const existing = stateCells.get(descriptor.key);
@@ -482,9 +456,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
           existing.role = descriptor.role;
           decorate(existing.host, descriptor);
           existing.handle.update(descriptor.item, descriptor.position);
-          if (stateDestroyed)
-            return;
-
+          if (stateDestroyed) return;
         } else {
           const host = root.ownerDocument.createElement(CORE_TEXT.div);
           host.style.cssText = CORE_TEXT.positionAbsoluteInset0OverflowHiddenBoxSizingBorderBoxWillChangeTransform;
@@ -495,7 +467,6 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
             handle.unmount();
 
             return;
-
           }
           stateCells.set(descriptor.key, { host, handle, role: descriptor.role });
         }
@@ -517,8 +488,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
    * Write cached transforms for the current cell and its valid adjacent hosts without layout reads.
    */
   function paint(): void {
-    if (stateRoot === null)
-      return;
+    if (stateRoot === null) return;
 
     const { width, height } = stateSize;
     stateRoot.style.visibility = width === 0 || height === 0 ? CORE_TEXT.hidden : CORE_TEXT.empty;
@@ -533,13 +503,11 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
    */
   function schedule(): void {
     const view = stateView;
-    if (stateDestroyed || stateFrameId !== null || view === null)
-      return;
+    if (stateDestroyed || stateFrameId !== null || view === null) return;
 
     const epoch = stateEpoch;
     stateFrameId = view.requestAnimationFrame((time) => {
-      if (stateDestroyed || epoch !== stateEpoch)
-        return;
+      if (stateDestroyed || epoch !== stateEpoch) return;
 
       stateFrameId = null;
       try {
@@ -564,7 +532,6 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
         stateOnResize?.(size);
 
         return;
-
       }
     }
     const animation = stateAnimation;
@@ -645,8 +612,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
   stateOnResize = options.onResize;
   try {
     const observer = new view.ResizeObserver(() => {
-      if (stateDestroyed)
-        return;
+      if (stateDestroyed) return;
 
       stateResizePending = true;
       schedule();
@@ -673,5 +639,4 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
   const api: DOMRenderer = { getSize, setOffset, animate, sync, reset, destroy };
 
   return api;
-
 }

@@ -18,8 +18,7 @@ export function GridView({ grid }: { grid: Grid<string> }) {
   const initialGrid = useRef(grid);
   const [bridge] = useState(createReactCellAdapter<string>);
   useEffect(() => {
-    if (!container.current)
-      return;
+    if (!container.current) return;
 
     const instance = createSwipeEngine({ container: container.current, grid: initialGrid.current, adapter: bridge.adapter });
     engine.current = instance;
@@ -29,7 +28,6 @@ export function GridView({ grid }: { grid: Grid<string> }) {
     };
 
     return cleanup;
-
   }, [bridge]);
   useEffect(() => {
     engine.current?.updateGrid(grid);
@@ -42,7 +40,6 @@ export function GridView({ grid }: { grid: Grid<string> }) {
   );
 
   return view;
-
 }
 ```
 

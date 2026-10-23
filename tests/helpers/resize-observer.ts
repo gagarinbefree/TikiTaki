@@ -24,10 +24,8 @@ export function createResizeObserverMock() {
     harness.instances.push(observer);
 
     return observer;
-
   }
   const harness = { instances, construct };
 
   return harness;
-
 }

@@ -1,5 +1,13 @@
 import { CORE_TEXT, CORE_MESSAGES } from './config';
-import { DEFAULT_GESTURE_OPTIONS, ZERO_OFFSET, VELOCITY_WINDOW_MS, SAMPLE_INTERVAL_MS, MAX_SAMPLES, MIN_MOTION_SAMPLES, PREVIOUS_MOTION_INDEX } from './config';
+import {
+  DEFAULT_GESTURE_OPTIONS,
+  ZERO_OFFSET,
+  VELOCITY_WINDOW_MS,
+  SAMPLE_INTERVAL_MS,
+  MAX_SAMPLES,
+  MIN_MOTION_SAMPLES,
+  PREVIOUS_MOTION_INDEX,
+} from './config';
 import type { Direction } from './navigation';
 /**
  * Validated gesture tuning values; distances use CSS pixels and times use milliseconds.
@@ -74,7 +82,6 @@ function record(value: unknown, label: string): Record<string, unknown> {
   const result = value as Record<string, unknown>;
 
   return result;
-
 }
 /**
  * Validate a finite numeric input without coercion.
@@ -88,7 +95,6 @@ function finiteNumber(value: unknown, label: string): number {
   }
 
   return value;
-
 }
 /**
  * Merge gesture overrides with central defaults and validate every supported option.
@@ -100,7 +106,8 @@ function resolveOptions(input: unknown): Readonly<GestureOptions> {
       throw new TypeError(CORE_MESSAGES.option(key));
     }
   }
-  const option = (key: keyof GestureOptions): number => finiteNumber(Object.hasOwn(overrides, key) ? overrides[key] : DEFAULT_GESTURE_OPTIONS[key], key);
+  const option = (key: keyof GestureOptions): number =>
+    finiteNumber(Object.hasOwn(overrides, key) ? overrides[key] : DEFAULT_GESTURE_OPTIONS[key], key);
   const options: GestureOptions = {
     distanceThreshold: option(CORE_TEXT.distanceThreshold),
     velocityThreshold: option(CORE_TEXT.velocityThreshold),
@@ -121,7 +128,6 @@ function resolveOptions(input: unknown): Readonly<GestureOptions> {
   const result = Object.freeze(options);
 
   return result;
-
 }
 /**
  * Copy viewport geometry and neighbor availability into an immutable context.
@@ -141,7 +147,6 @@ function snapshotContext(input: unknown): GestureContext {
     }
 
     return available;
-
   };
   const result = Object.freeze({
     width,
@@ -155,7 +160,6 @@ function snapshotContext(input: unknown): GestureContext {
   });
 
   return result;
-
 }
 /**
  * Validate a nonnegative safe pointer identifier.
@@ -167,7 +171,6 @@ function pointerId(input: unknown): number {
   }
 
   return id;
-
 }
 /**
  * Validate and snapshot a timestamped pointer sample.
@@ -184,7 +187,6 @@ function snapshotSample(input: unknown): PointerSample {
   const result: PointerSample = { pointerId: id, x, y, time };
 
   return result;
-
 }
 /**
  * Convert a nonzero axis displacement into a supported navigation direction.
@@ -194,14 +196,12 @@ function directionFor(axis: GestureAxis, delta: number): Direction | null {
     const result = null;
 
     return result;
-
   }
   const negativeDirection = axis === CORE_TEXT.x ? CORE_TEXT.left : CORE_TEXT.up;
   const positiveDirection = axis === CORE_TEXT.x ? CORE_TEXT.right : CORE_TEXT.down;
   const direction = delta < 0 ? negativeDirection : positiveDirection;
 
   return direction;
-
 }
 /**
  * Estimate velocity over the bounded recent motion window.
@@ -213,7 +213,6 @@ function recentVelocity(samples: readonly MotionSample[]): number {
     const result = 0;
 
     return result;
-
   }
   const cutoff = last.time - VELOCITY_WINDOW_MS;
   let startTime = first.time;
@@ -227,7 +226,6 @@ function recentVelocity(samples: readonly MotionSample[]): number {
   const result = (last.coordinate - startCoordinate) / (last.time - startTime);
 
   return result;
-
 }
 /**
  * Maintain bounded velocity history and reset its segment after a reversal or pause.
@@ -262,8 +260,7 @@ function trackMotion(active: ActiveGesture, axis: GestureAxis, next: PointerSamp
  */
 function dragOffset(axis: GestureAxis, delta: number, context: GestureContext, resistance: number): GestureOffset {
   const direction = directionFor(axis, delta);
-  if (direction === null)
-    return ZERO_OFFSET;
+  if (direction === null) return ZERO_OFFSET;
 
   const extent = axis === CORE_TEXT.x ? context.width : context.height;
   const magnitude = Math.abs(delta);
@@ -274,7 +271,6 @@ function dragOffset(axis: GestureAxis, delta: number, context: GestureContext, r
   const result = Object.freeze({ x: axis === CORE_TEXT.x ? normalized : 0, y: axis === CORE_TEXT.y ? normalized : 0 });
 
   return result;
-
 }
 /**
  * Functional pointer state machine operations; every instance owns its history and tokens.
@@ -318,9 +314,7 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
    * Read the validated immutable gesture configuration.
    */
   function getOptions(): Readonly<GestureOptions> {
-
     return stateOptions;
-
   }
   /**
    * Read a stable snapshot of the current state without exposing mutable internals.
@@ -335,7 +329,6 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     });
 
     return result;
-
   }
   /**
    * Start tracking a primary pointer when the state machine is idle.
@@ -345,14 +338,12 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
       const result = false;
 
       return result;
-
     }
     const start = snapshotSample(sample);
     stateActive = { start, last: start, motionSign: 0, samples: [] };
     const result = true;
 
     return result;
-
   }
   /**
    * Advance the active gesture while preserving the locked axis.
@@ -363,20 +354,17 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
       const result = false;
 
       return result;
-
     }
     const next = snapshotSample(sample);
     if (next.pointerId !== active.start.pointerId || next.time < active.last.time) {
       const result = false;
 
       return result;
-
     }
     advance(active, next);
     const result = true;
 
     return result;
-
   }
   /**
    * Resolve a commit or rollback plan using distance and recent directional velocity.
@@ -387,14 +375,12 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
       const result = null;
 
       return result;
-
     }
     const next = snapshotSample(sample);
     if (next.pointerId !== active.start.pointerId || next.time < active.last.time) {
       const result = null;
 
       return result;
-
     }
     advance(active, next);
     const axis = stateAxis;
@@ -403,7 +389,6 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
       const result = null;
 
       return result;
-
     }
     const delta = next[axis] - active.start[axis];
     const direction = directionFor(axis, delta);
@@ -415,7 +400,6 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     const result = settle(commit ? direction : null);
 
     return result;
-
   }
   /**
    * Cancel the active pointer and request a visual rollback when needed.
@@ -426,25 +410,21 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
       const result = null;
 
       return result;
-
     }
     if (pointerId(id) !== active.start.pointerId) {
       const result = null;
 
       return result;
-
     }
     if (stateAxis === null) {
       reset();
       const result = null;
 
       return result;
-
     }
     const result = settle(null);
 
     return result;
-
   }
   /**
    * Cancel a gesture whose pointer capture is no longer available.
@@ -453,7 +433,6 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     const result = pointerCancel(id);
 
     return result;
-
   }
   /**
    * Accept only the current settlement token and reset the gesture state.
@@ -463,20 +442,17 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
       const result = false;
 
       return result;
-
     }
     reset();
     const result = true;
 
     return result;
-
   }
   /**
    * Validate a replacement viewport and neighbor snapshot before resetting the gesture.
    */
   function updateContext(context: GestureContext): void {
-    if (stateDestroyed)
-      return;
+    if (stateDestroyed) return;
 
     const next = snapshotContext(context);
     stateContext = next;
@@ -486,8 +462,7 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
    * Release owned resources once and settle pending work without leaving stale callbacks.
    */
   function destroy(): void {
-    if (stateDestroyed)
-      return;
+    if (stateDestroyed) return;
 
     stateDestroyed = true;
     reset();
@@ -526,7 +501,6 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     stateSettlement = plan;
 
     return plan;
-
   }
   /**
    * Cancel pending motion and restore the viewport origin.
@@ -545,18 +519,15 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
       const result = CORE_TEXT.settling;
 
       return result;
-
     }
     if (stateActive === null) {
       const result = CORE_TEXT.idle;
 
       return result;
-
     }
     const result = stateAxis === null ? CORE_TEXT.tracking : CORE_TEXT.dragging;
 
     return result;
-
   }
   stateContext = snapshotContext(context);
   const stateOptions = resolveOptions(options);
@@ -574,5 +545,4 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
   };
 
   return api;
-
 }

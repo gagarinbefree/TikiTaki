@@ -78,7 +78,6 @@ test('real RAF animation has intermediate monotonic transforms and no jump at co
     };
 
     return result;
-
   });
   expect(result.completed).toBe(true);
   expect(result.samples.some((value) => value < 0 && value > -600)).toBe(true);
@@ -109,7 +108,6 @@ test('resize cancels an active transition, updates geometry, and allows a fresh 
     const result = { completed, size: window.fixture.getSize(), position: window.fixture.getPosition() };
 
     return result;
-
   });
   expect(result).toEqual({ completed: false, size: { width: 320, height: 680 }, position: { row: 0, col: 9 } });
   expect(await page.evaluate(() => window.fixture.slide('up'))).toBe(true);
@@ -211,7 +209,6 @@ test('offscreen content cannot take focus and destroy releases all mounts during
     const result = { completed: await pending, ...window.fixture.lifecycle };
 
     return result;
-
   });
   expect(result.completed).toBe(false);
   expect(result.unmounts).toBe(result.mounts);

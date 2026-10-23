@@ -11,7 +11,6 @@ function runtimeImports(context) {
     }
 
     return result;
-
   }
   function visit(node) {
     if (ts.isImportDeclaration(node)) {
@@ -24,7 +23,6 @@ function runtimeImports(context) {
       );
 
       return result;
-
     }
     if (ts.isExportDeclaration(node)) {
       const result = factory.updateExportDeclaration(
@@ -37,17 +35,14 @@ function runtimeImports(context) {
       );
 
       return result;
-
     }
     const result = ts.visitEachChild(node, visit, context);
 
     return result;
-
   }
   const result2 = (source) => ts.visitNode(source, visit);
 
   return result2;
-
 }
 /** Compile an isolated package and its declaration/source maps without bundling dependencies. */
 function build(configFile) {

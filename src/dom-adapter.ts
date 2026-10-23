@@ -17,7 +17,6 @@ export function createDOMAdapter<T>(renderCell: (item: T, position: Position) =>
     }
 
     return element;
-
   };
   const result: CellAdapter<T> = {
     /**
@@ -31,8 +30,7 @@ export function createDOMAdapter<T>(renderCell: (item: T, position: Position) =>
          * Update a live host while retaining its identity and component state.
          */
         update(nextItem, nextPosition) {
-          if (current === null)
-            return;
+          if (current === null) return;
 
           const next = render(nextItem, nextPosition, current);
           if (next !== current) {
@@ -50,10 +48,8 @@ export function createDOMAdapter<T>(renderCell: (item: T, position: Position) =>
       };
 
       return result;
-
     },
   };
 
   return result;
-
 }

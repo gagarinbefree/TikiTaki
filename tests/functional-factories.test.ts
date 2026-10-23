@@ -56,7 +56,6 @@ it('creates a renderer with detached lifecycle operations and no constructor', (
       cell.textContent = item;
 
       return cell;
-
     }),
   });
   const { getSize, reset, destroy } = renderer;
@@ -81,7 +80,6 @@ it('creates a swipe controller with detached commands and terminal cleanup', asy
       element.textContent = item;
 
       return element;
-
     },
   });
   const { navigate, getPosition, destroy } = engine;

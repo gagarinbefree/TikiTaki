@@ -10,8 +10,8 @@ createDOMRenderer/createSwipeEngine возвращают readonly интерфе
 в src/config.ts; demos/config.ts содержит данные/подписи demos, tooling.config.mjs —
 форматирование и браузерные/серверные настройки. Source imports без .js проверяются
 ESLint; build-time TypeScript transformers формируют корректные runtime ESM и .d.ts.
-Project formatter применяет Prettier, затем однострочные импорты/сигнатуры,
-именованные return-значения и обязательные пустые строки вокруг return.
+Форматирование выполняет стандартный Prettier 3.9.10 без дополнительных преобразований.
+Прежние правила оформления return, if, импортов и сигнатур отменены.
 
 Статус: реализованы этапы 1–5 — модель, Gesture Engine, DOM Renderer, SwipeEngine
 и изолированные React/Vue адаптеры с demos.

@@ -27,7 +27,6 @@ export function createDeploymentMetadata(baseVersion, runNumber, attempt, commit
   const metadata = { version, commit, runNumber, attempt };
 
   return metadata;
-
 }
 
 /**
@@ -45,7 +44,6 @@ export function updateReadmeRelease(source, version) {
   const result = marked.replace(VERSION_CONFIG.badgeImagePattern, `![Release](${VERSION_CONFIG.badgePath}?version=${version})`);
 
   return result;
-
 }
 
 /** Render a self-contained SVG badge without external badge-service requests. @param {string} version Published release version. */
@@ -58,5 +56,4 @@ export function createReleaseBadge(version) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${config.height}" role="img" aria-label="${config.label}: ${text}"><title>${config.label}: ${text}</title><clipPath id="badge"><rect width="${width}" height="${config.height}" rx="${config.cornerRadius}"/></clipPath><g clip-path="url(#badge)"><rect width="${width}" height="${config.height}" fill="${config.background}"/><rect x="${config.labelWidth}" width="${valueWidth}" height="${config.height}" fill="${config.valueBackground}"/></g><g fill="${config.foreground}" text-anchor="middle" font-family="${config.fontFamily}" font-size="${config.fontSize}"><text x="${config.labelWidth / 2}" y="${config.textY}">${config.label}</text><text x="${config.labelWidth + valueWidth / 2}" y="${config.textY}">${text}</text></g></svg>\n`;
 
   return svg;
-
 }

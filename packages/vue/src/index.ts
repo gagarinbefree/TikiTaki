@@ -28,7 +28,6 @@ function entry<T>(key: string, host: HTMLElement, item: T, position: Position): 
   const result = Object.freeze({ key, host, item, position: Object.freeze({ row: position.row, col: position.col }) });
 
   return result;
-
 }
 /** Create in setup; render VueCellPortals inside the owning Vue application. */
 export function createVueCellAdapter<T>(): VueCellBridge<T> {
@@ -51,8 +50,7 @@ export function createVueCellAdapter<T>(): VueCellBridge<T> {
            * Update a live host while retaining its identity and component state.
            */
           update(next, coordinates) {
-            if (!mounted)
-              return;
+            if (!mounted) return;
 
             cells.value = Object.freeze(cells.value.map((cell) => (cell.key === key ? entry(key, host, next, coordinates) : cell)));
           },
@@ -60,8 +58,7 @@ export function createVueCellAdapter<T>(): VueCellBridge<T> {
            * Release one mounted host exactly once and ignore stale updates.
            */
           unmount() {
-            if (!mounted)
-              return;
+            if (!mounted) return;
 
             mounted = false;
             cells.value = Object.freeze(cells.value.filter((cell) => cell.key !== key));
@@ -69,14 +66,12 @@ export function createVueCellAdapter<T>(): VueCellBridge<T> {
         };
 
         return result;
-
       },
     },
     cells: shallowReadonly(cells),
   };
 
   return result;
-
 }
 /** Teleport preserves provide/inject and the parent application's lifecycle. */
 export function VueCellPortals<T>({ bridge, renderCell }: VueCellPortalsProps<T>): VNodeChild {
@@ -86,5 +81,4 @@ export function VueCellPortals<T>({ bridge, renderCell }: VueCellPortalsProps<T>
   );
 
   return result;
-
 }

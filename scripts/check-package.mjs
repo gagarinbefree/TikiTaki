@@ -18,7 +18,6 @@ function run(args, cwd) {
   const result2 = result.stdout;
 
   return result2;
-
 }
 const artifacts = join(root, '.artifacts');
 await mkdir(artifacts, { recursive: true });

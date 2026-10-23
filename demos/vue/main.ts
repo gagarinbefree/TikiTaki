@@ -1,10 +1,31 @@
 import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY } from '../config';
-import { createApp, defineComponent, Fragment, h, inject, onBeforeUnmount, onMounted, onUnmounted, provide, ref, shallowRef, watch } from 'vue';
+import {
+  createApp,
+  defineComponent,
+  Fragment,
+  h,
+  inject,
+  onBeforeUnmount,
+  onMounted,
+  onUnmounted,
+  provide,
+  ref,
+  shallowRef,
+  watch,
+} from 'vue';
 import type { PropType } from 'vue';
 import { createVueCellAdapter, VueCellPortals } from '@tikitaki/vue';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
-import { controls, cellMapRows, createMetrics, hasNavigationTarget, initialGrid, INITIAL_POSITION, NAVIGATION_TARGET_POSITION } from '../shared';
+import {
+  controls,
+  cellMapRows,
+  createMetrics,
+  hasNavigationTarget,
+  initialGrid,
+  INITIAL_POSITION,
+  NAVIGATION_TARGET_POSITION,
+} from '../shared';
 import '../vendor/bootstrap-2.0.2/css/bootstrap.css';
 import '../vendor/bootstrap-2.0.2/css/bootstrap-responsive.css';
 import type { CellMapProps } from '../shared';
@@ -21,7 +42,8 @@ const Cell = defineComponent({
     const count = ref(0);
     onMounted(metrics.mount);
     onUnmounted(metrics.unmount);
-    const result = () => h(
+    const result = () =>
+      h(
         DEMO_TEXT.article,
         { class: DEMO_TEXT.cell, style: DEMO_GEOMETRY.cell, [DEMO_TEXT.dataItem]: props.item, [DEMO_TEXT.dataRow]: props.position.row },
         [
@@ -43,7 +65,6 @@ const Cell = defineComponent({
       );
 
     return result;
-
   },
 });
 /**
@@ -59,7 +80,8 @@ function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
     h(
       DEMO_TEXT.div,
       { class: DEMO_TEXT.gridMapScroll },
-      cellMapRows({ grid, position, enabled }).map((cells, row) => h(
+      cellMapRows({ grid, position, enabled }).map((cells, row) =>
+        h(
           DEMO_TEXT.p,
           {
             key: row,
@@ -68,7 +90,8 @@ function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
             role: DEMO_TEXT.group,
             [DEMO_TEXT.ariaLabel]: DEMO_LABELS.row(row),
           },
-          cells.map((cell) => h(
+          cells.map((cell) =>
+            h(
               DEMO_TEXT.button,
               {
                 key: cell.position.col,
@@ -90,7 +113,6 @@ function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
   ]);
 
   return result;
-
 }
 const App = defineComponent({
   /**
@@ -110,8 +132,7 @@ const App = defineComponent({
         const container = shallowRef<HTMLElement | null>(null);
         const bridge = createVueCellAdapter<string>();
         onMounted(() => {
-          if (container.value === null)
-            return;
+          if (container.value === null) return;
 
           engine.value = createSwipeEngine({
             container: container.value,
@@ -133,7 +154,8 @@ const App = defineComponent({
           engine.value = null;
           metrics.destroyEngine();
         });
-        const result = () => h(Fragment, [
+        const result = () =>
+          h(Fragment, [
             h(DEMO_TEXT.div, {
               ref: container,
               class: DEMO_TEXT.viewport,
@@ -148,7 +170,6 @@ const App = defineComponent({
           ]);
 
         return result;
-
       },
     });
     /**
@@ -161,7 +182,8 @@ const App = defineComponent({
       }
       visible.value = !visible.value;
     }
-    const result = () => h(DEMO_TEXT.main, { class: DEMO_TEXT.container }, [
+    const result = () =>
+      h(DEMO_TEXT.main, { class: DEMO_TEXT.container }, [
         h(DEMO_TEXT.a, { href: DEMO_TEXT.homePath }, DEMO_TEXT.demos),
         h(DEMO_TEXT.p, [h(DEMO_TEXT.span, { class: DEMO_TEXT.badge }, DEMO_TEXT.tikiTakiVue3CompositionAPI)]),
         h(DEMO_TEXT.div, { class: DEMO_TEXT.pageHeader }, [h(DEMO_TEXT.h1, DEMO_TEXT.headline)]),
@@ -181,7 +203,8 @@ const App = defineComponent({
                   DEMO_LABELS.coordinates(position.value),
                 ),
               ]),
-              ...controls.map(({ direction, label }) => h(DEMO_TEXT.p, { key: direction }, [
+              ...controls.map(({ direction, label }) =>
+                h(DEMO_TEXT.p, { key: direction }, [
                   h(
                     DEMO_TEXT.button,
                     {
@@ -266,7 +289,6 @@ const App = defineComponent({
       ]);
 
     return result;
-
   },
 });
 const app = createApp(App);

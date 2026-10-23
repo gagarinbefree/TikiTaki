@@ -26,158 +26,154 @@
   <body>
     <div id="grid"></div>
     <script type="module">
-import { createNavigationModel, createGestureEngine } from '/dist/index';
-import { createDOMRenderer } from '/dist/dom';
-const container = document.querySelector('#grid');
-const model = createNavigationModel([Array.from({ length: 10 }, (_, i) => `A${i + 1}`), ['B1'], ['C1', 'C2', 'C3'], ['D1', 'D2']], {
-  row: 0,
-  col: 9,
-});
-const lifecycle = { mounts: 0, unmounts: 0 };
-const errors = [];
-const adapter = {
-  mount(host, item, position) {
-    host.dataset.mountId = String(++lifecycle.mounts);
-    const button = document.createElement('button');
-    button.className = 'content';
-    const update = (next, pos) => {
-      button.textContent = next;
-      button.style.background = ['#1b4965', '#825b23', '#5e3370', '#245c3c'][pos.row];
-    };
-    update(item, position);
-    host.append(button);
-    const result = {
-      update,
-      unmount() {
-        lifecycle.unmounts += 1;
-        button.remove();
-      },
-    };
+      import { createNavigationModel, createGestureEngine } from '/dist/index';
+      import { createDOMRenderer } from '/dist/dom';
+      const container = document.querySelector('#grid');
+      const model = createNavigationModel([Array.from({ length: 10 }, (_, i) => `A${i + 1}`), ['B1'], ['C1', 'C2', 'C3'], ['D1', 'D2']], {
+        row: 0,
+        col: 9,
+      });
+      const lifecycle = { mounts: 0, unmounts: 0 };
+      const errors = [];
+      const adapter = {
+        mount(host, item, position) {
+          host.dataset.mountId = String(++lifecycle.mounts);
+          const button = document.createElement('button');
+          button.className = 'content';
+          const update = (next, pos) => {
+            button.textContent = next;
+            button.style.background = ['#1b4965', '#825b23', '#5e3370', '#245c3c'][pos.row];
+          };
+          update(item, position);
+          host.append(button);
+          const result = {
+            update,
+            unmount() {
+              lifecycle.unmounts += 1;
+              button.remove();
+            },
+          };
 
-    return result;
+          return result;
+        },
+      };
+      let gesture;
+      const renderer = createDOMRenderer({
+        container,
+        navigation: model,
+        adapter,
+        onResize() {
+          resetGesture();
+        },
+      });
+      function context() {
+        const result = {
+          ...renderer.getSize(),
+          neighbors: Object.fromEntries(
+            ['up', 'down', 'left', 'right'].map((direction) => [direction, model.getNeighbor(direction) !== null]),
+          ),
+        };
 
-  },
-};
-let gesture;
-const renderer = createDOMRenderer({
-  container,
-  navigation: model,
-  adapter,
-  onResize() {
-    resetGesture();
-  },
-});
-function context() {
-  const result = {
-    ...renderer.getSize(),
-    neighbors: Object.fromEntries(['up', 'down', 'left', 'right'].map((direction) => [direction, model.getNeighbor(direction) !== null])),
-  };
+        return result;
+      }
+      gesture = createGestureEngine(context(), { animationDuration: 180 });
+      function resetGesture() {
+        const id = gesture?.getSnapshot().pointerId;
+        gesture?.updateContext(context());
+        if (id != null && container.hasPointerCapture(id)) {
+          container.releasePointerCapture(id);
+        }
+      }
+      async function settle(plan) {
+        const completed = await renderer.animate(plan);
+        if (completed && gesture.finishSettling(plan)) {
+          if (plan.direction !== null) {
+            model.navigate(plan.direction);
+          }
+          renderer.sync();
+          gesture.updateContext(context());
+        } else {
+          resetGesture();
+        }
 
-  return result;
+        return completed;
+      }
+      function launch(plan) {
+        if (plan !== null) {
+          settle(plan).catch((error) => {
+            errors.push(String(error));
+          });
+        }
+      }
+      const sample = (event) => ({ pointerId: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp });
+      const down = (event) => {
+        if (event.button !== 0 || !event.isPrimary) return;
 
-}
-gesture = createGestureEngine(context(), { animationDuration: 180 });
-function resetGesture() {
-  const id = gesture?.getSnapshot().pointerId;
-  gesture?.updateContext(context());
-  if (id != null && container.hasPointerCapture(id)) {
-    container.releasePointerCapture(id);
-  }
-}
-async function settle(plan) {
-  const completed = await renderer.animate(plan);
-  if (completed && gesture.finishSettling(plan)) {
-    if (plan.direction !== null) {
-      model.navigate(plan.direction);
-    }
-    renderer.sync();
-    gesture.updateContext(context());
-  } else {
-    resetGesture();
-  }
+        if (gesture.pointerDown(sample(event))) {
+          container.setPointerCapture(event.pointerId);
+        }
+      };
+      const move = (event) => {
+        if (gesture.pointerMove(sample(event))) {
+          renderer.setOffset(gesture.getSnapshot().offset);
+        }
+      };
+      const up = (event) => {
+        launch(gesture.pointerUp(sample(event)));
+      };
+      const cancel = (event) => {
+        launch(gesture.pointerCancel(event.pointerId));
+      };
+      const lost = (event) => {
+        launch(gesture.lostPointerCapture(event.pointerId));
+      };
+      const listeners = { pointerdown: down, pointermove: move, pointerup: up, pointercancel: cancel, lostpointercapture: lost };
+      for (const [name, callback] of Object.entries(listeners)) container.addEventListener(name, callback);
+      window.fixture = {
+        errors,
+        lifecycle,
+        getPosition: () => model.getPosition(),
+        getSize: () => renderer.getSize(),
+        state: () => gesture.getSnapshot().state,
+        async slide(direction, duration = 180) {
+          const { width, height } = renderer.getSize();
+          const to = {
+            x: direction === 'left' ? -width : direction === 'right' ? width : 0,
+            y: direction === 'up' ? -height : direction === 'down' ? height : 0,
+          };
+          const completed = await renderer.animate({ direction, from: { x: 0, y: 0 }, to, duration });
+          if (completed) {
+            model.navigate(direction);
+            renderer.sync();
+            resetGesture();
+          }
 
-  return completed;
+          return completed;
+        },
+        async rollback() {
+          renderer.setOffset({ x: 0, y: -60 });
+          await new Promise(requestAnimationFrame);
+          const result = renderer.animate({ direction: null, from: { x: 0, y: -60 }, to: { x: 0, y: 0 }, duration: 180 });
 
-}
-function launch(plan) {
-  if (plan !== null) {
-    settle(plan).catch((error) => {
-      errors.push(String(error));
-    });
-  }
-}
-const sample = (event) => ({ pointerId: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp });
-const down = (event) => {
-  if (event.button !== 0 || !event.isPrimary)
-    return;
-
-  if (gesture.pointerDown(sample(event))) {
-    container.setPointerCapture(event.pointerId);
-  }
-};
-const move = (event) => {
-  if (gesture.pointerMove(sample(event))) {
-    renderer.setOffset(gesture.getSnapshot().offset);
-  }
-};
-const up = (event) => {
-  launch(gesture.pointerUp(sample(event)));
-};
-const cancel = (event) => {
-  launch(gesture.pointerCancel(event.pointerId));
-};
-const lost = (event) => {
-  launch(gesture.lostPointerCapture(event.pointerId));
-};
-const listeners = { pointerdown: down, pointermove: move, pointerup: up, pointercancel: cancel, lostpointercapture: lost };
-for (const [name, callback] of Object.entries(listeners)) container.addEventListener(name, callback);
-window.fixture = {
-  errors,
-  lifecycle,
-  getPosition: () => model.getPosition(),
-  getSize: () => renderer.getSize(),
-  state: () => gesture.getSnapshot().state,
-  async slide(direction, duration = 180) {
-    const { width, height } = renderer.getSize();
-    const to = {
-      x: direction === 'left' ? -width : direction === 'right' ? width : 0,
-      y: direction === 'up' ? -height : direction === 'down' ? height : 0,
-    };
-    const completed = await renderer.animate({ direction, from: { x: 0, y: 0 }, to, duration });
-    if (completed) {
-      model.navigate(direction);
-      renderer.sync();
-      resetGesture();
-    }
-
-    return completed;
-
-  },
-  async rollback() {
-    renderer.setOffset({ x: 0, y: -60 });
-    await new Promise(requestAnimationFrame);
-    const result = renderer.animate({ direction: null, from: { x: 0, y: -60 }, to: { x: 0, y: 0 }, duration: 180 });
-
-    return result;
-
-  },
-  resize(width, height) {
-    container.style.width = `${width}px`;
-    container.style.height = `${height}px`;
-  },
-  cancelInput() {
-    const { pointerId } = gesture.getSnapshot();
-    if (pointerId !== null) {
-      container.dispatchEvent(new PointerEvent('pointercancel', { pointerId, bubbles: true }));
-    }
-  },
-  destroy() {
-    for (const [name, callback] of Object.entries(listeners)) container.removeEventListener(name, callback);
-    resetGesture();
-    gesture.destroy();
-    renderer.destroy();
-  },
-};
-</script>
+          return result;
+        },
+        resize(width, height) {
+          container.style.width = `${width}px`;
+          container.style.height = `${height}px`;
+        },
+        cancelInput() {
+          const { pointerId } = gesture.getSnapshot();
+          if (pointerId !== null) {
+            container.dispatchEvent(new PointerEvent('pointercancel', { pointerId, bubbles: true }));
+          }
+        },
+        destroy() {
+          for (const [name, callback] of Object.entries(listeners)) container.removeEventListener(name, callback);
+          resetGesture();
+          gesture.destroy();
+          renderer.destroy();
+        },
+      };
+    </script>
   </body>
 </html>

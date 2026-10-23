@@ -11,7 +11,6 @@ export function frameworkEnvironment() {
     frames.set(++id, callback);
 
     return id;
-
   });
   vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((key) => {
     frames.delete(key);
@@ -52,5 +51,4 @@ export function frameworkEnvironment() {
   };
 
   return result;
-
 }

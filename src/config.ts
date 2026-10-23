@@ -162,5 +162,4 @@ export function translateOffset(x: number, y: number): string {
   const transform = `translate3d(${String(x)}px, ${String(y)}px, 0px)`;
 
   return transform;
-
 }

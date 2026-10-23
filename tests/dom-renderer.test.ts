@@ -27,7 +27,6 @@ function viewport(width = 300, height = 600) {
   const result = { container, size, readWidth, readHeight };
 
   return result;
-
 }
 function adapter() {
   const records: {
@@ -48,12 +47,10 @@ function adapter() {
     const result = { update, unmount };
 
     return result;
-
   });
   const result = { mount, records };
 
   return result;
-
 }
 function setup(position: Position = { row: 0, col: 9 }) {
   const view = viewport();
@@ -67,20 +64,17 @@ function setup(position: Position = { row: 0, col: 9 }) {
   const result = { ...view, model, cells, renderer };
 
   return result;
-
 }
 function cell(container: HTMLElement, role: 'current' | Direction): HTMLElement {
   const element = container.querySelector<HTMLElement>(`[data-tikitaki-role="${role}"]`);
   assert(element !== null);
 
   return element;
-
 }
 function plan(direction: Direction | null = 'up', duration = 300): GestureSettlement {
   const result: GestureSettlement = { direction, from: { x: 0, y: -100 }, to: { x: 0, y: direction === null ? 0 : -600 }, duration };
 
   return result;
-
 }
 beforeEach(() => {
   frames = new Map();
@@ -93,7 +87,6 @@ beforeEach(() => {
     frames.set(nextFrame, callback);
 
     return nextFrame;
-
   });
   vi.spyOn(window, 'cancelAnimationFrame').mockImplementation((id) => {
     frames.delete(id);
@@ -194,7 +187,6 @@ describe('DOMRenderer window and ownership', () => {
       element.textContent = value.label;
 
       return element;
-
     });
     const renderer = createDOMRenderer({ container, navigation: model, adapter: render });
     item.label = 'after';
@@ -217,7 +209,6 @@ describe('DOMRenderer window and ownership', () => {
         content.style.transform = 'rotate(10deg)';
 
         return content;
-
       }),
     });
     const button = cell(container, 'current').firstElementChild;
@@ -557,7 +548,6 @@ describe('plain DOM adapter', () => {
       element.textContent = item;
 
       return element;
-
     });
     const handle = adapter.mount(host, 'before', { row: 0, col: 0 });
     const previous = host.firstElementChild;

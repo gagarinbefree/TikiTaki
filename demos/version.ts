@@ -8,8 +8,7 @@ export async function showDeploymentVersion(): Promise<void> {
   document.body.append(output);
   try {
     const response = await fetch(`${import.meta.env.BASE_URL}${VERSION_CONFIG.filename}`, { cache: VERSION_CONFIG.cache });
-    if (!response.ok)
-      return;
+    if (!response.ok) return;
 
     const metadata: unknown = await response.json();
     if (typeof metadata === 'object' && metadata !== null && 'version' in metadata && typeof metadata.version === 'string') {

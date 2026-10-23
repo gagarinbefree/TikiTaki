@@ -27,7 +27,6 @@ async function centered(page: Page) {
       const result = viewport !== null && cell !== null && Math.abs(viewport.x - cell.x) < 0.5 && Math.abs(viewport.y - cell.y) < 0.5;
 
       return result;
-
     })
     .toBe(true);
 }
@@ -119,8 +118,7 @@ for (const framework of ['react', 'vue'] as const) {
       await viewport.scrollIntoViewIfNeeded();
       const box = await viewport.boundingBox();
       expect(box).not.toBeNull();
-      if (box === null)
-        return;
+      if (box === null) return;
 
       const x = box.x + box.width / 2,
         y = box.y + box.height * 0.7;
@@ -140,7 +138,6 @@ for (const framework of ['react', 'vue'] as const) {
             const result = cell !== null && cell.y < box.y - 30;
 
             return result;
-
           })
           .toBe(true);
         if (session) {
@@ -212,7 +209,6 @@ for (const framework of ['react', 'vue'] as const) {
           const result = state.enginesCreated === state.enginesDestroyed;
 
           return result;
-
         }),
       ).toBe(true);
     });

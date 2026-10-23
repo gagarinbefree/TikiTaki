@@ -32,7 +32,6 @@ function entry<T>(key: string, host: HTMLElement, item: T, position: Position): 
   const result = Object.freeze({ key, host, item, position: Object.freeze({ row: position.row, col: position.col }) });
 
   return result;
-
 }
 /** Create once per engine view; render ReactCellPortals under its parent root. */
 export function createReactCellAdapter<T>(): ReactCellBridge<T> {
@@ -63,8 +62,7 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
            * Update a live host while retaining its identity and component state.
            */
           update(next, coordinates) {
-            if (!mounted)
-              return;
+            if (!mounted) return;
 
             publish(cells.map((cell) => (cell.key === key ? entry(key, host, next, coordinates) : cell)));
           },
@@ -72,8 +70,7 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
            * Release one mounted host exactly once and ignore stale updates.
            */
           unmount() {
-            if (!mounted)
-              return;
+            if (!mounted) return;
 
             mounted = false;
             publish(cells.filter((cell) => cell.key !== key));
@@ -81,7 +78,6 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
         };
 
         return result;
-
       },
     },
     getSnapshot: () => cells,
@@ -95,12 +91,10 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
       };
 
       return result;
-
     },
   };
 
   return result;
-
 }
 /** Portal content retains the parent context, events, and component lifecycle. */
 export function ReactCellPortals<T>({ bridge, renderCell }: ReactCellPortalsProps<T>): ReactNode {
@@ -108,5 +102,4 @@ export function ReactCellPortals<T>({ bridge, renderCell }: ReactCellPortalsProp
   const result = cells.map((cell) => createPortal(renderCell(cell.item, cell.position), cell.host, cell.key));
 
   return result;
-
 }

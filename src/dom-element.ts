@@ -6,7 +6,6 @@ export function isHTMLElement(value: unknown): value is HTMLElement {
     const result = false;
 
     return result;
-
   }
   const candidate = value as Partial<HTMLElement>;
   /** function Object() { [native code] } */
@@ -14,5 +13,4 @@ export function isHTMLElement(value: unknown): value is HTMLElement {
   const result = constructor !== undefined && value instanceof constructor;
 
   return result;
-
 }
