@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, provide, ref, shallowRef } from 'vue';
 import type { Direction, Grid, Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
-import { DEMO_TEXT } from '../config';
+import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
 import { initialGrid, INITIAL_POSITION } from '../shared';
 import EngineView from './EngineView.vue';
 import CellMap from './CellMap.vue';
@@ -60,14 +60,13 @@ onUnmounted(() => {
       <h1>{{ DEMO_TEXT.headline }}</h1>
     </div>
     <p>{{ DEMO_TEXT.intro }}</p>
+    <h3>{{ DEMO_TEXT.liveTitle }}</h3>
     <div :class="DEMO_TEXT.layout" data-demo-layout="">
-      <div :class="DEMO_TEXT.viewportColumn">
-        <h3>{{ DEMO_TEXT.liveTitle }}</h3>
+      <div :class="DEMO_TEXT.viewportColumn" :style="DEMO_GEOMETRY.phoneColumn">
         <EngineView v-if="visible" :grid="grid" @engine="engine = $event" @position="position = $event" />
         <p v-else data-unmounted="">{{ DEMO_TEXT.destroyedMessage }}</p>
       </div>
+      <CellMap :grid="grid" :position="position" :enabled="visible" @select="select" />
     </div>
-    <hr />
-    <CellMap :grid="grid" :position="position" :enabled="visible" @select="select" />
   </main>
 </template>

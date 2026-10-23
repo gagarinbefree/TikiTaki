@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
-import { DEMO_TEXT } from '../config';
+import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
 import { initialGrid, INITIAL_POSITION } from '../shared';
 import { Context, metrics } from './context';
 import EngineView from './EngineView';
@@ -52,25 +52,24 @@ export default function App() {
           <h1>{DEMO_TEXT.headline}</h1>
         </div>
         <p>{DEMO_TEXT.intro}</p>
+        <h3>{DEMO_TEXT.liveTitle}</h3>
         <div className={DEMO_TEXT.layout} data-demo-layout="">
-          <div className={DEMO_TEXT.viewportColumn}>
-            <h3>{DEMO_TEXT.liveTitle}</h3>
+          <div className={DEMO_TEXT.viewportColumn} style={DEMO_GEOMETRY.phoneColumn}>
             {visible ? (
               <EngineView grid={grid} engineRef={engineRef} onPosition={setPosition} />
             ) : (
               <p data-unmounted="">{DEMO_TEXT.destroyedMessage}</p>
             )}
           </div>
+          <CellMap
+            grid={grid}
+            position={position}
+            enabled={visible}
+            onSelect={(target) => {
+              void engineRef.current?.goTo(target).catch(metrics.error);
+            }}
+          />
         </div>
-        <hr />
-        <CellMap
-          grid={grid}
-          position={position}
-          enabled={visible}
-          onSelect={(target) => {
-            void engineRef.current?.goTo(target).catch(metrics.error);
-          }}
-        />
       </main>
     </Context.Provider>
   );

@@ -16,6 +16,16 @@ for (const framework of ['react', 'vue']) {
     expect(field).not.toBeNull();
     expect(field && field.height > field.width).toBe(true);
     expect(field && Math.abs(field.width / field.height - 9 / 16) < 0.01).toBe(true);
+    const map = await page.getByRole('navigation', { name: 'Карта ячеек' }).boundingBox();
+    const layout = await page.locator('[data-demo-layout]').boundingBox();
+    expect(map && field && layout).toBeTruthy();
+    if (map && field && layout && (page.viewportSize()?.width ?? 0) >= 768) {
+      expect(Math.abs(field.x - layout.x)).toBeLessThan(1);
+      expect(map.x).toBeGreaterThan(field.x + field.width);
+      expect(Math.abs(map.y - field.y)).toBeLessThan(1);
+      expect(Math.abs(map.height - field.height)).toBeLessThan(1);
+      expect(Math.abs(map.x + map.width - layout.x - layout.width)).toBeLessThan(1);
+    }
     await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveAttribute('data-item', 'A1');
     await expect(page.locator('[aria-current="true"]')).toHaveClass(/theme-success/);
     await expect(page.locator('[data-navigate]')).toHaveCount(0);

@@ -1,10 +1,10 @@
-import { DEMO_TEXT, DEMO_LABELS } from '../config';
+import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY } from '../config';
 import { cellMapRows, type CellMapProps } from '../shared';
 
 /** Display the ragged grid and highlight its committed position. */
 export default function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
   return (
-    <nav className={DEMO_TEXT.gridMap} aria-label={DEMO_TEXT.cellMapTitle}>
+    <nav style={DEMO_GEOMETRY.map} className={DEMO_TEXT.gridMap} aria-label={DEMO_TEXT.cellMapTitle}>
       <div className={DEMO_TEXT.gridMapHeader}>
         <h2>{DEMO_TEXT.cellMapTitle}</h2>
         <span className={DEMO_TEXT.gridMapLegend}>{DEMO_TEXT.currentCellLegend}</span>

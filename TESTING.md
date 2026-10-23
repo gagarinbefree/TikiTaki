@@ -724,6 +724,22 @@ GREEN: all **76 Chrome desktop/touch E2E cases passed**. Typecheck, ESLint,
 Prettier, library/adapter builds, and the production demo build passed. Desktop
 and mobile screenshots confirmed the portrait field and absence of the panel.
 
+## Swipe field and map alignment (2026-10-23)
+
+RED: the desktop geometry assertion failed against the centered field and map
+below it. React and Vue now place the portrait field and map in one Bootstrap
+responsive flex row. The field keeps its phone width at the left edge; the map
+fills the remaining container width and stretches to the same height. The map
+can scroll internally. Narrow screens stack the two sections.
+
+Browser assertions compare the left edge, top alignment, equal heights, and
+right edge of the map against the layout container, alongside existing gesture,
+selection, lifecycle, and overflow checks.
+
+GREEN: all 76 Chrome desktop/touch E2E cases passed. Typecheck, ESLint,
+Prettier, library/adapter builds, and the demo production build passed.
+A desktop screenshot confirmed that the map fills the space beside the field.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

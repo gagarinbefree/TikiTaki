@@ -117,7 +117,7 @@ npm run demo
 
 The demos use locally bundled Bootstrap 6.0.0-alpha.1 CSS from the official release tag, with responsive columns, cards, utility classes, and theme-aware buttons. Bootstrap JavaScript is not included.
 
-Open `/react/` or `/vue/` at the Vite address printed in the terminal. Both demos show a centered 9:16 portrait swipe field with live component counters. Swipe to navigate; the former control panel has been removed. The interactive cell map below each view highlights the committed cell and supports pointer selection and keyboard activation.
+Open `/react/` or `/vue/` at the Vite address printed in the terminal. Both demos show a left-aligned 9:16 portrait swipe field with live component counters. Swipe to navigate; the former control panel has been removed. The interactive cell map beside each view (below it on narrow screens) highlights the committed cell and supports pointer selection and keyboard activation.
 
 ```sh
 npm run demo:build

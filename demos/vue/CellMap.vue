@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { DEMO_TEXT, DEMO_LABELS } from '../config';
+import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY } from '../config';
 import { cellMapRows, type CellMapProps } from '../shared';
 import type { Position } from 'tikitaki';
 
@@ -10,7 +10,7 @@ const rows = computed(() => cellMapRows(props));
 </script>
 
 <template>
-  <nav :class="DEMO_TEXT.gridMap" :aria-label="DEMO_TEXT.cellMapTitle">
+  <nav :style="DEMO_GEOMETRY.map" :class="DEMO_TEXT.gridMap" :aria-label="DEMO_TEXT.cellMapTitle">
     <div :class="DEMO_TEXT.gridMapHeader">
       <h2>{{ DEMO_TEXT.cellMapTitle }}</h2>
       <span :class="DEMO_TEXT.gridMapLegend">{{ DEMO_TEXT.currentCellLegend }}</span>

@@ -16,12 +16,12 @@ export const DEMO_TEXT = Object.freeze({
   dataAction: 'data-action',
   count: 'count',
   div: 'div',
-  viewport: 'border rounded-7 overflow-hidden bg-1 shadow-sm mx-auto',
+  viewport: 'border rounded-7 overflow-hidden bg-1 shadow-sm',
   dataDemoContainer: 'data-demo-container',
   ariaLabel: 'aria-label',
   viewportLabel: 'Свайп-сетка',
   nav: 'nav',
-  gridMap: 'card p-5 mt-5 mb-5',
+  gridMap: 'card p-5 flex-grow-1 overflow-auto',
   cellMapTitle: 'Карта ячеек',
   gridMapHeader: 'd-flex flex-wrap align-items-center justify-content-between gap-3 mb-3',
   span: 'span',
@@ -47,10 +47,10 @@ export const DEMO_TEXT = Object.freeze({
   cellTitle: 'fs-6xl fw-bold mb-0 fg-primary',
   headline: 'Два измерения. Один жест.',
   intro: 'Живые компоненты внутри сетки с разной длиной строк. Начало — A1.',
-  layout: 'd-flex justify-content-center',
+  layout: 'd-flex flex-column md:flex-row gap-5 align-items-stretch mb-5',
   dataDemoLayout: 'data-demo-layout',
   container: 'container py-5',
-  viewportColumn: 'w-100 text-center',
+  viewportColumn: 'flex-shrink-0',
   controls: 'col-12 md:col-4',
   panel: 'card p-5 bg-1',
   h3: 'h3',
@@ -108,7 +108,9 @@ export const DEMO_TEXT = Object.freeze({
 
 /** A 9:16 portrait viewport, at most 360px wide and 70svh tall; Bootstrap supplies its appearance. */
 export const DEMO_GEOMETRY = Object.freeze({
-  viewport: Object.freeze({ width: 'min(100%, 360px, 39.375svh)', aspectRatio: '9 / 16' }),
+  phoneColumn: Object.freeze({ width: 'min(100%, 360px, 39.375svh)' }),
+  map: Object.freeze({ minWidth: '0', minHeight: '0' }),
+  viewport: Object.freeze({ width: '100%', aspectRatio: '9 / 16' }),
   cell: Object.freeze({ height: '100%', boxSizing: 'border-box' as const }),
 });
 

@@ -101,7 +101,7 @@ for (const framework of ['react', 'vue'] as const) {
       );
       const mapBox = await map.boundingBox();
       const layoutBox = await page.locator('[data-demo-layout]').boundingBox();
-      expect(mapBox !== null && layoutBox !== null && mapBox.y >= layoutBox.y + layoutBox.height).toBe(true);
+      expect(mapBox !== null && layoutBox !== null && mapBox.x >= layoutBox.x && mapBox.y >= layoutBox.y).toBe(true);
       const destination = map.getByRole('button', { name: 'C3', exact: true });
       if (isMobile) {
         await destination.tap();
