@@ -3,7 +3,7 @@
 [![Tests and build](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml)
 [![Release](https://img.shields.io/github/v/release/gagarinbefree/TikiTaki?include_prereleases&sort=semver)](https://github.com/gagarinbefree/TikiTaki/releases)
 
-**Latest release:** <!-- release-version -->Not published yet<!-- /release-version -->
+**Latest release:** <!-- release-version -->v0.1.0-alpha.0.deploy.6.1<!-- /release-version -->
 
 A zero-runtime-dependency TypeScript engine for swipe navigation across a ragged two-dimensional grid. Each row can have a different positive length. The engine provides navigation, pointer gestures, bounded DOM rendering, and optional React/Vue adapters.
 
