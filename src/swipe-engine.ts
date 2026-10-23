@@ -1,4 +1,4 @@
-import { CORE_TEXT, CORE_MESSAGES, POINTER_TYPES, ORIGIN_POSITION } from './config';
+import { CORE_TEXT, CORE_MESSAGES, POINTER_TYPES, ORIGIN_POSITION, WHEEL_IDLE_MS } from './config';
 import { createNavigationModel, type NavigationModel } from './navigation';
 import type { Direction, Grid, Position } from './navigation';
 import { createGestureEngine, type GestureEngine } from './gesture';
@@ -142,6 +142,37 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
   let stateSuppressClick = false;
   let stateOwnsMarker = false;
   let statePreviousMarker: string | null = null;
+  let stateWheelTime: number | null = null;
+  /** Consume one vertical transition per wheel burst only inside the owned cell viewport. */
+  const stateWheel = (event: Event): void => {
+    guardEvent(() => {
+      const wheel = event as WheelEvent;
+      if (
+        event.defaultPrevented ||
+        wheel.ctrlKey ||
+        wheel.metaKey ||
+        wheel.shiftKey ||
+        !Number.isFinite(wheel.deltaY) ||
+        !Number.isFinite(wheel.deltaX) ||
+        wheel.deltaY === 0 ||
+        Math.abs(wheel.deltaY) <= Math.abs(wheel.deltaX) ||
+        !ownsEvent(event) ||
+        !readVisible()
+      )
+        return;
+      const viewport = stateContainer?.querySelector(CORE_TEXT.scopeDataTikitakiViewport);
+      if (!viewport || !event.composedPath().includes(viewport)) return;
+      if (event.cancelable) event.preventDefault();
+      const previous = stateWheelTime;
+      stateWheelTime = event.timeStamp;
+      if (readBusy() || (previous !== null && event.timeStamp - previous < WHEEL_IDLE_MS)) return;
+      const direction = wheel.deltaY > 0 ? CORE_TEXT.up : CORE_TEXT.down;
+      const reporter = stateReporter;
+      void navigate(direction).catch((error: unknown) => {
+        reporter?.(errorFrom(error));
+      });
+    });
+  };
   /** Accept an eligible primary pointer and acquire capture on its original element. */
   const stateDown = (event: Event): void => {
     guardEvent(() => {
@@ -400,6 +431,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
         }
       });
     }
+    stateWheelTime = null;
     stateModel = null;
     stateContainer = null;
     stateView = null;
@@ -751,6 +783,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     statePreviousMarker = container.getAttribute(CORE_TEXT.dataTikitakiEngine);
     container.setAttribute(CORE_TEXT.dataTikitakiEngine, CORE_TEXT.empty);
     stateOwnsMarker = true;
+    listen(container, CORE_TEXT.wheel, stateWheel);
     listen(container, CORE_TEXT.pointerdown, stateDown);
     listen(container, CORE_TEXT.pointermove, stateMove);
     listen(container, CORE_TEXT.pointerup, stateUp);

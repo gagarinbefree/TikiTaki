@@ -7,6 +7,8 @@ export const DEFAULT_GESTURE_OPTIONS: Readonly<GestureOptions> = Object.freeze({
   animationDuration: 300,
   edgeResistance: 0.35,
 });
+/** Quiet period in milliseconds separating wheel bursts, including trackpad inertia. */
+export const WHEEL_IDLE_MS = 160;
 /** Velocity history duration in milliseconds. */
 export const VELOCITY_WINDOW_MS = 80;
 /** Minimum spacing between stored velocity samples, in milliseconds. */
@@ -129,6 +131,7 @@ export const CORE_TEXT = Object.freeze({
   onPositionChange: 'onPositionChange',
   onError: 'onError',
   error: 'error',
+  wheel: 'wheel',
   pointerdown: 'pointerdown',
   pointermove: 'pointermove',
   pointerup: 'pointerup',

@@ -644,3 +644,86 @@ describe('grid, resize, and cleanup', () => {
     expect(mount).not.toHaveBeenCalled();
   });
 });
+
+describe('wheel navigation', () => {
+  function wheel(target: EventTarget, deltaY: number, time: number, options: WheelEventInit = {}) {
+    const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY, ...options });
+    Object.defineProperty(event, 'timeStamp', { value: time });
+    target.dispatchEvent(event);
+    return event;
+  }
+  it('animates down and back up, resetting the column only after successful transitions', async () => {
+    const { container, engine } = setup();
+    expect(wheel(current(container), -100, 0).defaultPrevented).toBe(true);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 9 });
+    expect(wheel(current(container), 100, 200).defaultPrevented).toBe(true);
+    expect(engine.getPosition()).toEqual({ row: 0, col: 9 });
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 1, col: 0 });
+    wheel(current(container), -1, 500, { deltaMode: WheelEvent.DOM_DELTA_LINE });
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 0 });
+  });
+  it('preserves the last-row column at the boundary and resets it when moving up', async () => {
+    const { container, engine } = setup({ initialPosition: { row: 3, col: 1 } });
+    wheel(current(container), 100, 0);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 3, col: 1 });
+    wheel(current(container), -100, 200);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 2, col: 0 });
+  });
+  it('consumes a continuous wheel burst once even when inertia outlasts the animation', async () => {
+    const { container, engine, changes } = setup();
+    wheel(current(container), 100, 0);
+    wheel(current(container), 100, 100);
+    await finish();
+    wheel(current(container), 50, 200);
+    wheel(current(container), 10, 300);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 1, col: 0 });
+    expect(changes).toHaveBeenCalledTimes(1);
+    wheel(current(container), 100, 600);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 2, col: 0 });
+  });
+  it('preserves browser zoom, horizontal scrolling, cancelled events, and scrolling outside cells', async () => {
+    const { container, engine } = setup();
+    const cell = current(container);
+    expect(wheel(cell, 100, 0, { ctrlKey: true }).defaultPrevented).toBe(false);
+    expect(wheel(cell, 100, 200, { shiftKey: true }).defaultPrevented).toBe(false);
+    expect(wheel(cell, 5, 400, { deltaX: 100 }).defaultPrevented).toBe(false);
+    expect(wheel(cell, 0, 600).defaultPrevented).toBe(false);
+    expect(wheel(container, 100, 800).defaultPrevented).toBe(false);
+    cell.addEventListener(
+      'wheel',
+      (event) => {
+        event.preventDefault();
+      },
+      { once: true },
+    );
+    wheel(cell, 100, 1000);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 9 });
+  });
+  it('blocks conflicts during pointer tracking and removes the listener on destroy', async () => {
+    const { container, engine } = setup();
+    pointer(current(container), 'pointerdown', 150, 300, 0);
+    wheel(current(container), 100, 0);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 9 });
+    engine.destroy();
+    expect(wheel(container, 100, 500).defaultPrevented).toBe(false);
+    expect(frames.size).toBe(0);
+  });
+  it('routes wheel input only to the nearest independent engine', async () => {
+    const outer = setup();
+    const inner = setup();
+    current(outer.container).append(inner.container);
+    wheel(current(inner.container), 100, 0);
+    await finish();
+    expect(inner.engine.getPosition()).toEqual({ row: 1, col: 0 });
+    expect(outer.engine.getPosition()).toEqual({ row: 0, col: 9 });
+  });
+});

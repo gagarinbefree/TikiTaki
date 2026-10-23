@@ -487,3 +487,16 @@ engine.destroy при cleanup; удаление одного Portals-компо�
 При обновлении props grid вызывайте updateGrid, не пересоздавайте engine на каждый
 render. Vue engine храните в shallowRef, для явного владения ресурсом.
 SSR не создаёт DOM engine; установка выполняется в useEffect/onMounted.
+
+## Mouse wheel navigation
+
+The DOM controller handles vertical wheel input only inside its owned cell viewport.
+Positive deltaY navigates to the next row; negative deltaY navigates to the previous
+row. Successful row changes reset col to zero; boundaries preserve the entire position.
+Each wheel burst starts at most one transition. A quiet interval of 160ms separates
+bursts (WHEEL_IDLE_MS in src/config.ts), and conflicting pointer gestures or settling
+transitions block wheel navigation without queuing. Delta units do not affect direction.
+The page does not scroll while vertical wheel input is consumed over the viewport,
+including at boundaries. Outside the viewport, page and map scrolling remain native.
+Horizontal gestures, Shift-wheel, Ctrl/Meta-wheel zoom, and events already cancelled
+by child content are ignored. destroy() removes the non-passive wheel listener.

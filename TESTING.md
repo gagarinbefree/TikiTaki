@@ -740,6 +740,23 @@ GREEN: all 76 Chrome desktop/touch E2E cases passed. Typecheck, ESLint,
 Prettier, library/adapter builds, and the demo production build passed.
 A desktop screenshot confirmed that the map fills the space beside the field.
 
+## Mouse wheel navigation (2026-10-23)
+
+RED: three new wheel assertions failed before implementation (48 existing and
+non-navigation cases passed). GREEN: the controller now consumes vertical wheel
+events over its owned viewport, reuses animated navigation, and groups inertia
+with a 160ms quiet interval. Tests cover successful row resets, top and bottom
+boundaries, burst suppression after settling, pointer conflicts, nested engines,
+zoom/horizontal/cancelled input, outside input, and listener cleanup on destroy.
+
+Real Chrome wheel input in both framework demos checks A10 to B1 to A1, map
+highlighting, stable page scroll while hovering a cell, and native page scroll
+outside the viewport. The tests run in desktop and touch-emulated Chrome projects.
+
+Final wheel verification: 80/80 Chrome E2E passed. The full unit run passed
+306 tests before the final bottom-boundary case; the expanded controller suite
+then passed all 52 cases. Typecheck, ESLint, Prettier, and production builds passed.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению
