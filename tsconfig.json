@@ -34,5 +34,5 @@
     "demos/**/*.tsx",
     "demos/**/*.vue"
   ],
-  "vueCompilerOptions": { "strictTemplates": true }
+  "vueCompilerOptions": { "strictTemplates": true, "dataAttributes": ["data-*"] }
 }
