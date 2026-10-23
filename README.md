@@ -1,7 +1,7 @@
 # TikiTaki
 
 [![Tests and build](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml)
-[![Release](docs/badges/release.svg)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
+[![Release](docs/badges/release.svg?version=0.1.0-alpha.0.deploy.8.1)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
 
 **Latest release:** <!-- release-version -->v0.1.0-alpha.0.deploy.8.1<!-- /release-version -->
 
@@ -10,6 +10,8 @@ A zero-runtime-dependency TypeScript engine for swipe navigation across a ragged
 The project is a private alpha. Google Chrome Desktop and Chrome touch emulation are tested. Physical Android verification is deferred at the user's request. There is no video player, backend, recommendation service, or media upload system.
 
 Both framework demos open at **A1** and return to A1 after remount. The **Go to A10** control remains available for trying navigation from the end of the first row.
+
+The demo interface uses the original **Twitter Bootstrap 2.0.2** styles, responsive grid, buttons, labels, wells, and Glyphicons. Assets are vendored locally with their notices in `demos/vendor/bootstrap-2.0.2`; no CDN, Bootstrap JavaScript, or jQuery is required. Only the swipe viewport dimensions and cell sizing are local geometry settings. Demo styling does not add runtime dependencies to the core package.
 
 ## Functional API
 

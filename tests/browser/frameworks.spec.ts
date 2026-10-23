@@ -79,7 +79,7 @@ for (const framework of ['react', 'vue'] as const) {
           .evaluate((element) => getComputedStyle(element).backgroundColor),
       );
       const mapBox = await map.boundingBox();
-      const layoutBox = await page.locator('.layout').boundingBox();
+      const layoutBox = await page.locator('[data-demo-layout]').boundingBox();
       expect(mapBox !== null && layoutBox !== null && mapBox.y >= layoutBox.y + layoutBox.height).toBe(true);
       const destination = map.getByRole('button', { name: 'C3', exact: true });
       if (isMobile) {
@@ -148,7 +148,7 @@ for (const framework of ['react', 'vue'] as const) {
         } else {
           if (cancel) {
             await page.evaluate(() => {
-              const active = document.querySelector('[data-tikitaki-role="current"] .cell');
+              const active = document.querySelector('[data-tikitaki-role="current"] [data-item]');
               active?.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerId: 1 }));
             });
           }

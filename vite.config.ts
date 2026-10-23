@@ -20,6 +20,8 @@ export default defineConfig(({ command }) => {
     },
     define: { __VUE_OPTIONS_API__: false, __VUE_PROD_DEVTOOLS__: false, __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false },
     build: {
+      /** Preserve the upstream Bootstrap 2 stylesheet, including declarations for old IE. */
+      cssMinify: false,
       outDir: 'dist',
       rolldownOptions: {
         input: { home: path('./demos/index.html'), react: path('./demos/react/index.html'), vue: path('./demos/vue/index.html') },

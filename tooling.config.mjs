@@ -28,9 +28,9 @@ export const VERSION_CONFIG = Object.freeze({
   outputDirectory: 'demos/dist',
   tag: 'deploy',
   development: 'development',
-  element: 'output',
+  element: 'p',
   attribute: 'data-demo-version',
-  className: 'deployment-version',
+  className: 'container muted pagination-centered',
   label: 'Version: ',
   cache: 'no-store',
   invalidVersion: 'Invalid package version',
@@ -38,6 +38,7 @@ export const VERSION_CONFIG = Object.freeze({
   invalidCommit: 'A full source commit SHA is required',
   readmePath: 'README.md',
   badgePath: 'docs/badges/release.svg',
+  badgeImagePattern: /!\[Release\]\(docs\/badges\/release\.svg(?:\?[^)]*)?\)/g,
   versionPattern: /^\d+\.\d+\.\d+(?:-[A-Za-z\d.-]+)?$/,
   readmeMarker: /<!-- release-version -->[\s\S]*?<!-- \/release-version -->/g,
   invalidReadme: 'README must contain exactly one release-version marker',
@@ -72,6 +73,6 @@ export const BROWSER_CONFIG = Object.freeze({
 
 /** Paths excluded from formatting, including the unchanged mandatory specification. */
 export const FORMAT_IGNORE = Object.freeze({
-  directories: Object.freeze(['node_modules', 'dist', 'coverage', 'test-results', 'playwright-report']),
+  directories: Object.freeze(['node_modules', 'dist', 'coverage', 'test-results', 'playwright-report', 'vendor']),
   files: Object.freeze(['AGENTS.md', 'package-lock.json']),
 });

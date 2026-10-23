@@ -638,6 +638,28 @@ Final checks passed all **306 unit/integration tests**, typecheck, ESLint, and
 formatting. A Google Chrome screenshot confirmed that the generated SVG displays
 the release label and complete version without clipping.
 
+## Twitter Bootstrap 2.0.2 demo (2026-10-23)
+
+RED: both new desktop presentation cases failed because the Bootstrap navbar and
+responsive columns were absent. GREEN passed the four desktop/touch presentation
+cases. After refining the navigation layout, the full Chrome suite passed
+**76/76 cases**. Unit/integration tests passed **307/307 in 12 files**; typecheck,
+ESLint, and library/adapter/demo production builds passed.
+
+The home, React, and Vue pages now use Bootstrap's navbar, pills, fluid grid,
+hero-unit, wells, buttons, labels, and icon sprites. The former demo stylesheet
+was removed. Only viewport dimensions and cell box sizing remain as local geometry.
+Bootstrap CSS, responsive CSS, and both icon sprites were byte-compared with the
+official `v2.0.2` tag and match. Vendor files are excluded from formatting. CSS
+minification is disabled to preserve upstream legacy IE declarations without
+modern minifier parse failures. No Bootstrap JS or jQuery was added.
+
+Desktop and narrow-screen React/Vue screenshots verified layout and current-cell
+highlighting. Browser checks cover no horizontal page overflow, loaded image
+assets, A1 startup, cell-map selection, real gestures, updates, and remount.
+An additional failing unit assertion preceded version-specific release-image
+URLs, preventing a browser from reusing an older badge URL after a new release.
+
 ## Deferred device verification
 
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению

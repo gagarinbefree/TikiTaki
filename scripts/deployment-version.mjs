@@ -41,7 +41,8 @@ export function updateReadmeRelease(source, version) {
   if (matches.length !== 1) {
     throw new Error(VERSION_CONFIG.invalidReadme);
   }
-  const result = source.replace(VERSION_CONFIG.readmeMarker, `<!-- release-version -->v${version}<!-- /release-version -->`);
+  const marked = source.replace(VERSION_CONFIG.readmeMarker, `<!-- release-version -->v${version}<!-- /release-version -->`);
+  const result = marked.replace(VERSION_CONFIG.badgeImagePattern, `![Release](${VERSION_CONFIG.badgePath}?version=${version})`);
 
   return result;
 

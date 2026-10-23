@@ -49,3 +49,10 @@ it('renders a repository-owned release badge with the published version', () => 
   expect(badge).not.toContain('shields.io');
   expect(() => createReleaseBadge('<script>')).toThrow();
 });
+
+it('changes the release image URL with its version to invalidate image caches', () => {
+  const source = '[![Release](docs/badges/release.svg?version=old)](/releases)\n<!-- release-version -->old<!-- /release-version -->';
+  const result = updateReadmeRelease(source, '0.1.0-alpha.0.deploy.8.1');
+  expect(result).toContain('docs/badges/release.svg?version=0.1.0-alpha.0.deploy.8.1');
+  expect(result).not.toContain('version=old');
+});

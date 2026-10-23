@@ -14,7 +14,7 @@ const server = createServer((request, response) => {
         ? 'demos/dist/index.html'
         : publishedPath !== null && /^(react|vue)\/$/.test(publishedPath)
           ? `demos/dist/${publishedPath}index.html`
-          : publishedPath !== null && /^assets\/[a-zA-Z0-9_-]+\.(js|css)$/.test(publishedPath)
+          : publishedPath !== null && /^assets\/[a-zA-Z0-9_-]+\.(js|css|png)$/.test(publishedPath)
             ? `demos/dist/${publishedPath}`
             : path === '/'
               ? 'tests/browser/renderer.html'
@@ -22,7 +22,7 @@ const server = createServer((request, response) => {
                 ? 'tests/browser/swipe.html'
                 : /^\/demos\/(react|vue)\/$/.test(path)
                   ? `demos/dist/${path.split('/')[2]}/index.html`
-                  : /^\/assets\/[a-zA-Z0-9_-]+\.(js|css)$/.test(path)
+                  : /^\/assets\/[a-zA-Z0-9_-]+\.(js|css|png)$/.test(path)
                     ? `demos/dist${path}`
                     : /^\/dist\/[a-z-]+(?:\.js)?$/.test(path)
                       ? path.endsWith('.js')
@@ -48,11 +48,13 @@ const server = createServer((request, response) => {
       response.writeHead(200, {
         'content-type': file.endsWith('.json')
           ? 'application/json; charset=utf-8'
-          : file.endsWith('.html')
-            ? 'text/html; charset=utf-8'
-            : file.endsWith('.css')
-              ? 'text/css; charset=utf-8'
-              : 'text/javascript; charset=utf-8',
+          : file.endsWith('.png')
+            ? 'image/png'
+            : file.endsWith('.html')
+              ? 'text/html; charset=utf-8'
+              : file.endsWith('.css')
+                ? 'text/css; charset=utf-8'
+                : 'text/javascript; charset=utf-8',
         'cache-control': 'no-store',
       });
       response.end(content);
