@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { preparePackageManifest, preparePackageLock } from '../scripts/package-release.mjs';
+import { preparePackageManifest, preparePackageLock, resolvePublicationTag } from '../scripts/package-release.mjs';
 
 it('sets a stable public version without mutating source manifests', () => {
   const source = { name: 'tikitaki', version: '0.1.3', private: true, devDependencies: { typescript: '5.9.3' } };
@@ -33,4 +33,16 @@ it('synchronizes root lockfile metadata without modifying dependency resolutions
 it.each(['0.1.4-alpha.0', 'v0.1.4', '01.1.4', 'invalid'])('rejects invalid public release versions: %s', (version) => {
   expect(() => preparePackageManifest({ name: 'tikitaki' }, version)).toThrow();
   expect(() => preparePackageLock({ packages: { '': {} } }, version)).toThrow();
+});
+
+it('resolves automatic publication to the exact completed run artifact instead of the latest release', () => {
+  expect(resolvePublicationTag('', ['verified-demo', 'verified-npm-packages', 'release-0.1.6'])).toBe('v0.1.6');
+});
+it('accepts a stable manual retry tag without requiring workflow artifacts', () => {
+  expect(resolvePublicationTag('v0.1.5', [])).toBe('v0.1.5');
+});
+it('rejects missing, ambiguous, and invalid publication targets', () => {
+  expect(() => resolvePublicationTag('', ['verified-demo'])).toThrow();
+  expect(() => resolvePublicationTag('', ['release-0.1.5', 'release-0.1.6'])).toThrow();
+  expect(() => resolvePublicationTag('v0.1.5-alpha.0', ['release-0.1.6'])).toThrow();
 });

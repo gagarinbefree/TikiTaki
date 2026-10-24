@@ -2,6 +2,7 @@
 
 [![Tests and build](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml)
 [![Release](docs/badges/release.svg?version=0.1.5)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
+[![npm version](https://img.shields.io/npm/v/tikitaki.svg)](https://www.npmjs.com/package/tikitaki)
 
 [Live demo](https://gagarinbefree.github.io/TikiTaki/) · [Releases](https://github.com/gagarinbefree/TikiTaki/releases) · [Report an issue](https://github.com/gagarinbefree/TikiTaki/issues/new)
 
@@ -291,7 +292,7 @@ No application or maintainer invitation is needed to start contributing. Pick an
 
 The [GitHub Actions workflow](./.github/workflows/ci-pages.yml) validates pull requests and pushes to `main`. It runs type checks, lint, formatting, unit/integration tests, package validation, production builds, and Chrome desktop/touch E2E. PR runs do not publish upstream releases or deploy upstream Pages. A new commit cancels the earlier pipeline for the same branch or PR.
 
-After a successful `main` run, the tested demo artifact is deployed to [GitHub Pages](https://gagarinbefree.github.io/TikiTaki/) and a matching [GitHub Release](https://github.com/gagarinbefree/TikiTaki/releases) is created. Stable release versions advance by one patch, such as `v0.1.1` → `v0.1.2`. The release includes the demo archive, `version.json`, npm package tarballs, and their integrity manifest. A bot updates the README badge and package versions. npm publication is a separate maintainer action after first-time account setup. Contributors do not need to edit those generated release fields in feature PRs.
+After a successful `main` run, the tested demo artifact is deployed to [GitHub Pages](https://gagarinbefree.github.io/TikiTaki/) and a matching [GitHub Release](https://github.com/gagarinbefree/TikiTaki/releases) is created. Stable release versions advance by one patch, such as `v0.1.1` → `v0.1.2`. The release includes the demo archive, `version.json`, npm package tarballs, and their integrity manifest. A bot updates the README badge and package versions. After the successful main workflow finishes, npm publication starts automatically through the trusted publisher. A manual run remains available for retries. Contributors do not need to edit those generated release fields in feature PRs.
 
 If you want Pages for your own fork, enable Actions, select **Settings → Pages → Source → GitHub Actions**, and allow the `github-pages` environment to deploy from your fork's `main`. If you rename the repository, update `DEPLOYMENT_CONFIG.basePath` in [tooling.config.mjs](./tooling.config.mjs). Fork deployments and releases belong to the fork; upstream releases follow the upstream workflow.
 

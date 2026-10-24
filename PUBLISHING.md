@@ -59,14 +59,16 @@ The repository includes `.github/workflows/npm-publish.yml`. Its job uses a GitH
 
 A new npm trusted-publisher configuration must complete a successful publish within two days or it expires. Enable direct `npm publish` explicitly: current npm settings may otherwise allow only staged publication. See the [official trusted publishing guide](https://docs.npmjs.com/trusted-publishers/).
 
-## Subsequent publication through GitHub Actions
+## Automatic publication through GitHub Actions
 
-1. Merge the reviewed change into `main` and wait for the full tests/build/Pages/Release workflow to pass.
-2. Open **Actions → Publish npm packages → Run workflow** on `main`.
-3. Enter the existing stable release tag, for example `v0.1.5`.
-4. Approve the `npm` environment if configured. The job downloads the release archives, verifies their checksums and version, and publishes them in dependency order using OIDC.
+1. Merge the reviewed change into `main`. The complete tests/build/Pages/Release workflow must succeed.
+2. Its successful `workflow_run` event automatically starts **Publish npm packages**. Failed, cancelled, pull-request, and fork runs cannot publish.
+3. The publication job selects the version from the exact completed run's release artifact. It does not guess from the latest release, so a newer concurrent release cannot change the publication target.
+4. The job downloads those release archives, verifies checksums and version, and publishes the core followed by all four adapters through OIDC.
 5. Verify registry metadata and test installation in a clean application before announcing the release.
 
-Publication runs are serialized and are not cancelled midway by a newer publication request. Ordinary CI runs still cancel outdated tests and builds on the same branch. Publication is manual rather than triggered by every demo deployment.
+To retry manually, open **Actions → Publish npm packages → Run workflow** on `main` and enter the existing stable release tag. Previously published identical archives are skipped. The workflow filename and `npm` environment are unchanged, so the existing npm Trusted Publisher settings continue to apply.
+
+Publication runs are serialized and are not cancelled midway by a newer publication request. Ordinary CI runs still cancel outdated tests and builds on the same branch. Every successful main release is published automatically; manual dispatch is a recovery path.
 
 After the initial packages exist, verify that the README installation commands resolve the intended public packages. Keep package metadata, adapter guides, and the registry pages consistent.

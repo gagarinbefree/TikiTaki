@@ -1,6 +1,10 @@
 name: Publish npm packages
 
 on:
+  workflow_run:
+    workflows: ['Test, build and release']
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag:
@@ -9,6 +13,7 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: read
   id-token: write
 
@@ -18,7 +23,13 @@ concurrency:
 
 jobs:
   publish:
-    if: github.repository == 'gagarinbefree/TikiTaki' && github.ref == 'refs/heads/main'
+    if: >-
+      github.repository == 'gagarinbefree/TikiTaki' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: npm
@@ -30,21 +41,30 @@ jobs:
         with:
           node-version: 24
           package-manager-cache: false
-      - name: Check the requested stable release tag
+      - name: Resolve the release produced by the successful source run
+        id: release
         env:
-          RELEASE_TAG: ${{ inputs.tag }}
-        run: node --input-type=module -e "if (!/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(process.env.RELEASE_TAG)) throw new Error('Expected a stable release tag')"
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          MANUAL_TAG: ${{ inputs.tag }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_run" ]; then
+            RELEASE_ARTIFACTS=$(gh api "repos/$GH_REPO/actions/runs/$SOURCE_RUN_ID/artifacts" --jq '[.artifacts[] | select(.expired == false) | .name]')
+            export RELEASE_ARTIFACTS
+          fi
+          node scripts/resolve-publication.mjs
       - name: Download the verified release archives
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: gh release download "$RELEASE_TAG" --pattern '*.tgz' --pattern 'npm-release.json' --dir .artifacts/npm-release
       - name: Verify checksums and release identity
         env:
-          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: npm run release:publish -- .artifacts/npm-release --verify-only
       - name: Publish core, then adapters using npm trusted publishing
         env:
-          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
         run: npm run release:publish

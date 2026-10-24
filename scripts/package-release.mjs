@@ -4,6 +4,22 @@ export function validatePublicVersion(version) {
   if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) throw new Error('Expected a stable major.minor.patch release version');
 }
 
+/** Resolve a manual retry or the exact release artifact produced by the completed source run.
+ * @param {string} manualTag
+ * @param {readonly string[]} artifactNames
+ */
+export function resolvePublicationTag(manualTag, artifactNames) {
+  let tag = manualTag;
+  if (!tag) {
+    const releases = artifactNames.filter((name) => /^release-\d+\.\d+\.\d+$/.test(name));
+    if (releases.length !== 1) throw new Error('Expected exactly one stable release artifact from the completed workflow');
+    tag = `v${releases[0]?.slice('release-'.length)}`;
+  }
+  if (!tag.startsWith('v')) throw new Error('Expected a v-prefixed release tag');
+  validatePublicVersion(tag.slice(1));
+  return tag;
+}
+
 /** Prepare an immutable manifest snapshot for the chosen public release. @param {PackageManifest} manifest @param {string} version */
 export function preparePackageManifest(manifest, version) {
   validatePublicVersion(version);
