@@ -24,15 +24,14 @@ Install the core in your application:
 npm install tikitaki
 ```
 
-For a framework integration, also install the adapter you need:
+For a framework integration, choose the matching installation command:
 
-```sh
-npm install tikitaki @tikitaki_gagarinbefree/react
-# Or choose one of the other adapters:
-npm install tikitaki @tikitaki_gagarinbefree/vue
-npm install tikitaki @tikitaki_gagarinbefree/svelte
-npm install tikitaki @tikitaki_gagarinbefree/angular
-```
+| Framework | Installation                                           |
+| --------- | ------------------------------------------------------ |
+| React     | `npm install tikitaki @tikitaki_gagarinbefree/react`   |
+| Vue       | `npm install tikitaki @tikitaki_gagarinbefree/vue`     |
+| Svelte    | `npm install tikitaki @tikitaki_gagarinbefree/svelte`  |
+| Angular   | `npm install tikitaki @tikitaki_gagarinbefree/angular` |
 
 Your application supplies the adapter's framework peer dependencies. Install only the adapter for your framework. The [core](https://www.npmjs.com/package/tikitaki) and adapters under [@tikitaki_gagarinbefree](https://www.npmjs.com/org/tikitaki_gagarinbefree) are available from npm. To install an archived build or inspect its contents, use the tested tarballs from [GitHub Releases](https://github.com/gagarinbefree/TikiTaki/releases) or build from source below. Release downloads include an integrity manifest; maintainer publication instructions are in [PUBLISHING.md](./PUBLISHING.md).
 
