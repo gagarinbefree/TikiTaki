@@ -31,7 +31,7 @@ npm install tikitaki @tikitaki_gagarinbefree/svelte
 npm install tikitaki @tikitaki_gagarinbefree/angular
 ```
 
-Your application supplies the adapter's framework peer dependencies. Install only the adapter for your framework. If a package has not yet been published to the registry, install a tested tarball from [GitHub Releases](https://github.com/gagarinbefree/TikiTaki/releases) or build from source below. Release downloads include an integrity manifest; maintainer publication instructions are in [PUBLISHING.md](./PUBLISHING.md).
+Your application supplies the adapter's framework peer dependencies. Install only the adapter for your framework. The [core](https://www.npmjs.com/package/tikitaki) and adapters under [@tikitaki_gagarinbefree](https://www.npmjs.com/org/tikitaki_gagarinbefree) are available from npm. To install an archived build or inspect its contents, use the tested tarballs from [GitHub Releases](https://github.com/gagarinbefree/TikiTaki/releases) or build from source below. Release downloads include an integrity manifest; maintainer publication instructions are in [PUBLISHING.md](./PUBLISHING.md).
 
 ### Build from source
 
