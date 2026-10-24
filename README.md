@@ -3,176 +3,283 @@
 [![Tests and build](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/ci-pages.yml)
 [![Release](docs/badges/release.svg?version=0.1.1)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
 
-[Live demo](https://gagarinbefree.github.io/TikiTaki/)
+[Live demo](https://gagarinbefree.github.io/TikiTaki/) · [Releases](https://github.com/gagarinbefree/TikiTaki/releases) · [Report an issue](https://github.com/gagarinbefree/TikiTaki/issues/new)
 
 **Latest release:** <!-- release-version -->v0.1.1<!-- /release-version -->
 
-A zero-runtime-dependency TypeScript engine for swipe navigation across a ragged two-dimensional grid. Each row can have a different positive length. The engine provides navigation, pointer gestures, bounded DOM rendering, and optional React, Vue, Svelte, and Angular adapters.
+TikiTaki is a TypeScript library for swipe navigation through a two-dimensional grid whose rows can have different lengths. Use it for paged interfaces, galleries, stories, or component-based feeds. You supply the content; TikiTaki handles navigation, pointer gestures, animation, and cell lifecycle.
 
-The project is a private alpha. Google Chrome Desktop and Chrome touch emulation are tested. Physical Android verification is deferred at the user's request. There is no video player, backend, recommendation service, or media upload system.
+The core has **zero runtime dependencies**. It provides ESM exports and TypeScript declarations, with optional React, Vue, Svelte, and Angular adapters. Rendering mounts the current cell and valid neighboring cells instead of the entire grid. Multiple independent views are supported.
 
-All four framework demos open at **A1** and return to A1 after remount. Select cells on the interactive map or swipe to navigate.
+The project is under active development. Google Chrome Desktop and Chrome touch emulation are tested; physical Android verification is still pending. Other browsers are outside the current support target.
 
-The demos use locally bundled Bootstrap 6.0.0-alpha.1 CSS from the official release tag. Layout uses Bootstrap cards, responsive columns, utility classes, and theme-aware buttons. No Bootstrap JavaScript is included. The core remains free of runtime dependencies.
+## Install in your project
 
-## Functional API
+Packages are not currently published to the npm registry. Build a checkout and install the generated package tarball. GitHub Releases contain the demo archive and deployment metadata, rather than installable library packages.
 
-Create independent controllers through factories. State lives in private closures; operations do not use classes, prototypes, singletons, or a `this` receiver. Methods can be destructured safely.
+Use Node.js 24 and npm 11 for building and contributing. Git and Google Chrome are needed for the contributor workflow and browser tests.
+
+```sh
+git clone https://github.com/gagarinbefree/TikiTaki.git
+cd TikiTaki
+npm ci
+npm run build
+npm pack
+```
+
+For a reproducible integration, check out a release tag before installing dependencies, for example `git checkout v0.1.1`. `npm pack` prints the generated tarball filename. Install that file from your application's directory:
+
+```sh
+npm install /absolute/path/to/the-generated-package.tgz
+```
+
+Release tags and the version in `package.json` are currently managed separately: the tarball name follows `package.json`, not the GitHub release tag. Keep the checked-out tag or commit in your integration notes.
+
+Optional adapters can be packed from the same built checkout:
+
+```sh
+npm pack ./packages/react
+npm pack ./packages/vue
+npm pack ./packages/svelte
+npm pack ./packages/angular
+```
+
+Install the core tarball and the adapter tarball you need together in the consuming project. Your application supplies the adapter's framework peer dependencies. Check the corresponding adapter guide for supported versions and a complete integration example.
+
+## Quick start: plain TypeScript
+
+Create a container with explicit dimensions:
+
+```html
+<div id="swipe-view" style="width: 100%; height: 100dvh"></div>
+```
+
+Mount the engine after the container exists:
 
 ```ts
 import { createSwipeEngine } from 'tikitaki/dom';
 
-/** Mount an independent swipe view; the caller owns its cleanup. */
-export function mount(container: HTMLElement) {
-  const engine = createSwipeEngine({
-    container,
-    grid: [['A1', 'A2'], ['B1'], ['C1', 'C2', 'C3']],
-    renderCell(item) {
-      const element = container.ownerDocument.createElement('div');
-      element.textContent = item;
+const container = document.querySelector<HTMLElement>('#swipe-view');
+if (!container) throw new Error('Missing swipe container');
 
-      return element;
-    },
-    onPositionChange(position, previous) {
-      console.log(previous, position);
-    },
-    onError(error) {
-      console.error(error);
-    },
-  });
+const engine = createSwipeEngine({
+  container,
+  grid: [['A1', 'A2', 'A3'], ['B1'], ['C1', 'C2']],
+  renderCell(item) {
+    const element = document.createElement('article');
+    element.textContent = item;
 
-  return engine;
-}
+    return element;
+  },
+  onPositionChange(position, previous) {
+    console.log('Position changed', previous, position);
+  },
+  onError(error) {
+    console.error('Swipe interaction failed', error);
+  },
+});
+
+await engine.navigate('up'); // A1 → B1
+await engine.goTo({ row: 2, col: 1 }); // B1 → C2
+engine.updateGrid([['A1', 'A2'], ['B1']]);
+
+// Call when the owning view is removed.
+engine.destroy();
 ```
 
-Give the container an explicit CSS size, such as `height: 100dvh`. The engine applies `touch-action: none` only to its container. Call `engine.destroy()` when the view is removed.
+The grid must contain at least one row, and every row must contain at least one item. Items can be any type. The engine copies the grid structure while preserving item identity. `initialPosition` defaults to `{ row: 0, col: 0 }`.
 
-| Operation             | Behavior                                                                                              |
-| --------------------- | ----------------------------------------------------------------------------------------------------- |
-| `getPosition()`       | Read a frozen snapshot of the last committed position                                                 |
-| `navigate(direction)` | Animate one neighboring transition; resolve `true` after commit                                       |
-| `goTo(position)`      | Immediately show any valid cell; resolve whether the position changed                                 |
-| `updateGrid(grid)`    | Validate a replacement grid, cancel pending motion, clamp coordinates when needed, and update hosts   |
-| `destroy()`           | Release listeners, pointer capture, observers, RAF work, and mounted content; repeated calls are safe |
+Keep the container dedicated to the engine. The DOM controller manages its cell hosts and applies `touch-action: none` locally. Create it on the client; destroy it when the owning route, component, or view unmounts. Bootstrap and the demo styles are not required by the library.
 
-Navigation promises resolve `false` at a boundary, for the same target, while busy, on cancellation, or after destruction. Commands are not queued. Invalid arguments reject while the controller is alive. Position callbacks run after host synchronization and may start another command. A callback exception rejects its operation after the position has committed. See [API.md](./API.md) for the complete lifecycle and error contract.
+## Navigation and API
 
-## Navigation rules
+Directions describe the swipe, so moving content upward opens the next row:
 
-- Swipe up: next row, always column zero.
-- Swipe down: previous row, always column zero.
-- Swipe left: next column in the current row.
-- Swipe right: previous column in the current row.
-- An unavailable transition preserves the entire position, including the column.
-- A gesture commits at most one neighbor and locks to one axis.
+| Direction | Destination                        |
+| --------- | ---------------------------------- |
+| `up`      | Next row, always column `0`        |
+| `down`    | Previous row, always column `0`    |
+| `left`    | Next column in the current row     |
+| `right`   | Previous column in the current row |
 
-For example: `A10 → up → B1 → up → C1 → left → C2 → down → B1 → down → A1`. Previous row columns are never remembered.
+An unavailable transition preserves the complete position, including the column. Previous row columns are never remembered. A gesture locks to one axis and moves at most one neighboring cell. For example: `A3 → up → B1 → up → C1 → left → C2 → down → B1 → down → A1`.
 
-## Headless layers
+Mouse-wheel input over a cell also navigates vertically: wheel down opens the next row, wheel up opens the previous row. A wheel burst produces at most one transition; horizontal input and browser zoom gestures are ignored.
 
-The `tikitaki` entry point works without DOM globals or DOM TypeScript libraries.
+| Method                | Contract                                                                     |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `getPosition()`       | Return a frozen snapshot of the committed position                           |
+| `navigate(direction)` | Animate to a neighbor; resolve `true` after the transition commits           |
+| `goTo(position)`      | Immediately show a valid target; resolve whether the position changed        |
+| `updateGrid(grid)`    | Validate and replace data, cancel motion, and clamp coordinates if necessary |
+| `destroy()`           | Release listeners, observers, mounted cells, and animation work; idempotent  |
+
+Navigation promises resolve `false` at boundaries, for the current target, while busy, on cancellation, or after destruction. Commands are not queued. Invalid navigation arguments reject while the controller is alive; invalid grid replacements throw without changing the current grid. Catch promise failures in application event handlers. `onError` reports failures from engine-owned interactions. A throwing position callback can reject its operation after the position has committed.
+
+### Gesture options
+
+Pass overrides through `gesture` when creating the engine, for example `gesture: { animationDuration: 200 }`.
+
+| Option              | Default | Units and accepted values                       |
+| ------------------- | ------- | ----------------------------------------------- |
+| `distanceThreshold` | `80`    | CSS pixels; finite and positive                 |
+| `velocityThreshold` | `0.5`   | CSS pixels per millisecond; finite and positive |
+| `axisLockThreshold` | `8`     | CSS pixels; finite and positive                 |
+| `animationDuration` | `300`   | Milliseconds; finite and nonnegative            |
+| `edgeResistance`    | `0.35`  | Finite ratio from `0` to `1`, inclusive         |
+
+A swipe can commit by distance or velocity. Direction changes and recent motion are taken into account. Pointer cancellation, capture loss, and container resize cancel active motion safely. See [API.md](./API.md) for detailed validation, rendering, and error semantics.
+
+### Headless usage
+
+Use the `tikitaki` entry point for navigation without DOM globals:
 
 ```ts
-import { createNavigationModel, createGestureEngine } from 'tikitaki';
+import { createNavigationModel } from 'tikitaki';
 
-const model = createNavigationModel([['A1', 'A2'], ['B1']]);
-const { navigate, getPosition } = model;
-navigate('up');
-console.log(getPosition());
+const navigation = createNavigationModel([['A1', 'A2'], ['B1']]);
+navigation.navigate('up');
+console.log(navigation.getPosition()); // { row: 1, col: 0 }
 ```
 
-`createGestureEngine(context, options?)` consumes normalized pointer samples and returns commit/rollback plans without touching the DOM. `createDOMRenderer(options)` and `createDOMAdapter(renderCell)` are available from `tikitaki/dom` for integrations that coordinate these layers themselves.
+`createGestureEngine` is also exported from `tikitaki`. Lower-level DOM integration uses `createDOMRenderer` and `createDOMAdapter` from `tikitaki/dom`. See [ARCHITECTURE.md](./ARCHITECTURE.md) before composing these layers yourself.
 
-## Configuration
+## React, Vue, Svelte, and Angular
 
-Production tuning values, validation messages, DOM tokens, and styles are centralized in [src/config.ts](./src/config.ts). Demo data, labels, and initial coordinates live in [demos/config.ts](./demos/config.ts). Optional adapters have their own `src/config.ts`. Formatting, server addresses, and browser geometry are configured in [tooling.config.mjs](./tooling.config.mjs).
+Use an adapter to render framework components with their lifecycle and parent context intact:
 
-The public `DEFAULT_GESTURE_OPTIONS` object is immutable. Override supported values through `gesture: Partial<GestureOptions>` when creating a controller.
+| Framework | Optional package    | Guide and working example                                               |
+| --------- | ------------------- | ----------------------------------------------------------------------- |
+| React     | `@tikitaki/react`   | [Guide](./packages/react/README.md) · [Demo source](./demos/react/)     |
+| Vue       | `@tikitaki/vue`     | [Guide](./packages/vue/README.md) · [Demo source](./demos/vue/)         |
+| Svelte    | `@tikitaki/svelte`  | [Guide](./packages/svelte/README.md) · [Demo source](./demos/svelte/)   |
+| Angular   | `@tikitaki/angular` | [Guide](./packages/angular/README.md) · [Demo source](./demos/angular/) |
 
-| Option              | Default | Unit and validation                             |
-| ------------------- | ------- | ----------------------------------------------- |
-| `distanceThreshold` | 80      | CSS pixels; finite and positive                 |
-| `velocityThreshold` | 0.5     | CSS pixels per millisecond; finite and positive |
-| `axisLockThreshold` | 8       | CSS pixels; finite and positive                 |
-| `animationDuration` | 300     | Milliseconds; finite and nonnegative            |
-| `edgeResistance`    | 0.35    | Finite ratio in `[0, 1]`                        |
+Create one adapter per engine view and pass its `adapter` to `createSwipeEngine` instead of `renderCell`. Keep the adapter stable across component renders, call `updateGrid` when data changes, and destroy the engine during cleanup. Framework-owned content is mounted through parent-tree portals, Teleport, or embedded views; it must not be manually converted into an `HTMLElement`. The core does not import any framework.
 
-Velocity uses a bounded recent history and accounts for reversals and pauses. Pointer cancellation or capture loss rolls back. Resize and valid grid replacement cancel the old transaction and invalidate stale animation completions.
+React StrictMode lifecycle replay is covered by tests. Core navigation promises synchronize hosts and adapter snapshots; framework content still commits on the framework's schedule. Use the framework's rendering helpers when testing component content.
 
-## Framework adapters
+## Run the demos locally
 
-Framework integrations are isolated packages with peer dependencies:
-
-- [@tikitaki/react](./packages/react/README.md): one parent React root, `useSyncExternalStore`, and portals. StrictMode setup/cleanup/setup is tested.
-- [@tikitaki/angular](./packages/angular/README.md): parent-owned embedded template views, signals, and injector context. The zoneless demo uses AOT compilation.
-- [@tikitaki/svelte](./packages/svelte/README.md): keyed Svelte 5 components, a readonly store, and owned portals under one parent application.
-- [@tikitaki/vue](./packages/vue/README.md): Composition API, a readonly shallow cell store, and Teleport inside the parent application.
-
-Create one adapter per engine view. React and Vue use parent-tree portals, Svelte uses a keyed template with a portal action, and Angular uses parent-owned embedded template views. Pass the adapter to `createSwipeEngine`. Adapters retain context and component state for surviving hosts. They do not create a separate framework root per cell.
-
-The plain DOM `renderCell` callback and `adapter` are mutually exclusive. Framework components must be mounted through an adapter rather than converted to an HTMLElement. Core promises synchronize hosts and adapter snapshots; framework content settles during the framework commit. Use async React `act` or Vue `nextTick` when asserting component content.
-
-## Demos
+From a checkout with dependencies installed:
 
 ```sh
-npm ci
 npm run demo
 ```
 
-The demos use locally bundled Bootstrap 6.0.0-alpha.1 CSS from the official release tag, with responsive columns, cards, utility classes, and theme-aware buttons. Bootstrap JavaScript is not included.
-
-Open `/react/`, `/vue/`, `/svelte/`, or `/angular/` at the Vite address printed in the terminal. All four demos show a left-aligned 9:16 portrait swipe field displaying the current cell label on a randomly assigned standard Bootstrap button-theme background. Cell colors remain stable for each coordinate during the demo session. Swipe or use the mouse wheel over a cell to navigate; the former control panel has been removed. Wheel down opens the next row, wheel up opens the previous row, always at its first cell after a successful transition. The interactive cell map beside each view (below it on narrow screens) highlights the committed cell and supports pointer selection and keyboard activation.
+Open the address printed by Vite, then choose React, Vue, Svelte, or Angular. Each demo starts at A1 and supports swipes, wheel navigation, and an interactive cell map.
 
 ```sh
 npm run demo:build
 npm run demo:preview
 ```
 
-The production demos are generated in `demos/dist`. React uses separate App, EngineView, Cell, and CellMap JSX components in `.tsx` under StrictMode; Vue uses `.vue` single-file components with `<script setup lang="ts">`, templates, and Teleports. Svelte uses runes and `.svelte` component templates; Angular uses signals, standalone components, and separate HTML templates. All pair engine creation with framework cleanup. `npm run typecheck` runs vue-tsc, svelte-check, and ngc with strict template checking. Angular demo classes are the only exception to the functional source rule; the core and adapters remain functional.
+## Contribute
 
-## Development and validation
+You can contribute bug reports, reproducible examples, documentation, tests, adapter improvements, and library changes. Repository write access is not required to submit an Issue or a Pull Request. Start with a small, focused change; for substantial features or public API changes, open an Issue first so the approach can be discussed before implementation.
 
-Dependencies are development-only and locked in `package-lock.json`. The verified environment uses Node.js 24 and npm 11.
+GitHub calls a proposed merge a **Pull Request (PR)**. If you know the term Merge Request (MR), use a PR here.
 
-| Command                  | Purpose                                                                        |
-| ------------------------ | ------------------------------------------------------------------------------ |
-| `npm test`               | Unit and integration tests                                                     |
-| `npm run typecheck`      | Strict TypeScript, including unchecked indexes and exact optional properties   |
-| `npm run lint`           | Type-aware ESLint and functional source rules                                  |
-| `npm run format`         | Format project files with Prettier 3.9.10                                      |
-| `npm run format:check`   | Check Prettier formatting                                                      |
-| `npm run build`          | Build core and all optional adapters with declarations and source maps         |
-| `npm run build:core`     | Build only the zero-dependency core                                            |
-| `npm run build:adapters` | Build adapters after core declarations exist                                   |
-| `npm run test:browser`   | Build packages/demos and run installed Google Chrome with mouse/touch projects |
-| `npm run test:package`   | Pack, install, compile, and import an independent core consumer                |
-| `npm run check`          | Run the aggregate validation sequence                                          |
+### Report a bug or propose a feature
 
-Prettier 3.9.10 is pinned as a development dependency and controls all formatting, including imports, function signatures, and returns. There is no custom formatting postprocessor. Run `npm run format` before committing; CI runs `npm run format:check`. Generated files, third-party Bootstrap assets, and the mandatory AGENTS.md specification are excluded. English JSDoc describes factories, operations, ownership, units, and validation.
+Search [existing Issues](https://github.com/gagarinbefree/TikiTaki/issues) and [open Pull Requests](https://github.com/gagarinbefree/TikiTaki/pulls) before creating a duplicate. Then choose **Issues → New issue** or [open an Issue directly](https://github.com/gagarinbefree/TikiTaki/issues/new).
 
-## GitHub Actions and Pages
+For a bug report, include:
 
-[The workflow](.github/workflows/ci-pages.yml) follows the AvaWeather repository's structure: `build-and-test → prepare-release → web-pages → release`. It runs on pull requests, pushes to `main`, and manual dispatch. Node.js 24 installs the lockfile with `npm ci`, then runs typecheck, ESLint, formatting checks, unit/integration tests, production library and adapter builds, and the independent packaged-core consumer audit. It builds the demos and runs Google Chrome E2E in desktop and touch configurations, including navigation from the Pages home page to all framework demos under `/TikiTaki/`. Hosted runners use their installed Google Chrome when available.
+- A clear title describing the observed failure.
+- The release tag or commit, browser and operating system, input device, framework, and relevant package versions.
+- A minimal runnable reproduction: grid shape, initial coordinates, options, and the exact gesture or command sequence.
+- Expected and actual behavior, including the final position.
+- Relevant console errors, screenshots, or traces when they help reproduce the problem.
 
-Only successful tests and builds on `main` allow release preparation and Pages publication. Jobs exchange the exact demo artifact verified by Chrome. Pull requests never deploy or create releases. Failure screenshots, traces, and the Chrome JSON report are retained as workflow artifacts for seven days. The CI badge reports the complete test/build/release pipeline. The release badge is an SVG stored in this repository and updated by the release job together with README. Published deployments are regular GitHub Releases marked **Latest**, so the newest version appears in the repository sidebar and at `releases/latest`; the version string still identifies the alpha package.
+For a feature request, describe the use case, the proposed behavior or API, alternatives considered, and any compatibility concerns. Include only sample data suitable for a public repository. A reproducible report or documentation correction is already a useful contribution; writing code is optional.
 
-One workflow-level concurrency group covers the repository and branch with `cancel-in-progress: true`. A new commit cancels the entire earlier pipeline, including tests, builds, deployment, and release work. There are no cross-workflow completion events to restart an outdated pipeline.
+### Create a fork and a working branch
 
-Each deployment increments the greatest published stable release by one patch version: `v0.1.1`, `v0.1.2`, and so on. Legacy alpha deployment tags are ignored when selecting the next version. The source commit, workflow number, and retry attempt remain in `version.json` for traceability. All five demo pages link to GitHub and the exact deployed release. After successful Pages deployment, the release job creates the matching tag and GitHub Release at the tested commit, attaching `tikitaki-demo.zip` and `version.json`. It then updates the README release badge and marked version with a `[skip ci]` bot commit, provided the branch still points to the tested source. Failed deployments do not create releases. Application assets are the exact Chrome-tested artifact; only metadata changes before deployment. Local development shows the repository link. No npm packages are published.
+1. Click **Fork** on [gagarinbefree/TikiTaki](https://github.com/gagarinbefree/TikiTaki). Keep your fork's `main` available for upstream synchronization.
+2. Clone your fork, add the original repository as `upstream`, and branch from its current `main`. Replace `YOUR_USERNAME` below with your GitHub username.
 
-The production base path is configured in `DEPLOYMENT_CONFIG` in `tooling.config.mjs`; development keeps `/`. Change the production base path if the repository is renamed. The expected published address is [gagarinbefree.github.io/TikiTaki](https://gagarinbefree.github.io/TikiTaki/), with `react/`, `vue/`, `svelte/`, and `angular/` demos below it. This address becomes available after the first successful deployment.
+```sh
+git clone https://github.com/YOUR_USERNAME/TikiTaki.git
+cd TikiTaki
+git remote add upstream https://github.com/gagarinbefree/TikiTaki.git
+git fetch upstream
+git switch main
+git merge --ff-only upstream/main
+git switch -c fix/vertical-boundary
+npm ci
+```
 
-For initial repository setup, choose **Settings → Pages → Build and deployment → Source → GitHub Actions**. Allow the `github-pages` environment to deploy from `main`. No custom deployment secret is required: only the deployment job receives `pages: write` and `id-token: write` permissions. See the official [GitHub Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages) and [Vite deployment guide](https://vite.dev/guide/static-deploy.html#github-pages).
+Use a descriptive branch name such as `fix/vertical-boundary`, `feat/adapter-update`, or `docs/installation`. Keep one problem or feature per PR. To refresh a working branch later, fetch upstream and merge `upstream/main` into your branch, resolve conflicts, and rerun the relevant checks.
 
-TypeScript source imports omit `.js`. Build-time compiler transformers emit explicit JavaScript specifiers in ESM and declarations, so installed packages work with native Node ESM and independent NodeNext consumers without a runtime resolver. Framework dependencies remain outside the core package.
+### Implement and validate
 
-The managed environment can reject nested `spawnSync` calls with `EPERM` in `test:package`. The equivalent pack/install/compile/verify steps are documented in [TESTING.md](./TESTING.md); a blocked aggregate command is never reported as passing.
+Read [AGENTS.md](./AGENTS.md), the project's mandatory specification, and [ARCHITECTURE.md](./ARCHITECTURE.md) before changing behavior. Follow **RED → GREEN → REFACTOR**: reproduce a bug or specify new behavior in a failing test, implement the smallest working change, then refactor while keeping tests green.
 
-## Migration and documentation
+Preserve the grid navigation rules and zero-runtime-dependency core. Keep framework dependencies isolated in adapters. Source code uses functional factories, strict TypeScript, extensionless source imports, and English JSDoc. Native Angular demo components are the documented class-based exception. Prettier 3.9.10 owns formatting; run it rather than applying custom formatting rules.
 
-Replace `new NavigationModel(...)`, `new GestureEngine(...)`, `new DOMRenderer(...)`, and `new SwipeEngine(...)` with their corresponding `create...` factories. The former class names remain interface types; `DOMRenderer` is now a nongeneric handle because its operations do not expose item content.
+| Command                | Purpose                                                 |
+| ---------------------- | ------------------------------------------------------- |
+| `npm run test:watch`   | Iterate on unit and integration tests                   |
+| `npm test`             | Run unit and integration tests                          |
+| `npm run typecheck`    | Check TypeScript and Vue, Svelte, and Angular templates |
+| `npm run lint`         | Run type-aware ESLint and source rules                  |
+| `npm run format`       | Format supported project files                          |
+| `npm run format:check` | Verify formatting without rewriting files               |
+| `npm run build`        | Build the core and adapters with declarations           |
+| `npm run test:package` | Verify builds and an independent packaged consumer      |
+| `npm run test:browser` | Build demos and run real Google Chrome E2E              |
+| `npm run check`        | Run the aggregate validation sequence                   |
 
-- [API.md](./API.md): public contracts and promise semantics.
-- [ARCHITECTURE.md](./ARCHITECTURE.md): layer boundaries and ownership.
-- [TESTING.md](./TESTING.md): actual TDD phases, commands, results, and limitations.
-- [AGENTS.md](./AGENTS.md): the unchanged mandatory specification.
+Install Google Chrome before browser checks. For CI-style browser setup, use `npx playwright install --with-deps chrome`; the test configuration explicitly selects Google Chrome. Touch emulation is included, but does not replace testing on a physical Android device. See [TESTING.md](./TESTING.md) for test layers, diagnostics, and environment-specific limitations.
+
+Before requesting review, run `npm run format` and `npm run check`. For documentation-only changes, check formatting and verify links, commands, and examples; report the checks actually performed. CI validates the full project for every PR. Commit source and intentional lockfile changes; leave generated builds, caches, and local diagnostic artifacts out of the PR.
+
+### Open a Pull Request
+
+Push the branch to your fork:
+
+```sh
+git add README.md
+git commit -m "docs: clarify installation from a local package"
+git push -u origin HEAD
+```
+
+The command above stages a documentation example; stage the specific source and test files for your own change instead.
+
+On GitHub, open **Compare & pull request**, or use [the comparison page](https://github.com/gagarinbefree/TikiTaki/compare). Select **compare across forks** with:
+
+- **Base repository:** `gagarinbefree/TikiTaki`.
+- **Base branch:** `main`.
+- **Head repository:** your fork.
+- **Compare branch:** your working branch.
+
+Open a **Draft PR** when you want early feedback. Mark it ready for review once the change and validation are complete. Give the PR a specific title and describe:
+
+- The problem or use case and the resulting behavior.
+- The related Issue, using `Closes #123` only when merging should resolve it.
+- Tests run and their results; include screenshots for visible demo changes.
+- Public API changes, compatibility effects, and documentation updates.
+
+Maintainers review the change and its checks before merging. Green CI is necessary, and the maintainer makes the merge decision. Address feedback with further commits on the same branch; they update the existing PR. New commits cancel outdated CI runs for that PR. Once merged, synchronize your fork with upstream and delete the completed feature branch when you no longer need it.
+
+For GitHub UI details, see [GitHub's fork contribution guide](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) and [creating a PR from a fork](https://docs.github.com/en/pull-requests/how-tos/create-pull-requests/creating-a-pull-request-from-a-fork).
+
+### Become a contributor
+
+No application or maintainer invitation is needed to start contributing. Pick an Issue, comment with your intended approach to avoid duplicate work, or propose a focused improvement. Help reproduce bugs, improve examples, and review changes as you become familiar with the project. The repository owner decides whether to invite someone to a collaborator or maintainer role; contributing does not automatically grant write access.
+
+## What happens after merge
+
+The [GitHub Actions workflow](./.github/workflows/ci-pages.yml) validates pull requests and pushes to `main`. It runs type checks, lint, formatting, unit/integration tests, package validation, production builds, and Chrome desktop/touch E2E. PR runs do not publish upstream releases or deploy upstream Pages. A new commit cancels the earlier pipeline for the same branch or PR.
+
+After a successful `main` run, the tested demo artifact is deployed to [GitHub Pages](https://gagarinbefree.github.io/TikiTaki/) and a matching [GitHub Release](https://github.com/gagarinbefree/TikiTaki/releases) is created. Stable release versions advance by one patch, such as `v0.1.1` → `v0.1.2`. The release includes the demo archive and `version.json`, and a bot updates the README version and badge. Contributors do not need to edit those generated release fields in feature PRs.
+
+If you want Pages for your own fork, enable Actions, select **Settings → Pages → Source → GitHub Actions**, and allow the `github-pages` environment to deploy from your fork's `main`. If you rename the repository, update `DEPLOYMENT_CONFIG.basePath` in [tooling.config.mjs](./tooling.config.mjs). Fork deployments and releases belong to the fork; upstream releases follow the upstream workflow.
+
+## Reference
+
+- [API.md](./API.md): detailed contracts, validation, and promise semantics.
+- [ARCHITECTURE.md](./ARCHITECTURE.md): navigation, gesture, rendering, and adapter boundaries.
+- [TESTING.md](./TESTING.md): test strategy, commands, diagnostics, and verification history.
+- [AGENTS.md](./AGENTS.md): mandatory implementation specification.
