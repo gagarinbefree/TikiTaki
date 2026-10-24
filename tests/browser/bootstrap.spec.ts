@@ -16,7 +16,7 @@ for (const framework of ['react', 'vue', 'svelte', 'angular']) {
     expect(field).not.toBeNull();
     expect(field && field.height > field.width).toBe(true);
     expect(field && Math.abs(field.width / field.height - 9 / 16) < 0.01).toBe(true);
-    const map = await page.getByRole('navigation', { name: 'Карта ячеек' }).boundingBox();
+    const map = await page.getByRole('navigation', { name: 'Cell map' }).boundingBox();
     const layout = await page.locator('[data-demo-layout]').boundingBox();
     expect(map && field && layout).toBeTruthy();
     if (map && field && layout && (page.viewportSize()?.width ?? 0) >= 768) {

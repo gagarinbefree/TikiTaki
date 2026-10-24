@@ -44,15 +44,6 @@ export default function App() {
   return (
     <Context.Provider value={DEMO_TEXT.reactContextRoot}>
       <main className={DEMO_TEXT.container}>
-        <a href={DEMO_TEXT.homePath}>{DEMO_TEXT.demos}</a>
-        <p>
-          <span className={DEMO_TEXT.badge}>{DEMO_TEXT.tikiTakiReactStrictMode}</span>
-        </p>
-        <div className={DEMO_TEXT.pageHeader}>
-          <h1>{DEMO_TEXT.headline}</h1>
-        </div>
-        <p>{DEMO_TEXT.intro}</p>
-        <h3>{DEMO_TEXT.liveTitle}</h3>
         <div className={DEMO_TEXT.layout} data-demo-layout="">
           <div className={DEMO_TEXT.viewportColumn} style={DEMO_GEOMETRY.phoneColumn}>
             {visible ? (

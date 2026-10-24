@@ -6,7 +6,6 @@ export default function CellMap({ grid, position, enabled, onSelect }: CellMapPr
   return (
     <nav style={DEMO_GEOMETRY.map} className={DEMO_TEXT.gridMap} aria-label={DEMO_TEXT.cellMapTitle}>
       <div className={DEMO_TEXT.gridMapHeader}>
-        <h2>{DEMO_TEXT.cellMapTitle}</h2>
         <span className={DEMO_TEXT.gridMapLegend}>{DEMO_TEXT.currentCellLegend}</span>
       </div>
       <p className={DEMO_TEXT.hint}>{DEMO_TEXT.cellMapHint}</p>

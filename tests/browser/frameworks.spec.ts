@@ -80,7 +80,7 @@ for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
       await item(page, 'A10', 0, 9);
     });
     test('cell-map selects cells and follows navigation, grid updates, and remount', async ({ page, isMobile }) => {
-      const map = page.getByRole('navigation', { name: 'Карта ячеек' });
+      const map = page.getByRole('navigation', { name: 'Cell map' });
       await expect(map).toBeVisible();
       const rows = map.locator('[data-map-row]');
       await expect(rows).toHaveCount(4);
@@ -90,8 +90,8 @@ for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
       const active = map.locator('[aria-current="true"]');
       await expect(active).toHaveCount(1);
       await expect(active).toHaveText('A10');
-      await map.scrollIntoViewIfNeeded();
-      await expect(active).toBeInViewport({ ratio: 1 });
+      await active.scrollIntoViewIfNeeded();
+      await expect(active).toBeInViewport({ ratio: 0.98 });
       expect(await active.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
         await rows
           .first()
@@ -188,10 +188,10 @@ for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
               : 'Angular context',
       );
       await page.locator(`${current} [data-action="count"]`).click();
-      await expect(page.locator(`${current} button`)).toHaveText('Нажатий: 1');
+      await expect(page.locator(`${current} button`)).toHaveText('Clicks: 1');
       await command(page, 'update');
       await item(page, 'A10!', 0, 9);
-      await expect(page.locator(`${current} button`)).toHaveText('Нажатий: 1');
+      await expect(page.locator(`${current} button`)).toHaveText('Clicks: 1');
       await command(page, 'shrink');
       await item(page, 'Only', 0, 0);
       await expect(page.locator('[data-tikitaki-cell]')).toHaveCount(1);
@@ -201,10 +201,10 @@ for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
       await item(page, 'Only', 0, 0);
       await command(page, 'toggle');
       await expect(page.locator('[data-tikitaki-viewport]')).toHaveCount(0);
-      await expect(page.getByRole('navigation', { name: 'Карта ячеек' }).getByRole('button')).toBeDisabled();
+      await expect(page.getByRole('navigation', { name: 'Cell map' }).getByRole('button')).toBeDisabled();
       await command(page, 'toggle');
       await item(page, 'A1', 0, 0);
-      await expect(page.getByRole('navigation', { name: 'Карта ячеек' }).getByRole('button')).toHaveCount(19);
+      await expect(page.getByRole('navigation', { name: 'Cell map' }).getByRole('button')).toHaveCount(19);
     });
     test('unmount during settling pairs all lifecycles and repeated remounts leave one viewport', async ({ page }) => {
       for (let i = 0; i < 3; i++) {

@@ -12,7 +12,6 @@ const rows = computed(() => cellMapRows(props));
 <template>
   <nav :style="DEMO_GEOMETRY.map" :class="DEMO_TEXT.gridMap" :aria-label="DEMO_TEXT.cellMapTitle">
     <div :class="DEMO_TEXT.gridMapHeader">
-      <h2>{{ DEMO_TEXT.cellMapTitle }}</h2>
       <span :class="DEMO_TEXT.gridMapLegend">{{ DEMO_TEXT.currentCellLegend }}</span>
     </div>
     <p :class="DEMO_TEXT.hint">{{ DEMO_TEXT.cellMapHint }}</p>

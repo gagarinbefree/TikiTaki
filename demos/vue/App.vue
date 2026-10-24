@@ -52,15 +52,6 @@ onUnmounted(() => {
 
 <template>
   <main :class="DEMO_TEXT.container">
-    <a :href="DEMO_TEXT.homePath">{{ DEMO_TEXT.demos }}</a>
-    <p>
-      <span :class="DEMO_TEXT.badge">{{ DEMO_TEXT.tikiTakiVue3CompositionAPI }}</span>
-    </p>
-    <div :class="DEMO_TEXT.pageHeader">
-      <h1>{{ DEMO_TEXT.headline }}</h1>
-    </div>
-    <p>{{ DEMO_TEXT.intro }}</p>
-    <h3>{{ DEMO_TEXT.liveTitle }}</h3>
     <div :class="DEMO_TEXT.layout" data-demo-layout="">
       <div :class="DEMO_TEXT.viewportColumn" :style="DEMO_GEOMETRY.phoneColumn">
         <EngineView v-if="visible" :grid="grid" @engine="engine = $event" @position="position = $event" />

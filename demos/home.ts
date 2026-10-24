@@ -1,4 +1,4 @@
 import './vendor/bootstrap-6.0.0-alpha.1/bootstrap.css';
-import { showDeploymentVersion } from './version';
+import { showRepositoryLink } from './version';
 
-void showDeploymentVersion();
+showRepositoryLink();

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -8,63 +8,57 @@
   </head>
   <body>
     <header class="border-bottom bg-1">
-      <nav class="navbar container gap-3 py-3" aria-label="Основная навигация">
+      <nav class="navbar container gap-3 py-3" aria-label="Main navigation">
         <a class="navbar-brand fw-bold" href="./">TikiTaki</a>
-        <span class="badge theme-secondary">Bootstrap 6</span>
       </nav>
     </header>
     <main class="container py-5">
-      <nav class="mb-5" aria-label="Демонстрации">
-        <div class="nav nav-pills d-inline-flex">
-          <a class="nav-link active" aria-current="page" href="./">Обзор</a>
+      <nav class="mb-5" aria-label="Demos">
+        <div class="nav nav-pills theme-secondary d-inline-flex">
+          <a class="nav-link active" aria-current="page" href="./">Overview</a>
           <a class="nav-link" href="./react/">React</a>
-          <a class="nav-link" href="./vue/">Vue 3</a>
+          <a class="nav-link" href="./vue/">Vue</a>
           <a class="nav-link" href="./svelte/">Svelte</a>
           <a class="nav-link" href="./angular/">Angular</a>
         </div>
       </nav>
-      <section class="p-5 lg:p-6 rounded-9 bg-subtle-primary mb-5">
+      <section class="p-5 lg:p-6 rounded-9 bg-1 mb-5">
         <div class="d-flex gap-2 flex-wrap mb-4">
-          <span class="badge theme-primary">2D Swipe Engine</span>
+          <span class="badge theme-secondary">2D Swipe Engine</span>
           <span class="badge theme-success">Zero dependencies</span>
           <span class="badge theme-secondary">TypeScript</span>
         </div>
-        <h1 class="fs-6xl fw-bold mb-3">Два измерения.<br />Один жест.</h1>
-        <p class="fs-lg fg-2 mb-4">Перемещайтесь по сетке свайпами. Любые строки, живые компоненты и плавные переходы.</p>
+        <p class="fs-lg fg-2 mb-4">Swipe through a grid with variable row lengths, live components, and smooth transitions.</p>
         <div class="d-flex gap-3 flex-wrap">
-          <a class="btn-solid theme-primary" href="./react/">React / StrictMode</a>
-          <a class="btn-outline theme-primary" href="./vue/">Vue 3 / Composition API</a>
-          <a class="btn-outline theme-primary" href="./svelte/">Svelte 5 / Runes</a>
-          <a class="btn-outline theme-primary" href="./angular/">Angular / Signals</a>
+          <a class="btn-outline theme-secondary" href="./react/">React</a>
+          <a class="btn-outline theme-secondary" href="./vue/">Vue</a>
+          <a class="btn-outline theme-secondary" href="./svelte/">Svelte</a>
+          <a class="btn-outline theme-secondary" href="./angular/">Angular</a>
         </div>
       </section>
       <div class="row g-4 mb-5">
         <section class="col-12 md:col-4">
           <div class="card h-100 p-5">
-            <span class="badge theme-primary align-self-start mb-3">01 / Навигация</span>
-            <h2 class="fs-xl">Четыре направления</h2>
-            <p class="fg-2 mb-0">Один жест — одна ячейка. Свайп вверх или вниз всегда открывает начало соседней строки.</p>
+            <span class="badge theme-secondary align-self-start mb-3">01 / Navigation</span>
+            <h2 class="fs-xl">Four directions</h2>
+            <p class="fg-2 mb-0">One gesture moves one cell. Swiping up or down always opens the first cell of the adjacent row.</p>
           </div>
         </section>
         <section class="col-12 md:col-4">
           <div class="card h-100 p-5">
-            <span class="badge theme-success align-self-start mb-3">02 / Сетка</span>
-            <h2 class="fs-xl">У каждой строки свой ритм</h2>
-            <p class="fg-2 mb-0">10, 1, 3 и 5 ячеек. Карта показывает ваше положение и позволяет перейти в любую точку.</p>
+            <span class="badge theme-success align-self-start mb-3">02 / Grid</span>
+            <h2 class="fs-xl">Different lengths, one grid</h2>
+            <p class="fg-2 mb-0">Rows contain 10, 1, 3, and 5 cells. The map tracks your position and lets you jump to any cell.</p>
           </div>
         </section>
         <section class="col-12 md:col-4">
           <div class="card h-100 p-5">
-            <span class="badge theme-secondary align-self-start mb-3">03 / Компоненты</span>
-            <h2 class="fs-xl">Попробуйте в действии</h2>
-            <p class="fg-2 mb-0">Свайпайте по экрану, нажимайте на ячейки карты и попробуйте счётчики внутри живых компонентов.</p>
+            <span class="badge theme-secondary align-self-start mb-3">03 / Components</span>
+            <h2 class="fs-xl">Try it yourself</h2>
+            <p class="fg-2 mb-0">Swipe across the viewport, select cells on the map, and try the counters inside live components.</p>
           </div>
         </section>
       </div>
-      <p class="fg-3 fs-sm">
-        Оформление — <a href="https://getbootstrap.com/">Bootstrap 6.0.0-alpha.1</a>. Выберите React, Vue, Svelte или Angular, чтобы открыть
-        интерактивное демо.
-      </p>
     </main>
     <script type="module" src="./home.ts"></script>
   </body>
