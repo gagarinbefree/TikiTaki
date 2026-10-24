@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('all Pages entry points link to the repository and npm without a release version', async ({ page }) => {
   await page.route('**/version.json', (route) => route.fulfill({ json: { version: '0.1.1' } }));
-  for (const entry of ['', 'vanilla/', 'react/', 'vue/', 'svelte/', 'angular/']) {
+  for (const entry of ['', 'vanilla/', 'react/', 'vue/', 'svelte/', 'angular/', 'lit/']) {
     await page.goto(`/TikiTaki/${entry}`);
     await expect(page.locator('[data-demo-repository]')).toHaveAttribute('href', 'https://github.com/gagarinbefree/TikiTaki');
     await expect(page.locator('[data-demo-repository]')).toHaveText('GitHub');
@@ -12,7 +12,7 @@ test('all Pages entry points link to the repository and npm without a release ve
   }
 });
 
-for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular'] as const) {
+for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'] as const) {
   test(`Pages project path opens the ${framework} demo with working assets and cell selection`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -27,7 +27,7 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular'] as cons
     const link = page
       .locator('main > section')
       .getByRole('link', {
-        name: { vanilla: 'Vanilla JS', react: 'React', vue: 'Vue', svelte: 'Svelte', angular: 'Angular' }[framework],
+        name: { vanilla: 'Vanilla JS', react: 'React', vue: 'Vue', svelte: 'Svelte', angular: 'Angular', lit: 'Lit' }[framework],
         exact: true,
       });
     await expect(link).toHaveClass('btn-outline theme-secondary');

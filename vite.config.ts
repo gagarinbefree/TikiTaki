@@ -44,6 +44,7 @@ export default defineConfig(({ command }) => {
           vue: path('./demos/vue/index.html'),
           svelte: path('./demos/svelte/index.html'),
           angular: path('./demos/angular/index.html'),
+          lit: path('./demos/lit/index.html'),
         },
       },
     },

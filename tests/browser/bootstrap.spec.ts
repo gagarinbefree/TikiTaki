@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular']) {
+for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit']) {
   test(`${framework} uses a responsive Bootstrap demo with working navigation`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
