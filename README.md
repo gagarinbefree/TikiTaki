@@ -15,7 +15,7 @@ The project is under active development. Google Chrome Desktop and Chrome touch 
 
 ## Install in your project
 
-Packages are not currently published to the npm registry. Build a checkout and install the generated package tarball. GitHub Releases contain the demo archive and deployment metadata, rather than installable library packages.
+Packages are not currently published to the npm registry. Build a checkout and install the generated package tarball. GitHub Releases prepared for npm publication also contain the five tested package tarballs and their checksum manifest. See [PUBLISHING.md](./PUBLISHING.md) for maintainer instructions.
 
 Use Node.js 24 and npm 11 for building and contributing. Git and Google Chrome are needed for the contributor workflow and browser tests.
 
@@ -33,7 +33,7 @@ For a reproducible integration, check out a release tag before installing depend
 npm install /absolute/path/to/the-generated-package.tgz
 ```
 
-Release tags and the version in `package.json` are currently managed separately: the tarball name follows `package.json`, not the GitHub release tag. Keep the checked-out tag or commit in your integration notes.
+CI assigns one version to the core, all adapters, and the lockfile before building. Release tarballs carry that exact tested version. Keep the release tag or commit in your integration notes.
 
 Optional adapters can be packed from the same built checkout:
 
@@ -148,12 +148,12 @@ console.log(navigation.getPosition()); // { row: 1, col: 0 }
 
 Use an adapter to render framework components with their lifecycle and parent context intact:
 
-| Framework | Optional package    | Guide and working example                                               |
-| --------- | ------------------- | ----------------------------------------------------------------------- |
-| React     | `@tikitaki/react`   | [Guide](./packages/react/README.md) · [Demo source](./demos/react/)     |
-| Vue       | `@tikitaki/vue`     | [Guide](./packages/vue/README.md) · [Demo source](./demos/vue/)         |
-| Svelte    | `@tikitaki/svelte`  | [Guide](./packages/svelte/README.md) · [Demo source](./demos/svelte/)   |
-| Angular   | `@tikitaki/angular` | [Guide](./packages/angular/README.md) · [Demo source](./demos/angular/) |
+| Framework | Optional package                  | Guide and working example                                               |
+| --------- | --------------------------------- | ----------------------------------------------------------------------- |
+| React     | `@tikitaki_gagarinbefree/react`   | [Guide](./packages/react/README.md) · [Demo source](./demos/react/)     |
+| Vue       | `@tikitaki_gagarinbefree/vue`     | [Guide](./packages/vue/README.md) · [Demo source](./demos/vue/)         |
+| Svelte    | `@tikitaki_gagarinbefree/svelte`  | [Guide](./packages/svelte/README.md) · [Demo source](./demos/svelte/)   |
+| Angular   | `@tikitaki_gagarinbefree/angular` | [Guide](./packages/angular/README.md) · [Demo source](./demos/angular/) |
 
 Create one adapter per engine view and pass its `adapter` to `createSwipeEngine` instead of `renderCell`. Keep the adapter stable across component renders, call `updateGrid` when data changes, and destroy the engine during cleanup. Framework-owned content is mounted through parent-tree portals, Teleport, or embedded views; it must not be manually converted into an `HTMLElement`. The core does not import any framework.
 
@@ -273,7 +273,7 @@ No application or maintainer invitation is needed to start contributing. Pick an
 
 The [GitHub Actions workflow](./.github/workflows/ci-pages.yml) validates pull requests and pushes to `main`. It runs type checks, lint, formatting, unit/integration tests, package validation, production builds, and Chrome desktop/touch E2E. PR runs do not publish upstream releases or deploy upstream Pages. A new commit cancels the earlier pipeline for the same branch or PR.
 
-After a successful `main` run, the tested demo artifact is deployed to [GitHub Pages](https://gagarinbefree.github.io/TikiTaki/) and a matching [GitHub Release](https://github.com/gagarinbefree/TikiTaki/releases) is created. Stable release versions advance by one patch, such as `v0.1.1` → `v0.1.2`. The release includes the demo archive and `version.json`, and a bot updates the README version and badge. Contributors do not need to edit those generated release fields in feature PRs.
+After a successful `main` run, the tested demo artifact is deployed to [GitHub Pages](https://gagarinbefree.github.io/TikiTaki/) and a matching [GitHub Release](https://github.com/gagarinbefree/TikiTaki/releases) is created. Stable release versions advance by one patch, such as `v0.1.1` → `v0.1.2`. The release includes the demo archive, `version.json`, npm package tarballs, and their integrity manifest. A bot updates the README badge and package versions. npm publication is a separate maintainer action after first-time account setup. Contributors do not need to edit those generated release fields in feature PRs.
 
 If you want Pages for your own fork, enable Actions, select **Settings → Pages → Source → GitHub Actions**, and allow the `github-pages` environment to deploy from your fork's `main`. If you rename the repository, update `DEPLOYMENT_CONFIG.basePath` in [tooling.config.mjs](./tooling.config.mjs). Fork deployments and releases belong to the fork; upstream releases follow the upstream workflow.
 
@@ -283,3 +283,7 @@ If you want Pages for your own fork, enable Actions, select **Settings → Pages
 - [ARCHITECTURE.md](./ARCHITECTURE.md): navigation, gesture, rendering, and adapter boundaries.
 - [TESTING.md](./TESTING.md): test strategy, commands, diagnostics, and verification history.
 - [AGENTS.md](./AGENTS.md): mandatory implementation specification.
+
+## License
+
+[MIT](./LICENSE), copyright 2026 gagarinbefree. Vendored third-party assets retain their own notices.

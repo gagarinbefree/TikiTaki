@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { createSvelteCellAdapter, portal } from '@tikitaki/svelte';
+  import { createSvelteCellAdapter, portal } from '@tikitaki_gagarinbefree/svelte';
   import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
   import type { Grid, Position } from 'tikitaki';
   import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';

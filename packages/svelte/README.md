@@ -1,4 +1,4 @@
-# @tikitaki/svelte
+# @tikitaki_gagarinbefree/svelte
 
 Optional Svelte 5 adapter for TikiTaki. The core remains independent of Svelte.
 Create one `createSvelteCellAdapter<T>()` per engine view and pass `bridge.adapter`

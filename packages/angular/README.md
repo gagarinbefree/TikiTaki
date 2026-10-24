@@ -1,4 +1,4 @@
-# @tikitaki/angular
+# @tikitaki_gagarinbefree/angular
 
 Optional Angular 21 adapter for TikiTaki. Angular is a peer dependency of this
 package and is not a dependency of the core. The adapter itself is a functional

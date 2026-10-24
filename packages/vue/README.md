@@ -1,6 +1,6 @@
-# @tikitaki/vue
+# @tikitaki_gagarinbefree/vue
 
-A functional Vue 3 adapter for TikiTaki. Private alpha, ESM, strict TypeScript. Peer dependencies: `tikitaki@0.1.0-alpha.0` and `vue@^3.5.44`. The core package has no Vue dependency.
+A functional Vue 3 adapter for TikiTaki. ESM, strict TypeScript, MIT licensed. Peer dependencies: the compatible `tikitaki` version declared in package.json and `vue@^3.5.44`. The core package has no Vue dependency.
 
 ## Usage
 
@@ -11,7 +11,7 @@ Create one bridge inside `<script setup>` and render its cells with `<Teleport>`
 import { onMounted, onBeforeUnmount, shallowRef, watch } from 'vue';
 import type { Grid } from 'tikitaki';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
-import { createVueCellAdapter } from '@tikitaki/vue';
+import { createVueCellAdapter } from '@tikitaki_gagarinbefree/vue';
 
 const props = defineProps<{ readonly grid: Grid<string> }>();
 const container = shallowRef<HTMLElement | null>(null);

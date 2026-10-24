@@ -11,7 +11,7 @@ import {
   output,
   viewChild,
 } from '@angular/core';
-import { createAngularCellAdapter, type AngularCellContext } from '@tikitaki/angular';
+import { createAngularCellAdapter, type AngularCellContext } from '@tikitaki_gagarinbefree/angular';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
 import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';

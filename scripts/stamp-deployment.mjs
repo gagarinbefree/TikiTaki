@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { URL } from 'node:url';
 import { createDeploymentMetadata } from './deployment-version.mjs';
+import { validatePublicVersion } from './package-release.mjs';
 import { VERSION_CONFIG } from '../tooling.config.mjs';
 
 const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
@@ -13,6 +14,10 @@ const metadata = createDeploymentMetadata(
   process.env.SOURCE_SHA ?? '',
   JSON.parse(process.env.RELEASE_TAGS ?? '[]').map((release) => release.tagName),
 );
+if (process.env.RELEASE_VERSION) {
+  validatePublicVersion(process.env.RELEASE_VERSION);
+  metadata.version = process.env.RELEASE_VERSION;
+}
 const directory = process.argv[2] ?? VERSION_CONFIG.outputDirectory;
 await access(join(directory, 'index.html'));
 await writeFile(join(directory, VERSION_CONFIG.filename), `${JSON.stringify(metadata, null, 2)}\n`);

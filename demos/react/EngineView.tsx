@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { createReactCellAdapter, ReactCellPortals } from '@tikitaki/react';
+import { createReactCellAdapter, ReactCellPortals } from '@tikitaki_gagarinbefree/react';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
 import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';

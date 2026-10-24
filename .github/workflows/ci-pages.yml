@@ -18,6 +18,8 @@ jobs:
     name: Tests and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -28,6 +30,16 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Assign package versions before building
+        id: version
+        run: |
+          RELEASE_TAGS=$(gh release list --limit 100 --json tagName)
+          export RELEASE_TAGS
+          node scripts/prepare-release.mjs
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
       - name: Install locked dependencies
         run: npm ci
       - name: Typecheck
@@ -64,6 +76,21 @@ jobs:
           retention-days: 7
           overwrite: true
 
+      - name: Pack the tested npm packages
+        run: npm run release:pack
+      - name: Verify independent consumers of all optional packages
+        run: npm run release:test-consumer
+      - name: Verify release archive integrity
+        run: npm run release:publish -- .artifacts/npm-release --verify-only
+      - name: Upload tested npm packages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: verified-npm-packages
+          path: .artifacts/npm-release
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
       - name: Upload the tested demo
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
@@ -75,7 +102,7 @@ jobs:
           overwrite: true
 
   prepare-release:
-    name: Prepare release version
+    name: Prepare deployment metadata
     needs: build-and-test
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -96,14 +123,10 @@ jobs:
           path: demos/dist
       - name: Prepare the deployment metadata
         id: version
-        run: |
-          RELEASE_TAGS=$(gh release list --limit 100 --json tagName)
-          export RELEASE_TAGS
-          node scripts/stamp-deployment.mjs
+        run: node scripts/stamp-deployment.mjs
         env:
           SOURCE_SHA: ${{ github.sha }}
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.build-and-test.outputs.version }}
       - uses: actions/upload-artifact@v7
         with:
           name: prepared-demo
@@ -138,16 +161,12 @@ jobs:
         with:
           name: prepared-demo
           path: demos/dist
-      - name: Assign the next stable release version
+      - name: Stamp the verified release version
         id: version
-        run: |
-          RELEASE_TAGS=$(gh release list --limit 100 --json tagName)
-          export RELEASE_TAGS
-          node scripts/stamp-deployment.mjs
+        run: node scripts/stamp-deployment.mjs
         env:
           SOURCE_SHA: ${{ github.sha }}
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.build-and-test.outputs.version }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
@@ -171,7 +190,7 @@ jobs:
 
   release:
     name: Publish GitHub Release
-    needs: [prepare-release, web-pages]
+    needs: [build-and-test, prepare-release, web-pages]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -185,6 +204,10 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: release-${{ needs.web-pages.outputs.version }}
+          path: release-assets
+      - uses: actions/download-artifact@v8
+        with:
+          name: verified-npm-packages
           path: release-assets
       - name: Create GitHub Release for the deployed version
         env:
@@ -210,7 +233,8 @@ jobs:
             exit 0
           fi
           node scripts/update-readme-release.mjs "$VERSION"
-          git add README.md docs/badges/release.svg
+          node scripts/prepare-release.mjs "$VERSION"
+          git add README.md docs/badges/release.svg package.json package-lock.json packages/*/package.json
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

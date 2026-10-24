@@ -442,7 +442,7 @@ callbacks/adapter/модель. Локальные styles и marker восста
 
 ## Framework adapters: этап 5
 
-Это отдельные необязательные пакеты: `@tikitaki/react` и `@tikitaki/vue`.
+Это отдельные необязательные пакеты: `@tikitaki_gagarinbefree/react` и `@tikitaki_gagarinbefree/vue`.
 Они объявляют framework/core peer dependencies и не входят в `tikitaki` exports
 или runtime/peer dependencies. ESM и declarations собираются в packages/*/dist.
 Примеры и lifecycle: [React](./packages/react/README.md),
@@ -503,9 +503,9 @@ by child content are ignored. destroy() removes the non-passive wheel listener.
 
 ## Svelte and Angular adapters
 
-`@tikitaki/svelte` exports `createSvelteCellAdapter<T>()`, a readonly cell store,
+`@tikitaki_gagarinbefree/svelte` exports `createSvelteCellAdapter<T>()`, a readonly cell store,
 and the `portal` action. Render keyed cells under the parent Svelte application.
-`@tikitaki/angular` exports `createAngularCellAdapter<T>(createView)`. Its factory
+`@tikitaki_gagarinbefree/angular` exports `createAngularCellAdapter<T>(createView)`. Its factory
 receives `{ $implicit: item, position }` and must return a parent-owned embedded
 view, normally from `ViewContainerRef.createEmbeddedView`. Both implement the
 core CellAdapter contract, preserve surviving component identity during updates,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, shallowRef, watch } from 'vue';
-import { createVueCellAdapter } from '@tikitaki/vue';
+import { createVueCellAdapter } from '@tikitaki_gagarinbefree/vue';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
 import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';

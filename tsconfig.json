@@ -18,10 +18,10 @@
     "paths": {
       "tikitaki": ["./src/index.ts"],
       "tikitaki/dom": ["./src/dom.ts"],
-      "@tikitaki/react": ["./packages/react/src/index.ts"],
-      "@tikitaki/vue": ["./packages/vue/src/index.ts"],
-      "@tikitaki/svelte": ["./packages/svelte/src/index.ts"],
-      "@tikitaki/angular": ["./packages/angular/src/index.ts"],
+      "@tikitaki_gagarinbefree/react": ["./packages/react/src/index.ts"],
+      "@tikitaki_gagarinbefree/vue": ["./packages/vue/src/index.ts"],
+      "@tikitaki_gagarinbefree/svelte": ["./packages/svelte/src/index.ts"],
+      "@tikitaki_gagarinbefree/angular": ["./packages/angular/src/index.ts"],
       "@demo/angular": ["./demos/angular/App.ts"]
     },
     "jsx": "react-jsx"

@@ -35,13 +35,18 @@ if (mode === 'prepare') {
     `
 import { createElement } from 'react';
 import { h } from 'vue';
-import { createReactCellAdapter, ReactCellPortals, type ReactCellBridge } from '@tikitaki/react';
-import { createVueCellAdapter, VueCellPortals, type VueCellBridge } from '@tikitaki/vue';
+import { createReactCellAdapter, ReactCellPortals, type ReactCellBridge } from '@tikitaki_gagarinbefree/react';
+import { createVueCellAdapter, VueCellPortals, type VueCellBridge } from '@tikitaki_gagarinbefree/vue';
+import { createSvelteCellAdapter } from '@tikitaki_gagarinbefree/svelte';
+import { createAngularCellAdapter } from '@tikitaki_gagarinbefree/angular';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Position } from 'tikitaki';
 
 const react: ReactCellBridge<string> = createReactCellAdapter<string>();
 const vue: VueCellBridge<string> = createVueCellAdapter<string>();
+const svelte = createSvelteCellAdapter<string>();
+const angular = createAngularCellAdapter<string>((context) => ({ context, rootNodes: [], destroyed: false, detectChanges() {}, destroy() {} }));
+if (typeof svelte.cells.subscribe !== 'function' || typeof angular.mount !== 'function') throw new Error('Invalid optional adapter import');
 if (react.getSnapshot().length !== 0 || vue.cells.value.length !== 0) throw new Error('Invalid adapter import');
 createElement(ReactCellPortals<string>, { bridge: react, renderCell: item => createElement('span', null, item) });
 h(VueCellPortals<string>, { bridge: vue, renderCell: (item: string) => h('span', item) });
@@ -67,18 +72,25 @@ if (false) {
   process.stdout.write(`Prepared framework consumer at ${consumer}\n`);
 } else {
   await import(pathToFileURL(join(consumer, 'output/index.js')).href);
-  for (const framework of ['react', 'vue']) {
-    const directory = join(consumer, 'node_modules/@tikitaki', framework);
+  for (const framework of ['react', 'vue', 'svelte', 'angular']) {
+    const directory = join(consumer, 'node_modules/@tikitaki_gagarinbefree', framework);
     const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
-    assert.equal(manifest.name, `@tikitaki/${framework}`);
+    assert.equal(manifest.name, `@tikitaki_gagarinbefree/${framework}`);
     assert.equal(manifest.sideEffects, false);
     assert.equal(Object.keys(manifest.dependencies ?? {}).length, 0);
     assert.deepEqual(
       Object.keys(manifest.peerDependencies).sort(),
-      framework === 'react' ? ['react', 'react-dom', 'tikitaki'] : ['tikitaki', 'vue'],
+      framework === 'react'
+        ? ['react', 'react-dom', 'tikitaki']
+        : framework === 'vue'
+          ? ['tikitaki', 'vue']
+          : framework === 'svelte'
+            ? ['svelte', 'tikitaki']
+            : ['@angular/core', 'tikitaki'],
     );
     const code = await readFile(join(directory, 'dist/index.js'), 'utf8');
-    const allowed = framework === 'react' ? ['react', 'react-dom'] : ['vue'];
+    const allowed =
+      framework === 'react' ? ['react', 'react-dom'] : framework === 'vue' ? ['vue'] : framework === 'svelte' ? ['svelte/store'] : [];
     for (const [, specifier] of code.matchAll(/\bfrom\s*['"]([^'"]+)['"]/g)) {
       assert(allowed.includes(specifier) || specifier.startsWith('./'), `Unexpected adapter import ${specifier}`);
     }
@@ -88,6 +100,6 @@ if (false) {
   assert.equal(Object.keys(core.dependencies ?? {}).length, 0);
   assert.equal(Object.keys(core.peerDependencies ?? {}).length, 0);
   process.stdout.write(
-    'Adapter package check passed: fresh React/Vue tarballs, independent strict TypeScript consumer, readonly contracts, import-safe ESM and isolated peers.\n',
+    'Adapter package check passed: all four framework tarballs, independent strict TypeScript consumer, readonly contracts, import-safe ESM and isolated peers.\n',
   );
 }

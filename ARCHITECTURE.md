@@ -43,7 +43,7 @@ ESLint; build-time TypeScript transformers формируют корректны
 
 ## Владение содержимым
 
-Результат этапа 5: отдельные пакеты @tikitaki/react и @tikitaki/vue. Адаптер хранит
+Результат этапа 5: отдельные пакеты @tikitaki_gagarinbefree/react и @tikitaki_gagarinbefree/vue. Адаптер хранит
 только снимок текущих hosts и CellAdapter handles; содержимое рендерится
 родительским React root через portals либо родительским Vue-приложением через
 Teleport. Общий контракт mount/update/unmount не требует root на каждую ячейку.

@@ -65,3 +65,11 @@ export const BROWSER_CONFIG = Object.freeze({
   workers: 1,
   reportPath: '.artifacts/chrome.json',
 });
+
+/** Public package locations and the deterministic release artifact directory. */
+export const NPM_RELEASE_CONFIG = Object.freeze({
+  directories: Object.freeze(['.', 'packages/react', 'packages/vue', 'packages/svelte', 'packages/angular']),
+  directory: '.artifacts/npm-release',
+  scope: '@tikitaki_gagarinbefree',
+  registry: 'https://registry.npmjs.org/',
+});

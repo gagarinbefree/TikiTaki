@@ -1,0 +1,50 @@
+name: Publish npm packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing verified GitHub release tag, for example v0.1.4
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-publication-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'gagarinbefree/TikiTaki' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: npm
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Check the requested stable release tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: node --input-type=module -e "if (!/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(process.env.RELEASE_TAG)) throw new Error('Expected a stable release tag')"
+      - name: Download the verified release archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: gh release download "$RELEASE_TAG" --pattern '*.tgz' --pattern 'npm-release.json' --dir .artifacts/npm-release
+      - name: Verify checksums and release identity
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: npm run release:publish -- .artifacts/npm-release --verify-only
+      - name: Publish core, then adapters using npm trusted publishing
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: npm run release:publish

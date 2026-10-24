@@ -1,6 +1,6 @@
-# @tikitaki/react
+# @tikitaki_gagarinbefree/react
 
-A functional React adapter for TikiTaki. Private alpha, ESM, strict TypeScript. Peer dependencies: `tikitaki@0.1.0-alpha.0`, `react@^19.3.1`, and `react-dom@^19.3.1`. The core package has no framework dependency.
+A functional React adapter for TikiTaki. ESM, strict TypeScript, MIT licensed. Peer dependencies: the compatible `tikitaki` version declared in package.json, `react@^19.3.1`, and `react-dom@^19.3.1`. The core package has no framework dependency.
 
 ## Usage
 
@@ -10,7 +10,7 @@ Create one bridge per view and render one `ReactCellPortals` under the owning Re
 import { useEffect, useRef, useState } from 'react';
 import type { Grid } from 'tikitaki';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
-import { createReactCellAdapter, ReactCellPortals } from '@tikitaki/react';
+import { createReactCellAdapter, ReactCellPortals } from '@tikitaki_gagarinbefree/react';
 /** Own one controller while rendering its component content through parent-root portals. */
 export function GridView({ grid }: { grid: Grid<string> }) {
   const container = useRef<HTMLDivElement>(null);
