@@ -27,6 +27,7 @@ export const VERSION_CONFIG = Object.freeze({
   className: 'container fg-3 fs-sm text-center py-4 border-top',
   label: 'Version: ',
   repository: 'https://github.com/gagarinbefree/TikiTaki',
+  npm: 'https://www.npmjs.com/package/tikitaki',
   cache: 'no-store',
   invalidVersion: 'Invalid package version',
   invalidIdentifier: 'Deployment identifiers must be positive decimal integers',
