@@ -1,6 +1,6 @@
 {
   "name": "@tikitaki_gagarinbefree/svelte",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -16,7 +16,7 @@
   ],
   "sideEffects": false,
   "peerDependencies": {
-    "tikitaki": "^0.1.6",
+    "tikitaki": "^0.1.7",
     "svelte": "^5.57.2"
   },
   "license": "MIT",
