@@ -15,7 +15,25 @@ The project is under active development. Google Chrome Desktop and Chrome touch 
 
 ## Install in your project
 
-Packages are not currently published to the npm registry. Build a checkout and install the generated package tarball. GitHub Releases prepared for npm publication also contain the five tested package tarballs and their checksum manifest. See [PUBLISHING.md](./PUBLISHING.md) for maintainer instructions.
+Install the core in your application:
+
+```sh
+npm install tikitaki
+```
+
+For a framework integration, also install the adapter you need:
+
+```sh
+npm install tikitaki @tikitaki_gagarinbefree/react
+# Or choose one of the other adapters:
+npm install tikitaki @tikitaki_gagarinbefree/vue
+npm install tikitaki @tikitaki_gagarinbefree/svelte
+npm install tikitaki @tikitaki_gagarinbefree/angular
+```
+
+Your application supplies the adapter's framework peer dependencies. Install only the adapter for your framework. If a package has not yet been published to the registry, install a tested tarball from [GitHub Releases](https://github.com/gagarinbefree/TikiTaki/releases) or build from source below. Release downloads include an integrity manifest; maintainer publication instructions are in [PUBLISHING.md](./PUBLISHING.md).
+
+### Build from source
 
 Use Node.js 24 and npm 11 for building and contributing. Git and Google Chrome are needed for the contributor workflow and browser tests.
 

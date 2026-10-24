@@ -69,4 +69,4 @@ A new npm trusted-publisher configuration must complete a successful publish wit
 
 Publication runs are serialized and are not cancelled midway by a newer publication request. Ordinary CI runs still cancel outdated tests and builds on the same branch. Publication is manual rather than triggered by every demo deployment.
 
-After the initial packages exist, update the user-facing installation instructions to use `npm install tikitaki` and the selected `@tikitaki_gagarinbefree/*` adapter. Keep package metadata, adapter guides, and the registry pages consistent.
+After the initial packages exist, verify that the README installation commands resolve the intended public packages. Keep package metadata, adapter guides, and the registry pages consistent.
