@@ -153,4 +153,4 @@ window.addEventListener('pagehide', (event) => {
   unmount();
   window.tikitakiDemo.commands = null;
 });
-void showRepositoryLink();
+showRepositoryLink();
