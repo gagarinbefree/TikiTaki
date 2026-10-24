@@ -1,6 +1,6 @@
 {
   "name": "tikitaki",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Zero-runtime-dependency navigation for a ragged 2D swipe grid",
   "type": "module",
   "types": "./dist/index.d.ts",
