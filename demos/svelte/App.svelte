@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, setContext } from 'svelte';
+  import { onMount } from 'svelte';
   import type { Grid, Position } from 'tikitaki';
   import type { SwipeEngine } from 'tikitaki/dom';
   import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
@@ -12,7 +12,6 @@
   let visible = $state(true);
   let position = $state.raw<Position>(INITIAL_POSITION);
   let engine = $state.raw<SwipeEngine<string> | null>(null);
-  setContext(DEMO_TEXT.context, DEMO_TEXT.svelteContext);
   /** Restore initial data before mounting another independent controller. */
   function remount() {
     if (!visible) {

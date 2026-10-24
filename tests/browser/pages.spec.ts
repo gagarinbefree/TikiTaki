@@ -1,11 +1,16 @@
 import { expect, test } from '@playwright/test';
 
-test('all Pages entry points link to the repository', async ({ page }) => {
+test('all Pages entry points link to the repository and deployed release', async ({ page }) => {
+  await page.route('**/version.json', (route) => route.fulfill({ json: { version: '0.1.1' } }));
   for (const entry of ['', 'react/', 'vue/', 'svelte/', 'angular/']) {
     await page.goto(`/TikiTaki/${entry}`);
     await expect(page.locator('[data-demo-repository]')).toHaveAttribute('href', 'https://github.com/gagarinbefree/TikiTaki');
     await expect(page.locator('[data-demo-repository]')).toHaveText('GitHub');
-    await expect(page.locator('[data-demo-version]')).toHaveCount(0);
+    await expect(page.locator('[data-demo-version]')).toHaveText('v0.1.1');
+    await expect(page.locator('[data-demo-version]')).toHaveAttribute(
+      'href',
+      'https://github.com/gagarinbefree/TikiTaki/releases/tag/v0.1.1',
+    );
   }
 });
 

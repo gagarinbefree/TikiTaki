@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, provide, ref, shallowRef } from 'vue';
+import { onMounted, onUnmounted, ref, shallowRef } from 'vue';
 import type { Direction, Grid, Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
 import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
@@ -12,7 +12,6 @@ const grid = shallowRef<Grid<string>>(initialGrid);
 const visible = ref(true);
 const position = shallowRef<Position>(INITIAL_POSITION);
 const engine = shallowRef<SwipeEngine<string> | null>(null);
-provide(DEMO_TEXT.context, DEMO_TEXT.vueContextCompositionAPI);
 
 /** Request an animated transition and report rejected operations. */
 function navigate(direction: Direction) {

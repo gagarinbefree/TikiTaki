@@ -177,21 +177,10 @@ for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
       }
       await session?.detach();
     });
-    test('framework context and component state survive updateGrid, then a shorter grid clamps coordinates', async ({ page }) => {
-      await expect(page.locator(`${current} small`)).toContainText(
-        framework === 'react'
-          ? 'React context'
-          : framework === 'vue'
-            ? 'Vue context'
-            : framework === 'svelte'
-              ? 'Svelte context'
-              : 'Angular context',
-      );
-      await page.locator(`${current} [data-action="count"]`).click();
-      await expect(page.locator(`${current} button`)).toHaveText('Clicks: 1');
+    test('cell labels update with the grid, then a shorter grid clamps coordinates', async ({ page }) => {
+      await expect(page.locator(`${current} [data-item]`)).toHaveText('A10');
       await command(page, 'update');
       await item(page, 'A10!', 0, 9);
-      await expect(page.locator(`${current} button`)).toHaveText('Clicks: 1');
       await command(page, 'shrink');
       await item(page, 'Only', 0, 0);
       await expect(page.locator('[data-tikitaki-cell]')).toHaveCount(1);

@@ -27,13 +27,23 @@ for (const framework of ['react', 'vue', 'svelte', 'angular']) {
       expect(Math.abs(map.x + map.width - layout.x - layout.width)).toBeLessThan(1);
     }
     await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveAttribute('data-item', 'A1');
+    await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveText('A1');
     await expect(page.locator('[aria-current="true"]')).toHaveClass(/theme-success/);
     await expect(page.locator('[data-navigate]')).toHaveCount(0);
+    await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveClass(
+      /(?=.*\btheme-(primary|accent|success|danger|warning|info|inverse|secondary)\b)(?=.*\btheme-contrast\b)/,
+    );
+    const initialAppearance = await page.locator('[data-tikitaki-role="current"] [data-item]').getAttribute('class');
+    await page.getByRole('button', { name: 'C3', exact: true }).click();
+    await expect(page.locator('[aria-current="true"]')).toHaveText('C3');
+    await page.getByRole('button', { name: 'A1', exact: true }).click();
+    await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveAttribute('data-item', 'A1');
+    await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveAttribute('class', initialAppearance ?? '');
     await page.getByRole('button', { name: 'C3', exact: true }).click();
     await expect(page.locator('[aria-current="true"]')).toHaveText('C3');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.screenshot({ path: `.artifacts/bootstrap-${framework}-${String(page.viewportSize()?.width)}.png`, fullPage: true });
-    const surface = page.locator('[data-tikitaki-role="current"] [data-item]');
+    const surface = page.getByRole('navigation', { name: 'Cell map' });
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-bs-theme', 'light');
     });

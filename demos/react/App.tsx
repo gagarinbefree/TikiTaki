@@ -3,7 +3,7 @@ import type { Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
 import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
 import { initialGrid, INITIAL_POSITION } from '../shared';
-import { Context, metrics } from './context';
+import { metrics } from './context';
 import EngineView from './EngineView';
 import CellMap from './CellMap';
 
@@ -42,26 +42,24 @@ export default function App() {
     };
   });
   return (
-    <Context.Provider value={DEMO_TEXT.reactContextRoot}>
-      <main className={DEMO_TEXT.container}>
-        <div className={DEMO_TEXT.layout} data-demo-layout="">
-          <div className={DEMO_TEXT.viewportColumn} style={DEMO_GEOMETRY.phoneColumn}>
-            {visible ? (
-              <EngineView grid={grid} engineRef={engineRef} onPosition={setPosition} />
-            ) : (
-              <p data-unmounted="">{DEMO_TEXT.destroyedMessage}</p>
-            )}
-          </div>
-          <CellMap
-            grid={grid}
-            position={position}
-            enabled={visible}
-            onSelect={(target) => {
-              void engineRef.current?.goTo(target).catch(metrics.error);
-            }}
-          />
+    <main className={DEMO_TEXT.container}>
+      <div className={DEMO_TEXT.layout} data-demo-layout="">
+        <div className={DEMO_TEXT.viewportColumn} style={DEMO_GEOMETRY.phoneColumn}>
+          {visible ? (
+            <EngineView grid={grid} engineRef={engineRef} onPosition={setPosition} />
+          ) : (
+            <p data-unmounted="">{DEMO_TEXT.destroyedMessage}</p>
+          )}
         </div>
-      </main>
-    </Context.Provider>
+        <CellMap
+          grid={grid}
+          position={position}
+          enabled={visible}
+          onSelect={(target) => {
+            void engineRef.current?.goTo(target).catch(metrics.error);
+          }}
+        />
+      </div>
+    </main>
   );
 }

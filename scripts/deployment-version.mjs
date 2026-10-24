@@ -8,13 +8,14 @@ function validateReleaseVersion(version) {
 }
 
 /**
- * Create a unique semantic prerelease for each workflow execution and retry.
+ * Increment the greatest published stable version; workflow identifiers remain trace metadata.
  * @param {string} baseVersion Package version of the tested source.
  * @param {string} runNumber Monotonically increasing deployment workflow number.
  * @param {string} attempt GitHub's attempt number, including deploy-only retries.
  * @param {string} commit Full SHA of the source verified by the upstream workflow.
+ * @param {readonly string[]} releaseTags Previously published GitHub release tags.
  */
-export function createDeploymentMetadata(baseVersion, runNumber, attempt, commit) {
+export function createDeploymentMetadata(baseVersion, runNumber, attempt, commit, releaseTags = []) {
   validateReleaseVersion(baseVersion);
   if (!/^[1-9]\d*$/.test(runNumber) || !/^[1-9]\d*$/.test(attempt)) {
     throw new Error(VERSION_CONFIG.invalidIdentifier);
@@ -22,8 +23,12 @@ export function createDeploymentMetadata(baseVersion, runNumber, attempt, commit
   if (!/^[a-f\d]{40}$/.test(commit)) {
     throw new Error(VERSION_CONFIG.invalidCommit);
   }
-  const separator = baseVersion.includes('-') ? '.' : '-';
-  const version = `${baseVersion}${separator}${VERSION_CONFIG.tag}.${runNumber}.${attempt}`;
+  const baseline = baseVersion.split('-')[0] ?? baseVersion;
+  const stable = [baseline, ...releaseTags.filter((tag) => /^v\d+\.\d+\.\d+$/.test(tag)).map((tag) => tag.slice(1))];
+  const versions = stable.map((value) => value.split('.').map(Number));
+  versions.sort((a, b) => (b[0] ?? 0) - (a[0] ?? 0) || (b[1] ?? 0) - (a[1] ?? 0) || (b[2] ?? 0) - (a[2] ?? 0));
+  const latest = versions[0] ?? [0, 1, 0];
+  const version = `${String(latest[0])}.${String(latest[1])}.${String((latest[2] ?? 0) + 1)}`;
   const metadata = { version, commit, runNumber, attempt };
 
   return metadata;

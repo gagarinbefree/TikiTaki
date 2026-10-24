@@ -11,6 +11,7 @@ const metadata = createDeploymentMetadata(
   process.env.GITHUB_RUN_NUMBER ?? '',
   process.env.GITHUB_RUN_ATTEMPT ?? '',
   process.env.SOURCE_SHA ?? '',
+  JSON.parse(process.env.RELEASE_TAGS ?? '[]').map((release) => release.tagName),
 );
 const directory = process.argv[2] ?? VERSION_CONFIG.outputDirectory;
 await access(join(directory, 'index.html'));

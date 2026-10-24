@@ -96,9 +96,14 @@ jobs:
           path: demos/dist
       - name: Prepare the deployment metadata
         id: version
-        run: node scripts/stamp-deployment.mjs
+        run: |
+          RELEASE_TAGS=$(gh release list --limit 100 --json tagName)
+          export RELEASE_TAGS
+          node scripts/stamp-deployment.mjs
         env:
           SOURCE_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
       - uses: actions/upload-artifact@v7
         with:
           name: prepared-demo
@@ -133,11 +138,16 @@ jobs:
         with:
           name: prepared-demo
           path: demos/dist
-      - name: Assign a unique version, including deploy-only retries
+      - name: Assign the next stable release version
         id: version
-        run: node scripts/stamp-deployment.mjs
+        run: |
+          RELEASE_TAGS=$(gh release list --limit 100 --json tagName)
+          export RELEASE_TAGS
+          node scripts/stamp-deployment.mjs
         env:
           SOURCE_SHA: ${{ github.sha }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:

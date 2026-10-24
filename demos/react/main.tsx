@@ -5,7 +5,7 @@ import { showRepositoryLink } from '../version';
 import App from './App';
 import '../vendor/bootstrap-6.0.0-alpha.1/bootstrap.css';
 
-showRepositoryLink();
+void showRepositoryLink();
 const root = document.getElementById(DEMO_TEXT.app);
 if (root === null) throw new Error(DEMO_TEXT.missingDemoRoot);
 createRoot(root).render(

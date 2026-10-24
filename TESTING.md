@@ -681,7 +681,7 @@ environment failure before tests execute, rather than a failing assertion.
 React markup now lives in separate App, EngineView, Cell, and CellMap TSX
 components. Vue uses matching single-file components with script setup and
 compiled templates; Teleports render cells inside the parent application.
-Existing Chrome lifecycle checks cover context, counter state, updateGrid,
+Chrome lifecycle checks cover cell labels, updateGrid,
 destroy, remount, and React StrictMode without per-cell roots.
 
 The Bootstrap 6 presentation assertion first failed against the previous navbar
@@ -774,7 +774,7 @@ notifications were replaced by an ownership callback. Angular uses AOT templates
 zoneless change detection, parent-owned embedded views, and isolated peers.
 
 All four demos are included in shared geometry, mouse/touch gesture, wheel,
-map, updateGrid, context, counter-state, cleanup, remount, and Pages checks.
+map, updateGrid, cell labels, cleanup, remount, and Pages checks.
 Svelte and Angular templates are checked by their official compilers; Prettier
 3.9.10 uses the Svelte plugin and the Angular HTML parser for the new files.
 

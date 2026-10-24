@@ -5,7 +5,6 @@ import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
 import { initialGrid, INITIAL_POSITION } from '../shared';
 import { EngineView } from './EngineView';
 import { CellMap } from './CellMap';
-import { DEMO_CONTEXT } from './context';
 import { metrics } from './metrics';
 
 /** Coordinate native Angular signals, template views, and demo lifecycle diagnostics. */
@@ -13,7 +12,6 @@ import { metrics } from './metrics';
   selector: 'tikitaki-angular-app',
   standalone: true,
   imports: [EngineView, CellMap],
-  providers: [{ provide: DEMO_CONTEXT, useValue: DEMO_TEXT.angularContext }],
   templateUrl: './App.component.html',
   host: { class: 'd-block' },
 })

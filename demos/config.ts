@@ -5,16 +5,14 @@ export const DEMO_TEXT = Object.freeze({
   updateSuffix: '!',
   empty: '',
   article: 'article',
-  cell: 'd-flex flex-column align-items-center justify-content-center gap-3 text-center p-5 bg-1 rounded-7',
+  cell: 'd-flex flex-column align-items-center justify-content-center gap-3 text-center p-5 rounded-7',
   dataItem: 'data-item',
   dataRow: 'data-row',
   small: 'small',
   h2: 'h2',
   p: 'p',
-  swipeHint: 'Swipe up or down to change rows. Swipe left or right to change cells.',
   button: 'button',
   dataAction: 'data-action',
-  count: 'count',
   div: 'div',
   viewport: 'border rounded-7 overflow-hidden bg-1 shadow-sm',
   dataDemoContainer: 'data-demo-container',
@@ -37,14 +35,13 @@ export const DEMO_TEXT = Object.freeze({
   gridMapCurrentCell: 'btn-solid theme-success btn-lg flex-shrink-0',
   ariaCurrent: 'aria-current',
   true: 'true',
-  reactContextRoot: 'React context · one parent root',
   main: 'main',
   a: 'a',
   demos: '← All demos',
   badge: 'badge theme-secondary',
   tikiTakiReactStrictMode: 'TikiTaki / React / StrictMode',
   h1: 'h1',
-  cellTitle: 'fs-6xl fw-bold mb-0 fg-1',
+  cellTitle: 'fs-6xl fw-bold mb-0',
   layout: 'd-flex flex-column md:flex-row gap-5 align-items-stretch mb-5',
   dataDemoLayout: 'data-demo-layout',
   container: 'container py-5',
@@ -76,15 +73,11 @@ export const DEMO_TEXT = Object.freeze({
   toggle: 'toggle',
   destroyLabel: 'Destroy',
   remountLabel: 'Remount',
-  counterHint: 'The counter belongs to the component: data updates preserve it; unmounting resets it.',
   app: 'app',
   missingDemoRoot: 'Missing demo root',
   context: 'context',
-  angularContext: 'Angular context · parent injector',
   tikiTakiAngular: 'TikiTaki / Angular / Signals',
-  svelteContext: 'Svelte context · one parent root',
   tikiTakiSvelte: 'TikiTaki / Svelte 5 / Runes',
-  vueContextCompositionAPI: 'Vue context · Composition API',
   tikiTakiVue3CompositionAPI: 'TikiTaki / Vue 3 / Composition API',
   appSelector: '#app',
   b1: 'B1',
@@ -116,7 +109,6 @@ export const DEMO_GEOMETRY = Object.freeze({
 
 /** Format demo UI labels consistently without duplicating strings across frameworks. */
 export const DEMO_LABELS = Object.freeze({
-  counter: (count: number) => `Clicks: ${String(count)}`,
   coordinates: (position: Position) => `row: ${String(position.row)}, col: ${String(position.col)}`,
   row: (row: number) => `Row ${String(row)}`,
 });
@@ -128,3 +120,6 @@ export const initialGrid: Grid<string> = [
   [DEMO_TEXT.c1, DEMO_TEXT.c2, DEMO_TEXT.c3],
   [DEMO_TEXT.d1, DEMO_TEXT.d2, DEMO_TEXT.d3, DEMO_TEXT.d4, DEMO_TEXT.d5],
 ];
+
+/** Built-in button themes; no custom color values are introduced. */
+export const CELL_THEMES = Object.freeze(['primary', 'accent', 'success', 'danger', 'warning', 'info', 'inverse', 'secondary']);
