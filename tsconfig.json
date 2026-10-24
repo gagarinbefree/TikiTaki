@@ -35,7 +35,8 @@
     "vitest.config.ts",
     "playwright.config.ts",
     "demos/**/*.tsx",
-    "demos/**/*.vue"
+    "demos/**/*.vue",
+    "demos/vanilla/**/*.js"
   ],
   "vueCompilerOptions": { "strictTemplates": true, "dataAttributes": ["data-*"] },
   "exclude": ["demos/angular/**"]

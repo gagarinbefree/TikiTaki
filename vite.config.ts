@@ -39,6 +39,7 @@ export default defineConfig(({ command }) => {
       rolldownOptions: {
         input: {
           home: path('./demos/index.html'),
+          vanilla: path('./demos/vanilla/index.html'),
           react: path('./demos/react/index.html'),
           vue: path('./demos/vue/index.html'),
           svelte: path('./demos/svelte/index.html'),

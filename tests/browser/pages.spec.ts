@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('all Pages entry points link to the repository and deployed release', async ({ page }) => {
   await page.route('**/version.json', (route) => route.fulfill({ json: { version: '0.1.1' } }));
-  for (const entry of ['', 'react/', 'vue/', 'svelte/', 'angular/']) {
+  for (const entry of ['', 'vanilla/', 'react/', 'vue/', 'svelte/', 'angular/']) {
     await page.goto(`/TikiTaki/${entry}`);
     await expect(page.locator('[data-demo-repository]')).toHaveAttribute('href', 'https://github.com/gagarinbefree/TikiTaki');
     await expect(page.locator('[data-demo-repository]')).toHaveText('GitHub');
@@ -14,7 +14,7 @@ test('all Pages entry points link to the repository and deployed release', async
   }
 });
 
-for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
+for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular'] as const) {
   test(`Pages project path opens the ${framework} demo with working assets and cell selection`, async ({ page }) => {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -25,9 +25,13 @@ for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
     });
     const response = await page.goto('/TikiTaki/');
     expect(response?.status()).toBe(200);
+    await expect(page.locator('main > section .btn-outline').first()).toHaveText('Vanilla JS');
     const link = page
       .locator('main > section')
-      .getByRole('link', { name: { react: 'React', vue: 'Vue', svelte: 'Svelte', angular: 'Angular' }[framework], exact: true });
+      .getByRole('link', {
+        name: { vanilla: 'Vanilla JS', react: 'React', vue: 'Vue', svelte: 'Svelte', angular: 'Angular' }[framework],
+        exact: true,
+      });
     await expect(link).toHaveClass('btn-outline theme-secondary');
     await link.click();
     await expect(page).toHaveURL(new RegExp(`/TikiTaki/${framework}/$`));

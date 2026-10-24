@@ -58,7 +58,7 @@ async function item(page: Page, name: string, row: number, col: number) {
   await centered(page);
   expect(await page.locator('[data-tikitaki-cell]').count()).toBeLessThanOrEqual(5);
 }
-for (const framework of ['react', 'vue', 'svelte', 'angular'] as const) {
+for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular'] as const) {
   test.describe(`${framework} demo`, () => {
     test.beforeEach(async ({ page }) => {
       await page.goto(`/demos/${framework}/`);

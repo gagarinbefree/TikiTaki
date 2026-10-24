@@ -167,7 +167,7 @@ From a checkout with dependencies installed:
 npm run demo
 ```
 
-Open the address printed by Vite, then choose React, Vue, Svelte, or Angular. Each demo starts at A1 and supports swipes, wheel navigation, and an interactive cell map.
+Open the address printed by Vite, then choose Vanilla JS, React, Vue, Svelte, or Angular. The [Vanilla JS example](./demos/vanilla/) uses the DOM API directly without a UI framework. Each demo starts at A1 and supports swipes, wheel navigation, and an interactive cell map.
 
 ```sh
 npm run demo:build

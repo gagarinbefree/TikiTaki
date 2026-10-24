@@ -43,7 +43,7 @@ export default tseslint.config(
   },
   js.configs.recommended,
   {
-    files: ['**/*.ts', '**/*.tsx', '**/*.mjs'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.mjs', 'demos/vanilla/**/*.js'],
     plugins: { local: { rules: { functional: functionalStyle } } },
     rules: { 'local/functional': 'error' },
   },
@@ -52,5 +52,6 @@ export default tseslint.config(
     extends: [tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
   },
+  { files: ['demos/vanilla/**/*.js'], languageOptions: { globals: { window: 'readonly', document: 'readonly', HTMLElement: 'readonly' } } },
   { files: ['demos/angular/**/*.ts'], rules: { 'local/functional': 'off' } },
 );

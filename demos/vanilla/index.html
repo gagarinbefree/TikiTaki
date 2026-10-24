@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>TikiTaki · Vanilla JS</title>
+  </head>
+  <body>
+    <header class="border-bottom bg-1">
+      <nav class="navbar container gap-3 py-3" aria-label="Main navigation"><a class="navbar-brand fw-bold" href="../">TikiTaki</a></nav>
+    </header>
+    <nav class="container pt-4" aria-label="Demos">
+      <div class="nav nav-pills theme-secondary d-inline-flex">
+        <a class="nav-link" href="../">Overview</a>
+        <a class="nav-link active" aria-current="page" href="../vanilla/">Vanilla JS</a>
+        <a class="nav-link" href="../react/">React</a>
+        <a class="nav-link" href="../vue/">Vue</a>
+        <a class="nav-link" href="../svelte/">Svelte</a>
+        <a class="nav-link" href="../angular/">Angular</a>
+      </div>
+    </nav>
+    <main class="container py-5">
+      <div class="d-flex flex-column md:flex-row gap-5 align-items-stretch mb-5" data-demo-layout>
+        <div class="flex-shrink-0" data-viewport-column></div>
+        <nav class="card p-5 flex-grow-1 overflow-auto" aria-label="Cell map" data-cell-map>
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+            <span class="badge theme-success">● Current cell</span>
+          </div>
+          <p class="fg-3 fs-sm">Click a cell to navigate. Scroll horizontally to explore longer rows.</p>
+          <div class="overflow-x-auto" data-map-rows></div>
+        </nav>
+      </div>
+    </main>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
