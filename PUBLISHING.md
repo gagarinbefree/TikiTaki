@@ -61,14 +61,14 @@ A new npm trusted-publisher configuration must complete a successful publish wit
 
 ## Automatic publication through GitHub Actions
 
-1. Merge the reviewed change into `main`. The complete tests/build/Pages/Release workflow must succeed.
-2. Its successful `workflow_run` event automatically starts **Publish npm packages**. Failed, cancelled, pull-request, and fork runs cannot publish.
-3. The publication job selects the version from the exact completed run's release artifact. It does not guess from the latest release, so a newer concurrent release cannot change the publication target.
+1. Merge the reviewed change into `main`. The **Test, build and release** workflow runs tests, builds packages, deploys Pages, and creates the GitHub Release.
+2. The same run contains a separate **Publish npm packages** job after **Publish GitHub Release**. Failed, cancelled, pull-request, and fork runs cannot publish.
+3. The publication job selects the exact version from this run's build output. It does not guess from the latest release, so a newer release cannot change the publication target.
 4. The job downloads those release archives, verifies checksums and version, and publishes the core followed by all four adapters through OIDC.
 5. Verify registry metadata and test installation in a clean application before announcing the release.
 
-To retry manually, open **Actions → Publish npm packages → Run workflow** on `main` and enter the existing stable release tag. Previously published identical archives are skipped. The workflow filename and `npm` environment are unchanged, so the existing npm Trusted Publisher settings continue to apply.
+To retry manually, open **Actions → Test, build and release → Run workflow** on `main` and enter the existing stable release tag. Previously published identical archives are skipped. The workflow filename and `npm` environment are unchanged, so the existing npm Trusted Publisher settings continue to apply.
 
-Publication runs are serialized and are not cancelled midway by a newer publication request. Ordinary CI runs still cancel outdated tests and builds on the same branch. Every successful main release is published automatically; manual dispatch is a recovery path.
+Publication jobs are serialized. A newer commit cancels an outdated pipeline on the same branch, including any running publication job. If publication was interrupted, retry its existing release tag manually: identical published archives are skipped safely. Leave the manual tag empty to run the full pipeline. A manual publication by tag skips tests, builds, Pages, and release creation.
 
 After the initial packages exist, verify that the README installation commands resolve the intended public packages. Keep package metadata, adapter guides, and the registry pages consistent.
