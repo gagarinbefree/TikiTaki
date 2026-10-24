@@ -15,7 +15,9 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'])
     const field = await page.locator('[data-demo-container]').boundingBox();
     expect(field).not.toBeNull();
     expect(field && field.height > field.width).toBe(true);
-    expect(field && Math.abs(field.width / field.height - 9 / 16) < 0.01).toBe(true);
+    const mobile = (page.viewportSize()?.width ?? 0) < 768;
+    if (mobile) expect(field).toEqual({ x: 0, y: 0, ...page.viewportSize() });
+    else expect(field && Math.abs(field.width / field.height - 9 / 16) < 0.01).toBe(true);
     const map = await page.getByRole('navigation', { name: 'Cell map' }).boundingBox();
     const layout = await page.locator('[data-demo-layout]').boundingBox();
     expect(map && field && layout).toBeTruthy();
@@ -51,7 +53,7 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'])
     await page.evaluate(() => {
       document.documentElement.setAttribute('data-bs-theme', 'dark');
     });
-    await expect.poll(() => surface.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(light);
+    if (!mobile) await expect.poll(() => surface.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(light);
     await page.evaluate(() => {
       document.documentElement.dir = 'rtl';
     });

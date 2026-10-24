@@ -17,6 +17,7 @@ const map = requireElement('[data-cell-map]');
 const rows = requireElement('[data-map-rows]');
 Object.assign(column.style, DEMO_GEOMETRY.phoneColumn);
 Object.assign(map.style, DEMO_GEOMETRY.map);
+Object.assign(rows.style, DEMO_GEOMETRY.mapRows);
 const metrics = createMetrics();
 let grid = initialGrid;
 let position = INITIAL_POSITION;
@@ -62,6 +63,7 @@ function renderMap() {
   for (const [row, cells] of cellMapRows({ grid, position, enabled: engine !== null }).entries()) {
     const group = document.createElement('p');
     group.className = DEMO_TEXT.gridMapRow;
+    Object.assign(group.style, DEMO_GEOMETRY.mapRow);
     group.setAttribute(DEMO_TEXT.dataMapRow, String(row));
     group.setAttribute('role', DEMO_TEXT.group);
     group.setAttribute(DEMO_TEXT.ariaLabel, DEMO_LABELS.row(row));
@@ -70,6 +72,7 @@ function renderMap() {
       button.type = 'button';
       button.className = cell.current ? DEMO_TEXT.gridMapCurrentCell : DEMO_TEXT.gridMapCell;
       button.textContent = cell.label;
+      Object.assign(button.style, DEMO_GEOMETRY.mapCell, cell.current ? DEMO_GEOMETRY.mapCurrentCell : {});
       button.title = DEMO_LABELS.coordinates(cell.position);
       button.disabled = engine === null;
       if (cell.current) button.setAttribute(DEMO_TEXT.ariaCurrent, DEMO_TEXT.true);
@@ -153,4 +156,4 @@ window.addEventListener('pagehide', (event) => {
   unmount();
   window.tikitakiDemo.commands = null;
 });
-showRepositoryLink();
+showRepositoryLink(true);

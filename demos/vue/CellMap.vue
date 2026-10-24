@@ -15,11 +15,12 @@ const rows = computed(() => cellMapRows(props));
       <span :class="DEMO_TEXT.gridMapLegend">{{ DEMO_TEXT.currentCellLegend }}</span>
     </div>
     <p :class="DEMO_TEXT.hint">{{ DEMO_TEXT.cellMapHint }}</p>
-    <div :class="DEMO_TEXT.gridMapScroll">
+    <div :class="DEMO_TEXT.gridMapScroll" :style="DEMO_GEOMETRY.mapRows">
       <p
         v-for="(cells, row) in rows"
         :key="row"
         :class="DEMO_TEXT.gridMapRow"
+        :style="DEMO_GEOMETRY.mapRow"
         :data-map-row="row"
         role="group"
         :aria-label="DEMO_LABELS.row(row)"
@@ -29,6 +30,7 @@ const rows = computed(() => cellMapRows(props));
           :key="cell.position.col"
           type="button"
           :class="cell.current ? DEMO_TEXT.gridMapCurrentCell : DEMO_TEXT.gridMapCell"
+          :style="{ ...DEMO_GEOMETRY.mapCell, ...(cell.current ? DEMO_GEOMETRY.mapCurrentCell : {}) }"
           :disabled="!enabled"
           :title="DEMO_LABELS.coordinates(cell.position)"
           :aria-current="cell.current ? true : undefined"

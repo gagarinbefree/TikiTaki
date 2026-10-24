@@ -21,11 +21,11 @@ export const DEMO_TEXT = Object.freeze({
   nav: 'nav',
   gridMap: 'card p-5 flex-grow-1 overflow-auto',
   cellMapTitle: 'Cell map',
-  gridMapHeader: 'd-flex flex-wrap align-items-center justify-content-between gap-3 mb-3',
+  gridMapHeader: 'd-none md:d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3',
   span: 'span',
   gridMapLegend: 'badge theme-success',
   currentCellLegend: '● Current cell',
-  hint: 'fg-3 fs-sm',
+  hint: 'd-none md:d-block fg-3 fs-sm',
   cellMapHint: 'Click a cell to navigate. Scroll horizontally to explore longer rows.',
   gridMapScroll: 'overflow-x-auto',
   gridMapRow: 'd-flex gap-1 mb-3',
@@ -102,9 +102,48 @@ export const DEMO_TEXT = Object.freeze({
 /** A 9:16 portrait viewport, at most 360px wide and 70svh tall; Bootstrap supplies its appearance. */
 export const DEMO_GEOMETRY = Object.freeze({
   phoneColumn: Object.freeze({ width: 'min(100%, 360px, 39.375svh)' }),
-  map: Object.freeze({ minWidth: '0', minHeight: '0' }),
-  viewport: Object.freeze({ width: '100%', aspectRatio: '9 / 16' }),
-  cell: Object.freeze({ height: '100%', boxSizing: 'border-box' as const }),
+  map: Object.freeze({
+    minWidth: '0',
+    minHeight: '0',
+    position: 'var(--demo-map-position, relative)' as 'relative' | 'fixed',
+    bottom: 'var(--demo-map-bottom, auto)',
+    left: 'var(--demo-map-left, auto)',
+    transform: 'var(--demo-map-transform, none)',
+    zIndex: 'var(--demo-map-layer, auto)',
+    width: 'var(--demo-map-width, auto)',
+    maxWidth: 'var(--demo-map-max-width, none)',
+    padding: 'var(--demo-map-padding, var(--bs-spacer-5))',
+    backgroundColor: 'var(--demo-map-background, var(--bs-card-bg))',
+    borderWidth: 'var(--demo-map-border-width, var(--bs-border-width))',
+  }),
+  mapRows: Object.freeze({
+    display: 'var(--demo-map-display, block)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 'var(--bs-spacer-1)',
+  }),
+  mapRow: Object.freeze({ display: 'var(--demo-row-display, flex)', marginBottom: 'var(--demo-row-margin, var(--bs-spacer-3))' }),
+  mapCell: Object.freeze({
+    width: 'var(--demo-dot-size, auto)',
+    height: 'var(--demo-dot-size, auto)',
+    padding: 'var(--demo-dot-padding, var(--bs-btn-padding-y) var(--bs-btn-padding-x))',
+    fontSize: 'var(--demo-dot-font-size, var(--bs-btn-font-size))',
+    minHeight: 'var(--demo-dot-min-height, var(--bs-btn-min-height))',
+    borderRadius: 'var(--demo-dot-radius, var(--bs-btn-border-radius))',
+  }),
+  mapCurrentCell: Object.freeze({ width: 'var(--demo-current-dot-size, auto)', height: 'var(--demo-current-dot-size, auto)' }),
+  viewport: Object.freeze({
+    width: 'var(--demo-viewport-width, 100%)',
+    aspectRatio: '9 / 16',
+    position: 'var(--demo-viewport-position, relative)' as 'relative' | 'fixed',
+    inset: 'var(--demo-viewport-inset, auto)',
+    height: 'var(--demo-viewport-height, auto)',
+    zIndex: 'var(--demo-viewport-layer, auto)',
+    borderRadius: 'var(--demo-radius, var(--bs-radius-7))',
+    borderWidth: 'var(--demo-border-width, var(--bs-border-width))',
+  }),
+  cell: Object.freeze({ height: '100%', boxSizing: 'border-box' as const, borderRadius: 'var(--demo-radius, var(--bs-radius-7))' }),
 });
 
 /** Format demo UI labels consistently without duplicating strings across frameworks. */
@@ -123,3 +162,36 @@ export const initialGrid: Grid<string> = [
 
 /** Built-in button themes; no custom color values are introduced. */
 export const CELL_THEMES = Object.freeze(['primary', 'accent', 'success', 'danger', 'warning', 'info', 'inverse', 'secondary']);
+
+/** Mobile geometry overrides; Bootstrap continues to supply colors and component appearance. */
+export const MOBILE_LAYOUT = Object.freeze({
+  query: '(width < 768px)',
+  variables: Object.freeze({
+    '--demo-viewport-position': 'fixed',
+    '--demo-viewport-inset': '0',
+    '--demo-viewport-height': '100dvh',
+    '--demo-viewport-width': '100dvw',
+    '--demo-viewport-layer': '2',
+    '--demo-radius': '0',
+    '--demo-border-width': '0',
+    '--demo-map-position': 'fixed',
+    '--demo-map-bottom': 'max(var(--bs-spacer-5), env(safe-area-inset-bottom))',
+    '--demo-map-left': '50dvw',
+    '--demo-map-transform': 'translateX(-50%)',
+    '--demo-map-layer': '3',
+    '--demo-map-width': 'max-content',
+    '--demo-map-max-width': 'calc(100% - 2 * var(--bs-spacer-5))',
+    '--demo-map-padding': '0',
+    '--demo-map-background': 'transparent',
+    '--demo-map-border-width': '0',
+    '--demo-map-display': 'flex',
+    '--demo-row-display': 'contents',
+    '--demo-row-margin': '0',
+    '--demo-dot-size': '8px',
+    '--demo-current-dot-size': '12px',
+    '--demo-dot-padding': '0',
+    '--demo-dot-min-height': '0',
+    '--demo-dot-font-size': '0px',
+    '--demo-dot-radius': '50%',
+  }),
+});

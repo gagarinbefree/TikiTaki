@@ -52,6 +52,12 @@
   class={DEMO_TEXT.viewport}
   style:width={DEMO_GEOMETRY.viewport.width}
   style:aspect-ratio={DEMO_GEOMETRY.viewport.aspectRatio}
+  style:position={DEMO_GEOMETRY.viewport.position}
+  style:inset={DEMO_GEOMETRY.viewport.inset}
+  style:height={DEMO_GEOMETRY.viewport.height}
+  style:z-index={DEMO_GEOMETRY.viewport.zIndex}
+  style:border-radius={DEMO_GEOMETRY.viewport.borderRadius}
+  style:border-width={DEMO_GEOMETRY.viewport.borderWidth}
   data-demo-container=""
   aria-label={DEMO_TEXT.viewportLabel}
 ></div>

@@ -41,7 +41,8 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'] 
     await expect(page.locator('[aria-current="true"]')).toHaveText('C3');
     const geometry = await current.boundingBox();
     expect(geometry?.height).toBeGreaterThan(100);
-    await page.getByRole('link', { name: 'Overview', exact: true }).click();
+    if ((page.viewportSize()?.width ?? 0) < 768) await page.goto('/TikiTaki/');
+    else await page.getByRole('link', { name: 'Overview', exact: true }).click();
     await expect(page).toHaveURL(/\/TikiTaki\/$/);
     expect(errors).toEqual([]);
   });

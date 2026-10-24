@@ -187,7 +187,7 @@ From a checkout with dependencies installed:
 npm run demo
 ```
 
-Open the address printed by Vite, then choose Vanilla JS, React, Vue, Svelte, Angular, or Lit. The [Vanilla JS example](./demos/vanilla/) uses the DOM API directly without a UI framework. The [Lit example](./demos/lit/) uses Lit templates for cell rendering and the interactive map, with a demo-local adapter that mounts, updates, and clears each cell template. Lit is a development dependency for the demo; the core package does not depend on it. Each demo starts at A1 and supports swipes, wheel navigation, and an interactive cell map.
+Open the address printed by Vite, then choose Vanilla JS, React, Vue, Svelte, Angular, or Lit. The [Vanilla JS example](./demos/vanilla/) uses the DOM API directly without a UI framework. The [Lit example](./demos/lit/) uses Lit templates for cell rendering and the interactive map, with a demo-local adapter that mounts, updates, and clears each cell template. Lit is a development dependency for the demo; the core package does not depend on it. Each demo starts at A1 and supports swipes, wheel navigation, and an interactive cell map. On narrow screens, the swipe view fills the viewport and the map becomes small centered dots at the bottom, with a larger dot for the current cell. Wider screens keep the portrait view and labeled map side by side.
 
 ```sh
 npm run demo:build

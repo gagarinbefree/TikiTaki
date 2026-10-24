@@ -9,14 +9,22 @@ export default function CellMap({ grid, position, enabled, onSelect }: CellMapPr
         <span className={DEMO_TEXT.gridMapLegend}>{DEMO_TEXT.currentCellLegend}</span>
       </div>
       <p className={DEMO_TEXT.hint}>{DEMO_TEXT.cellMapHint}</p>
-      <div className={DEMO_TEXT.gridMapScroll}>
+      <div className={DEMO_TEXT.gridMapScroll} style={DEMO_GEOMETRY.mapRows}>
         {cellMapRows({ grid, position, enabled }).map((cells, row) => (
-          <p key={row} className={DEMO_TEXT.gridMapRow} data-map-row={row} role="group" aria-label={DEMO_LABELS.row(row)}>
+          <p
+            key={row}
+            className={DEMO_TEXT.gridMapRow}
+            style={DEMO_GEOMETRY.mapRow}
+            data-map-row={row}
+            role="group"
+            aria-label={DEMO_LABELS.row(row)}
+          >
             {cells.map((cell) => (
               <button
                 key={cell.position.col}
                 type="button"
                 className={cell.current ? DEMO_TEXT.gridMapCurrentCell : DEMO_TEXT.gridMapCell}
+                style={{ ...DEMO_GEOMETRY.mapCell, ...(cell.current ? DEMO_GEOMETRY.mapCurrentCell : {}) }}
                 disabled={!enabled}
                 title={DEMO_LABELS.coordinates(cell.position)}
                 aria-current={cell.current ? true : undefined}

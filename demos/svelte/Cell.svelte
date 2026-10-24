@@ -16,6 +16,7 @@
   class={cellAppearance(position)}
   style:height={DEMO_GEOMETRY.cell.height}
   style:box-sizing={DEMO_GEOMETRY.cell.boxSizing}
+  style:border-radius={DEMO_GEOMETRY.cell.borderRadius}
   data-item={item}
   data-row={position.row}
 >

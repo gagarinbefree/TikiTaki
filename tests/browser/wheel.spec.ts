@@ -27,6 +27,11 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'])
     expect(await page.evaluate(() => window.scrollY)).toBe(scroll);
     await page.mouse.wheel(0, -240);
     await expect(cell).toHaveAttribute('data-item', 'A1');
+    if ((page.viewportSize()?.width ?? 0) < 768) {
+      await expect(page.locator('body')).toHaveCSS('overflow', 'hidden');
+      expect(errors).toEqual([]);
+      return;
+    }
     await page.mouse.move(2, 200);
     await page.mouse.wheel(0, 300);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(scroll);

@@ -20,6 +20,7 @@ const map = requireElement('[data-cell-map]');
 const rows = requireElement('[data-map-rows]');
 Object.assign(column.style, DEMO_GEOMETRY.phoneColumn);
 Object.assign(map.style, DEMO_GEOMETRY.map);
+Object.assign(rows.style, DEMO_GEOMETRY.mapRows);
 const metrics = createMetrics();
 let grid: Grid<string> = initialGrid;
 let position = INITIAL_POSITION;
@@ -110,4 +111,4 @@ window.addEventListener('pagehide', (event) => {
   unmount();
   window.tikitakiDemo.commands = null;
 });
-showRepositoryLink();
+showRepositoryLink(true);
