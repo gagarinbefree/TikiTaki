@@ -1,14 +1,8 @@
 <div
   #container
-  [class]="text.viewport"
-  [style.width]="geometry.viewport.width"
-  [style.aspect-ratio]="geometry.viewport.aspectRatio"
-  [style.position]="geometry.viewport.position"
-  [style.inset]="geometry.viewport.inset"
-  [style.height]="geometry.viewport.height"
-  [style.z-index]="geometry.viewport.zIndex"
-  [style.border-radius]="geometry.viewport.borderRadius"
-  [style.border-width]="geometry.viewport.borderWidth"
+  [class]="fullscreen() ? mobileLayout.viewport : text.viewport"
+  [style.width]="fullscreen() ? null : geometry.viewport.width"
+  [style.aspect-ratio]="fullscreen() ? null : geometry.viewport.aspectRatio"
   data-demo-container=""
   [attr.aria-label]="text.viewportLabel"
 ></div>

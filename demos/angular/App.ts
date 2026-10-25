@@ -6,6 +6,7 @@ import { initialGrid, INITIAL_POSITION } from '../shared';
 import { EngineView } from './EngineView';
 import { CellMap } from './CellMap';
 import { metrics } from './metrics';
+import { isFullscreenDemo, subscribeDemoLayout } from '../responsive';
 
 /** Coordinate native Angular signals, template views, and demo lifecycle diagnostics. */
 @Component({
@@ -18,6 +19,7 @@ import { metrics } from './metrics';
 export default class App {
   readonly text = DEMO_TEXT;
   readonly geometry = DEMO_GEOMETRY;
+  readonly fullscreen = signal(isFullscreenDemo());
   readonly grid = signal<Grid<string>>(initialGrid);
   readonly visible = signal(true);
   readonly position = signal<Position>(INITIAL_POSITION);
@@ -27,6 +29,10 @@ export default class App {
   };
   /** Pair framework lifecycle ownership with the controller and its diagnostics. */
   constructor() {
+    const stopLayout = subscribeDemoLayout(() => {
+      this.fullscreen.set(isFullscreenDemo());
+    });
+    inject(DestroyRef).onDestroy(stopLayout);
     window.tikitakiDemo.commands = {
       navigate: (direction) => {
         void this.engine()?.navigate(direction).catch(metrics.error);

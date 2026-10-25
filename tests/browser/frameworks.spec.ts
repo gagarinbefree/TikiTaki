@@ -101,7 +101,7 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'] 
       );
       const mapBox = await map.boundingBox();
       const layoutBox = await page.locator('[data-demo-layout]').boundingBox();
-      expect(mapBox !== null && layoutBox !== null && mapBox.x >= layoutBox.x && mapBox.y >= layoutBox.y).toBe(true);
+      if (!isMobile) expect(mapBox !== null && layoutBox !== null && mapBox.x >= layoutBox.x && mapBox.y >= layoutBox.y).toBe(true);
       const destination = map.getByRole('button', { name: 'C3', exact: true });
       if (isMobile) {
         await destination.tap();

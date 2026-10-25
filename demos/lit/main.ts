@@ -3,6 +3,7 @@ import { createSwipeEngine } from 'tikitaki/dom';
 import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
 import { initialGrid, INITIAL_POSITION, createMetrics } from '../shared';
 import { showRepositoryLink } from '../version';
+import { isFullscreenDemo, subscribeDemoLayout, applyDOMDemoLayout } from '../responsive';
 import { createLitCellAdapter } from './cell';
 import { renderCellMap } from './cell-map';
 import type { Direction, Grid, Position } from 'tikitaki';
@@ -20,7 +21,6 @@ const map = requireElement('[data-cell-map]');
 const rows = requireElement('[data-map-rows]');
 Object.assign(column.style, DEMO_GEOMETRY.phoneColumn);
 Object.assign(map.style, DEMO_GEOMETRY.map);
-Object.assign(rows.style, DEMO_GEOMETRY.mapRows);
 const metrics = createMetrics();
 let grid: Grid<string> = initialGrid;
 let position = INITIAL_POSITION;
@@ -30,9 +30,12 @@ const adapter = createLitCellAdapter(metrics);
 
 /** Update the Lit map after navigation, data replacement, or lifecycle changes. */
 function renderMap(): void {
+  const fullscreen = isFullscreenDemo();
+  applyDOMDemoLayout(column.querySelector('[data-demo-container]'), map, rows, fullscreen);
   renderCellMap(rows, {
     grid,
     position,
+    fullscreen,
     enabled: engine !== null,
     onSelect: (target) => {
       void engine?.goTo(target).catch(metrics.error);
@@ -48,6 +51,7 @@ function mount() {
   container.setAttribute(DEMO_TEXT.dataDemoContainer, DEMO_TEXT.empty);
   container.setAttribute(DEMO_TEXT.ariaLabel, DEMO_TEXT.viewportLabel);
   column.replaceChildren(container);
+  applyDOMDemoLayout(container, map, rows, isFullscreenDemo());
   engine = createSwipeEngine({
     container,
     grid,
@@ -82,6 +86,8 @@ function updateGrid(next: Grid<string>) {
 }
 
 mount();
+const stopLayout = subscribeDemoLayout(renderMap);
+import.meta.hot?.dispose(stopLayout);
 window.tikitakiDemo.commands = {
   /** Request one animated transition through the public API. */
   navigate: (direction: Direction) => {
@@ -108,6 +114,7 @@ window.tikitakiDemo.commands = {
 };
 window.addEventListener('pagehide', (event) => {
   if (event.persisted) return;
+  stopLayout();
   unmount();
   window.tikitakiDemo.commands = null;
 });

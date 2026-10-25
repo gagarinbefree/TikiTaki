@@ -1,20 +1,25 @@
-import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY } from '../config';
+import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY, MOBILE_LAYOUT } from '../config';
 import { cellMapRows, type CellMapProps } from '../shared';
 
 /** Display the ragged grid and highlight its committed position. */
-export default function CellMap({ grid, position, enabled, onSelect }: CellMapProps) {
+export default function CellMap({ grid, position, enabled, onSelect, fullscreen }: CellMapProps & { readonly fullscreen: boolean }) {
   return (
-    <nav style={DEMO_GEOMETRY.map} className={DEMO_TEXT.gridMap} aria-label={DEMO_TEXT.cellMapTitle}>
-      <div className={DEMO_TEXT.gridMapHeader}>
-        <span className={DEMO_TEXT.gridMapLegend}>{DEMO_TEXT.currentCellLegend}</span>
-      </div>
-      <p className={DEMO_TEXT.hint}>{DEMO_TEXT.cellMapHint}</p>
-      <div className={DEMO_TEXT.gridMapScroll} style={DEMO_GEOMETRY.mapRows}>
+    <nav
+      style={fullscreen ? MOBILE_LAYOUT.mapGeometry : DEMO_GEOMETRY.map}
+      className={fullscreen ? MOBILE_LAYOUT.map : DEMO_TEXT.gridMap}
+      aria-label={DEMO_TEXT.cellMapTitle}
+    >
+      {!fullscreen && (
+        <div className={DEMO_TEXT.gridMapHeader}>
+          <span className={DEMO_TEXT.gridMapLegend}>{DEMO_TEXT.currentCellLegend}</span>
+        </div>
+      )}
+      {!fullscreen && <p className={DEMO_TEXT.hint}>{DEMO_TEXT.cellMapHint}</p>}
+      <div className={fullscreen ? MOBILE_LAYOUT.rows : DEMO_TEXT.gridMapScroll}>
         {cellMapRows({ grid, position, enabled }).map((cells, row) => (
           <p
             key={row}
-            className={DEMO_TEXT.gridMapRow}
-            style={DEMO_GEOMETRY.mapRow}
+            className={fullscreen ? MOBILE_LAYOUT.row : DEMO_TEXT.gridMapRow}
             data-map-row={row}
             role="group"
             aria-label={DEMO_LABELS.row(row)}
@@ -23,8 +28,16 @@ export default function CellMap({ grid, position, enabled, onSelect }: CellMapPr
               <button
                 key={cell.position.col}
                 type="button"
-                className={cell.current ? DEMO_TEXT.gridMapCurrentCell : DEMO_TEXT.gridMapCell}
-                style={{ ...DEMO_GEOMETRY.mapCell, ...(cell.current ? DEMO_GEOMETRY.mapCurrentCell : {}) }}
+                className={
+                  fullscreen
+                    ? cell.current
+                      ? MOBILE_LAYOUT.currentCell
+                      : MOBILE_LAYOUT.cell
+                    : cell.current
+                      ? DEMO_TEXT.gridMapCurrentCell
+                      : DEMO_TEXT.gridMapCell
+                }
+                data-bs-target={fullscreen ? '' : undefined}
                 disabled={!enabled}
                 title={DEMO_LABELS.coordinates(cell.position)}
                 aria-current={cell.current ? true : undefined}
@@ -32,7 +45,7 @@ export default function CellMap({ grid, position, enabled, onSelect }: CellMapPr
                   onSelect(cell.position);
                 }}
               >
-                {cell.label}
+                <span className={fullscreen ? MOBILE_LAYOUT.label : undefined}>{cell.label}</span>
               </button>
             ))}
           </p>

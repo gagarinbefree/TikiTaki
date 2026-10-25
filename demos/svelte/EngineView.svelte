@@ -3,16 +3,18 @@
   import { createSvelteCellAdapter, portal } from '@tikitaki_gagarinbefree/svelte';
   import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
   import type { Grid, Position } from 'tikitaki';
-  import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
+  import { DEMO_TEXT, DEMO_GEOMETRY, MOBILE_LAYOUT } from '../config';
   import { INITIAL_POSITION } from '../shared';
   import Cell from './Cell.svelte';
   import { metrics } from './metrics';
 
   let {
+    fullscreen,
     grid,
     onengine,
     onposition,
   }: {
+    readonly fullscreen: boolean;
     readonly grid: Grid<string>;
     readonly onengine: (engine: SwipeEngine<string> | null) => void;
     readonly onposition: (position: Position) => void;
@@ -49,15 +51,9 @@
 
 <div
   bind:this={container}
-  class={DEMO_TEXT.viewport}
-  style:width={DEMO_GEOMETRY.viewport.width}
-  style:aspect-ratio={DEMO_GEOMETRY.viewport.aspectRatio}
-  style:position={DEMO_GEOMETRY.viewport.position}
-  style:inset={DEMO_GEOMETRY.viewport.inset}
-  style:height={DEMO_GEOMETRY.viewport.height}
-  style:z-index={DEMO_GEOMETRY.viewport.zIndex}
-  style:border-radius={DEMO_GEOMETRY.viewport.borderRadius}
-  style:border-width={DEMO_GEOMETRY.viewport.borderWidth}
+  class={fullscreen ? MOBILE_LAYOUT.viewport : DEMO_TEXT.viewport}
+  style:width={fullscreen ? undefined : DEMO_GEOMETRY.viewport.width}
+  style:aspect-ratio={fullscreen ? undefined : DEMO_GEOMETRY.viewport.aspectRatio}
   data-demo-container=""
   aria-label={DEMO_TEXT.viewportLabel}
 ></div>

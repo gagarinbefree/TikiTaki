@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import type { Grid, Position } from 'tikitaki';
-import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY } from '../config';
+import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY, MOBILE_LAYOUT } from '../config';
 import { cellMapRows } from '../shared';
 
 /** Render the same accessible ragged cell map using Angular template control flow. */
@@ -9,23 +9,16 @@ import { cellMapRows } from '../shared';
   standalone: true,
   templateUrl: './CellMap.component.html',
   host: {
-    '[class]': 'text.gridMap',
+    '[class]': 'fullscreen() ? mobileLayout.map : text.gridMap',
     '[attr.aria-label]': 'text.cellMapTitle',
-    '[style.position]': 'geometry.map.position',
-    '[style.bottom]': 'geometry.map.bottom',
-    '[style.left]': 'geometry.map.left',
-    '[style.transform]': 'geometry.map.transform',
-    '[style.z-index]': 'geometry.map.zIndex',
-    '[style.width]': 'geometry.map.width',
-    '[style.max-width]': 'geometry.map.maxWidth',
-    '[style.padding]': 'geometry.map.padding',
-    '[style.background-color]': 'geometry.map.backgroundColor',
-    '[style.border-width]': 'geometry.map.borderWidth',
     '[style.min-width]': 'geometry.map.minWidth',
     '[style.min-height]': 'geometry.map.minHeight',
+    '[style]': 'fullscreen() ? mobileLayout.mapGeometry : geometry.map',
   },
 })
 export class CellMap {
+  readonly fullscreen = input(false);
+  readonly mobileLayout = MOBILE_LAYOUT;
   readonly grid = input.required<Grid<string>>();
   readonly position = input.required<Position>();
   readonly enabled = input(true);

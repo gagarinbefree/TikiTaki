@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
 import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
@@ -6,9 +6,11 @@ import { initialGrid, INITIAL_POSITION } from '../shared';
 import { metrics } from './context';
 import EngineView from './EngineView';
 import CellMap from './CellMap';
+import { isFullscreenDemo, subscribeDemoLayout } from '../responsive';
 
 /** Render a portrait swipe view and its interactive cell map. */
 export default function App() {
+  const fullscreen = useSyncExternalStore(subscribeDemoLayout, isFullscreenDemo);
   const [grid, setGrid] = useState(initialGrid);
   const [visible, setVisible] = useState(true);
   const [position, setPosition] = useState<Position>(INITIAL_POSITION);
@@ -46,12 +48,13 @@ export default function App() {
       <div className={DEMO_TEXT.layout} data-demo-layout="">
         <div className={DEMO_TEXT.viewportColumn} style={DEMO_GEOMETRY.phoneColumn}>
           {visible ? (
-            <EngineView grid={grid} engineRef={engineRef} onPosition={setPosition} />
+            <EngineView fullscreen={fullscreen} grid={grid} engineRef={engineRef} onPosition={setPosition} />
           ) : (
             <p data-unmounted="">{DEMO_TEXT.destroyedMessage}</p>
           )}
         </div>
         <CellMap
+          fullscreen={fullscreen}
           grid={grid}
           position={position}
           enabled={visible}

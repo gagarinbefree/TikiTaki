@@ -1,64 +1,46 @@
 <script lang="ts">
-  import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY } from '../config';
+  import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY, MOBILE_LAYOUT } from '../config';
   import { cellMapRows, type CellMapProps } from '../shared';
 
-  let { grid, position, enabled, onSelect }: CellMapProps = $props();
+  let { grid, position, enabled, onSelect, fullscreen }: CellMapProps & { readonly fullscreen: boolean } = $props();
   const rows = $derived(cellMapRows({ grid, position, enabled }));
 </script>
 
 <nav
   style:min-width={DEMO_GEOMETRY.map.minWidth}
   style:min-height={DEMO_GEOMETRY.map.minHeight}
-  style:position={DEMO_GEOMETRY.map.position}
-  style:bottom={DEMO_GEOMETRY.map.bottom}
-  style:left={DEMO_GEOMETRY.map.left}
-  style:transform={DEMO_GEOMETRY.map.transform}
-  style:z-index={DEMO_GEOMETRY.map.zIndex}
-  style:width={DEMO_GEOMETRY.map.width}
-  style:max-width={DEMO_GEOMETRY.map.maxWidth}
-  style:padding={DEMO_GEOMETRY.map.padding}
-  style:background-color={DEMO_GEOMETRY.map.backgroundColor}
-  style:border-width={DEMO_GEOMETRY.map.borderWidth}
-  class={DEMO_TEXT.gridMap}
+  style:padding-bottom={fullscreen ? MOBILE_LAYOUT.mapGeometry.paddingBottom : undefined}
+  style:--bs-carousel-indicator-width={fullscreen ? MOBILE_LAYOUT.mapGeometry['--bs-carousel-indicator-width'] : undefined}
+  style:--bs-carousel-indicator-height={fullscreen ? MOBILE_LAYOUT.mapGeometry['--bs-carousel-indicator-height'] : undefined}
+  style:--bs-carousel-indicator-bg={fullscreen ? MOBILE_LAYOUT.mapGeometry['--bs-carousel-indicator-bg'] : undefined}
+  class={fullscreen ? MOBILE_LAYOUT.map : DEMO_TEXT.gridMap}
   aria-label={DEMO_TEXT.cellMapTitle}
 >
-  <div class={DEMO_TEXT.gridMapHeader}>
-    <span class={DEMO_TEXT.gridMapLegend}>{DEMO_TEXT.currentCellLegend}</span>
-  </div>
-  <p class={DEMO_TEXT.hint}>{DEMO_TEXT.cellMapHint}</p>
-  <div
-    class={DEMO_TEXT.gridMapScroll}
-    style:display={DEMO_GEOMETRY.mapRows.display}
-    style:align-items={DEMO_GEOMETRY.mapRows.alignItems}
-    style:justify-content={DEMO_GEOMETRY.mapRows.justifyContent}
-    style:flex-wrap={DEMO_GEOMETRY.mapRows.flexWrap}
-    style:gap={DEMO_GEOMETRY.mapRows.gap}
-  >
+  {#if !fullscreen}<div class={DEMO_TEXT.gridMapHeader}>
+      <span class={DEMO_TEXT.gridMapLegend}>{DEMO_TEXT.currentCellLegend}</span>
+    </div>
+    <p class={DEMO_TEXT.hint}>{DEMO_TEXT.cellMapHint}</p>
+  {/if}
+  <div class={fullscreen ? MOBILE_LAYOUT.rows : DEMO_TEXT.gridMapScroll}>
     {#each rows as cells, row (row)}
-      <p
-        class={DEMO_TEXT.gridMapRow}
-        style:display={DEMO_GEOMETRY.mapRow.display}
-        style:margin-bottom={DEMO_GEOMETRY.mapRow.marginBottom}
-        data-map-row={row}
-        role="group"
-        aria-label={DEMO_LABELS.row(row)}
-      >
+      <p class={fullscreen ? MOBILE_LAYOUT.row : DEMO_TEXT.gridMapRow} data-map-row={row} role="group" aria-label={DEMO_LABELS.row(row)}>
         {#each cells as cell (cell.position.col)}
           <button
             type="button"
-            class={cell.current ? DEMO_TEXT.gridMapCurrentCell : DEMO_TEXT.gridMapCell}
-            style:width={cell.current ? DEMO_GEOMETRY.mapCurrentCell.width : DEMO_GEOMETRY.mapCell.width}
-            style:height={cell.current ? DEMO_GEOMETRY.mapCurrentCell.height : DEMO_GEOMETRY.mapCell.height}
-            style:padding={DEMO_GEOMETRY.mapCell.padding}
-            style:font-size={DEMO_GEOMETRY.mapCell.fontSize}
-            style:min-height={DEMO_GEOMETRY.mapCell.minHeight}
-            style:border-radius={DEMO_GEOMETRY.mapCell.borderRadius}
+            class={fullscreen
+              ? cell.current
+                ? MOBILE_LAYOUT.currentCell
+                : MOBILE_LAYOUT.cell
+              : cell.current
+                ? DEMO_TEXT.gridMapCurrentCell
+                : DEMO_TEXT.gridMapCell}
+            data-bs-target={fullscreen ? '' : undefined}
             disabled={!enabled}
             title={DEMO_LABELS.coordinates(cell.position)}
             aria-current={cell.current ? true : undefined}
             onclick={() => {
               onSelect(cell.position);
-            }}>{cell.label}</button
+            }}><span class={fullscreen ? MOBILE_LAYOUT.label : undefined}>{cell.label}</span></button
           >
         {/each}
       </p>

@@ -14,7 +14,7 @@ import {
 import { createAngularCellAdapter, type AngularCellContext } from '@tikitaki_gagarinbefree/angular';
 import { createSwipeEngine, type SwipeEngine } from 'tikitaki/dom';
 import type { Grid, Position } from 'tikitaki';
-import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
+import { DEMO_TEXT, DEMO_GEOMETRY, MOBILE_LAYOUT } from '../config';
 import { INITIAL_POSITION } from '../shared';
 import { Cell } from './Cell';
 import { metrics } from './metrics';
@@ -28,6 +28,8 @@ import { metrics } from './metrics';
   host: { class: 'd-block' },
 })
 export class EngineView {
+  readonly fullscreen = input(false);
+  readonly mobileLayout = MOBILE_LAYOUT;
   readonly grid = input.required<Grid<string>>();
   readonly positionChange = output<Position>();
   readonly onengine = input.required<(engine: SwipeEngine<string> | null) => void>();

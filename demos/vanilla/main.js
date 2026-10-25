@@ -1,9 +1,10 @@
 // @ts-check
 import '../vendor/bootstrap-6.0.0-alpha.1/bootstrap.css';
 import { createSwipeEngine, createDOMAdapter } from 'tikitaki/dom';
-import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY } from '../config';
+import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY, MOBILE_LAYOUT } from '../config';
 import { initialGrid, INITIAL_POSITION, cellAppearance, cellMapRows, createMetrics } from '../shared';
 import { showRepositoryLink } from '../version';
+import { isFullscreenDemo, subscribeDemoLayout, applyDOMDemoLayout } from '../responsive';
 
 /** Require an existing element from the static demo template. @param {string} selector */
 function requireElement(selector) {
@@ -17,7 +18,6 @@ const map = requireElement('[data-cell-map]');
 const rows = requireElement('[data-map-rows]');
 Object.assign(column.style, DEMO_GEOMETRY.phoneColumn);
 Object.assign(map.style, DEMO_GEOMETRY.map);
-Object.assign(rows.style, DEMO_GEOMETRY.mapRows);
 const metrics = createMetrics();
 let grid = initialGrid;
 let position = INITIAL_POSITION;
@@ -59,20 +59,30 @@ const adapter = {
 
 /** Refresh map labels, selection, and disabled state from the committed engine state. */
 function renderMap() {
+  const fullscreen = isFullscreenDemo();
+  applyDOMDemoLayout(column.querySelector('[data-demo-container]'), map, rows, fullscreen);
   rows.replaceChildren();
   for (const [row, cells] of cellMapRows({ grid, position, enabled: engine !== null }).entries()) {
     const group = document.createElement('p');
-    group.className = DEMO_TEXT.gridMapRow;
-    Object.assign(group.style, DEMO_GEOMETRY.mapRow);
+    group.className = fullscreen ? MOBILE_LAYOUT.row : DEMO_TEXT.gridMapRow;
     group.setAttribute(DEMO_TEXT.dataMapRow, String(row));
     group.setAttribute('role', DEMO_TEXT.group);
     group.setAttribute(DEMO_TEXT.ariaLabel, DEMO_LABELS.row(row));
     for (const cell of cells) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = cell.current ? DEMO_TEXT.gridMapCurrentCell : DEMO_TEXT.gridMapCell;
-      button.textContent = cell.label;
-      Object.assign(button.style, DEMO_GEOMETRY.mapCell, cell.current ? DEMO_GEOMETRY.mapCurrentCell : {});
+      button.className = fullscreen
+        ? cell.current
+          ? MOBILE_LAYOUT.currentCell
+          : MOBILE_LAYOUT.cell
+        : cell.current
+          ? DEMO_TEXT.gridMapCurrentCell
+          : DEMO_TEXT.gridMapCell;
+      if (fullscreen) button.setAttribute('data-bs-target', '');
+      const label = document.createElement('span');
+      label.className = fullscreen ? MOBILE_LAYOUT.label : '';
+      label.textContent = cell.label;
+      button.append(label);
       button.title = DEMO_LABELS.coordinates(cell.position);
       button.disabled = engine === null;
       if (cell.current) button.setAttribute(DEMO_TEXT.ariaCurrent, DEMO_TEXT.true);
@@ -93,6 +103,7 @@ function mount() {
   container.setAttribute(DEMO_TEXT.dataDemoContainer, DEMO_TEXT.empty);
   container.setAttribute(DEMO_TEXT.ariaLabel, DEMO_TEXT.viewportLabel);
   column.replaceChildren(container);
+  applyDOMDemoLayout(container, map, rows, isFullscreenDemo());
   engine = createSwipeEngine({
     container,
     grid,
@@ -127,6 +138,8 @@ function updateGrid(next) {
 }
 
 mount();
+const stopLayout = subscribeDemoLayout(renderMap);
+import.meta.hot?.dispose(stopLayout);
 window.tikitakiDemo.commands = {
   /** @param {import('tikitaki').Direction} direction */
   navigate: (direction) => {
@@ -153,6 +166,7 @@ window.tikitakiDemo.commands = {
 };
 window.addEventListener('pagehide', (event) => {
   if (event.persisted) return;
+  stopLayout();
   unmount();
   window.tikitakiDemo.commands = null;
 });

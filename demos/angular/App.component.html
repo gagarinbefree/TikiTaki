@@ -2,11 +2,23 @@
   <div [class]="text.layout" data-demo-layout="">
     <div [class]="text.viewportColumn" [style.width]="geometry.phoneColumn.width">
       @if (visible()) {
-        <tikitaki-angular-view [grid]="grid()" [onengine]="receiveEngine" (positionChange)="position.set($event)" />
+        <tikitaki-angular-view
+          [fullscreen]="fullscreen()"
+          [grid]="grid()"
+          [onengine]="receiveEngine"
+          (positionChange)="position.set($event)"
+        />
       } @else {
         <p data-unmounted="">{{ text.destroyedMessage }}</p>
       }
     </div>
-    <nav tikitakiAngularMap [grid]="grid()" [position]="position()" [enabled]="visible()" (selectCell)="select($event)"></nav>
+    <nav
+      tikitakiAngularMap
+      [fullscreen]="fullscreen()"
+      [grid]="grid()"
+      [position]="position()"
+      [enabled]="visible()"
+      (selectCell)="select($event)"
+    ></nav>
   </div>
 </main>

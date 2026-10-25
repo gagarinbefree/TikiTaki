@@ -1,32 +1,52 @@
-import { MOBILE_LAYOUT } from './config';
-
-/** Switch shared demo geometry at the Bootstrap md breakpoint and restore owned changes on cleanup. */
+import { MOBILE_LAYOUT, DEMO_GEOMETRY, DEMO_TEXT } from './config';
+const media = window.matchMedia(MOBILE_LAYOUT.query);
+/** Report mobile portrait mode for touch devices of any width and narrow portrait windows. */
+export function isFullscreenDemo(): boolean {
+  return media.matches;
+}
+/** Subscribe framework state to device and orientation changes without owning its DOM. */
+export function subscribeDemoLayout(listener: () => void): () => void {
+  media.addEventListener('change', listener);
+  return () => {
+    media.removeEventListener('change', listener);
+  };
+}
+/** Apply Bootstrap visibility and overflow utilities only to the static page chrome. */
 export function startResponsiveLayout(): () => void {
-  const media = window.matchMedia(MOBILE_LAYOUT.query);
-  const root = document.documentElement;
-  const previousOverflow = document.body.style.overflow;
-  const previousGutter = root.style.scrollbarGutter;
-  const previous = new Map(Object.keys(MOBILE_LAYOUT.variables).map((name) => [name, root.style.getPropertyValue(name)]));
-  /** Apply geometry without replacing framework-owned nodes or interrupting the engine lifecycle. */
+  const chrome = [...document.querySelectorAll<HTMLElement>('body > header, body > nav, body > footer')];
+  const overflow = document.body.classList.contains('overflow-hidden');
+  const classes = chrome.map((element) => element.className);
   function update(): void {
-    for (const [name, value] of Object.entries(MOBILE_LAYOUT.variables)) {
-      if (media.matches) root.style.setProperty(name, value);
-      else root.style.removeProperty(name);
-    }
-    document.body.style.overflow = media.matches ? 'hidden' : previousOverflow;
-    root.style.scrollbarGutter = media.matches ? 'auto' : previousGutter;
-  }
-  /** Release the media subscription and restore the document styles owned by this demo. */
-  function destroy(): void {
-    media.removeEventListener('change', update);
-    for (const [name, value] of previous) {
-      if (value) root.style.setProperty(name, value);
-      else root.style.removeProperty(name);
-    }
-    document.body.style.overflow = previousOverflow;
-    root.style.scrollbarGutter = previousGutter;
+    document.body.classList.toggle('overflow-hidden', media.matches || overflow);
+    for (const element of chrome) element.classList.toggle('d-none', media.matches);
   }
   update();
-  media.addEventListener('change', update);
-  return destroy;
+  const stop = subscribeDemoLayout(update);
+  return () => {
+    stop();
+    document.body.classList.toggle('overflow-hidden', overflow);
+    chrome.forEach((element, index) => {
+      element.className = classes[index] ?? '';
+    });
+  };
+}
+
+/** Apply the Bootstrap layout to the DOM-owned Vanilla JS and Lit demo shells. */
+export function applyDOMDemoLayout(viewport: HTMLElement | null, map: HTMLElement, rows: HTMLElement, fullscreen: boolean): void {
+  if (viewport) {
+    viewport.className = fullscreen ? MOBILE_LAYOUT.viewport : DEMO_TEXT.viewport;
+    viewport.style.width = fullscreen ? '' : DEMO_GEOMETRY.viewport.width;
+    viewport.style.aspectRatio = fullscreen ? '' : DEMO_GEOMETRY.viewport.aspectRatio;
+  }
+  map.className = fullscreen ? MOBILE_LAYOUT.map : DEMO_TEXT.gridMap;
+  rows.className = fullscreen ? MOBILE_LAYOUT.rows : DEMO_TEXT.gridMapScroll;
+  for (const [name, value] of Object.entries(MOBILE_LAYOUT.mapGeometry)) {
+    if (!name.startsWith('--')) continue;
+    if (fullscreen) map.style.setProperty(name, value);
+    else map.style.removeProperty(name);
+  }
+  map.style.paddingBottom = fullscreen ? MOBILE_LAYOUT.mapGeometry.paddingBottom : '';
+  for (const element of map.querySelectorAll<HTMLElement>(':scope > div:first-child, :scope > p')) {
+    element.classList.toggle('d-none', fullscreen);
+  }
 }
