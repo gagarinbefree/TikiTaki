@@ -51,6 +51,6 @@ onBeforeUnmount(() => {
     :aria-label="DEMO_TEXT.viewportLabel"
   />
   <Teleport v-for="cell in cells" :key="cell.key" :to="cell.host">
-    <Cell :item="cell.item" :position="cell.position" />
+    <Cell :fullscreen="fullscreen" :item="cell.item" :position="cell.position" />
   </Teleport>
 </template>

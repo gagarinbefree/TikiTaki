@@ -5,13 +5,21 @@ import { cellAppearance } from '../shared';
 import { metrics } from './context';
 
 /** Render a cell label and track its component lifecycle. */
-export default function Cell({ item, position }: { readonly item: string; readonly position: Position }) {
+export default function Cell({
+  item,
+  position,
+  fullscreen,
+}: {
+  readonly item: string;
+  readonly position: Position;
+  readonly fullscreen: boolean;
+}) {
   useEffect(() => {
     metrics.mount();
     return metrics.unmount;
   }, []);
   return (
-    <article className={cellAppearance(position)} style={DEMO_GEOMETRY.cell} data-item={item} data-row={position.row}>
+    <article className={cellAppearance(position, fullscreen)} style={DEMO_GEOMETRY.cell} data-item={item} data-row={position.row}>
       <h1 className={DEMO_TEXT.cellTitle}>{item}</h1>
     </article>
   );

@@ -1,4 +1,4 @@
-import { CELL_THEMES, DEMO_TEXT } from './config';
+import { CELL_THEMES, DEMO_TEXT, MOBILE_LAYOUT } from './config';
 export { INITIAL_POSITION, initialGrid } from './config';
 
 import type { Direction, Grid, Position } from 'tikitaki';
@@ -83,14 +83,15 @@ declare global {
 /** Create a stable random Bootstrap appearance for each coordinate in this demo session. */
 function createCellAppearance() {
   const themes = new Map<string, string>();
-  return (position: Position): string => {
+  return (position: Position, fullscreen = false): string => {
     const key = `${String(position.row)}:${String(position.col)}`;
     let theme = themes.get(key);
     if (theme === undefined) {
       theme = CELL_THEMES[Math.floor(Math.random() * CELL_THEMES.length)] ?? 'secondary';
       themes.set(key, theme);
     }
-    return `${DEMO_TEXT.cell} theme-${theme} theme-contrast`;
+    const displayTheme = fullscreen && theme === MOBILE_LAYOUT.excludedTheme ? MOBILE_LAYOUT.fallbackTheme : theme;
+    return `${DEMO_TEXT.cell} theme-${displayTheme} theme-contrast`;
   };
 }
 /** Share coordinate colors across remounted demo cells without touching the engine. */

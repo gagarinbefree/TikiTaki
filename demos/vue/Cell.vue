@@ -5,13 +5,13 @@ import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
 import { cellAppearance } from '../shared';
 import { metrics } from './metrics';
 
-defineProps<{ readonly item: string; readonly position: Position }>();
+defineProps<{ readonly item: string; readonly position: Position; readonly fullscreen: boolean }>();
 onMounted(metrics.mount);
 onUnmounted(metrics.unmount);
 </script>
 
 <template>
-  <article :class="cellAppearance(position)" :style="DEMO_GEOMETRY.cell" :data-item="item" :data-row="position.row">
+  <article :class="cellAppearance(position, fullscreen)" :style="DEMO_GEOMETRY.cell" :data-item="item" :data-row="position.row">
     <h1 :class="DEMO_TEXT.cellTitle">{{ item }}</h1>
   </article>
 </template>

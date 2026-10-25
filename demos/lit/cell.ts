@@ -2,6 +2,7 @@ import { html, nothing, render } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { DEMO_GEOMETRY, DEMO_TEXT } from '../config';
 import { cellAppearance } from '../shared';
+import { isFullscreenDemo, subscribeDemoLayout } from '../responsive';
 import type { createMetrics } from '../shared';
 import type { Position } from 'tikitaki';
 import type { CellAdapter } from 'tikitaki/dom';
@@ -11,12 +12,16 @@ export function createLitCellAdapter(metrics: ReturnType<typeof createMetrics>):
   return {
     mount(host, item, position) {
       let released = false;
+      let currentItem = item;
+      let currentPosition = position;
       /** Update one mounted Lit template without replacing its engine-owned host. */
       function update(nextItem: string, nextPosition: Position): void {
         if (released) return;
+        currentItem = nextItem;
+        currentPosition = nextPosition;
         render(
           html`<article
-            class=${cellAppearance(nextPosition)}
+            class=${cellAppearance(nextPosition, isFullscreenDemo())}
             style=${styleMap(DEMO_GEOMETRY.cell)}
             data-item=${nextItem}
             data-row=${nextPosition.row}
@@ -28,11 +33,15 @@ export function createLitCellAdapter(metrics: ReturnType<typeof createMetrics>):
       }
       metrics.mount();
       update(item, position);
+      const stopColor = subscribeDemoLayout(() => {
+        update(currentItem, currentPosition);
+      });
       return {
         update,
         unmount() {
           if (released) return;
           released = true;
+          stopColor();
           render(nothing, host);
           metrics.unmount();
         },

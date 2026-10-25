@@ -6,4 +6,6 @@
   data-demo-container=""
   [attr.aria-label]="text.viewportLabel"
 ></div>
-<ng-template #cell let-item let-position="position"><tikitaki-angular-cell [item]="item" [position]="position" /></ng-template>
+<ng-template #cell let-item let-position="position"
+  ><tikitaki-angular-cell [fullscreen]="fullscreen()" [item]="item" [position]="position"
+/></ng-template>

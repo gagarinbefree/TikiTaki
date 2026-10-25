@@ -27,7 +27,7 @@ let engine = null;
 /** Render an ordinary DOM cell without a framework. @param {string} item @param {import('tikitaki').Position} coordinates */
 function renderCell(item, coordinates) {
   const cell = document.createElement('article');
-  cell.className = cellAppearance(coordinates);
+  cell.className = cellAppearance(coordinates, isFullscreenDemo());
   Object.assign(cell.style, DEMO_GEOMETRY.cell);
   cell.setAttribute(DEMO_TEXT.dataItem, item);
   cell.setAttribute(DEMO_TEXT.dataRow, String(coordinates.row));
@@ -43,13 +43,21 @@ const dom = createDOMAdapter(renderCell);
 const adapter = {
   mount(host, item, coordinates) {
     const mounted = dom.mount(host, item, coordinates);
+    let currentPosition = coordinates;
+    const stopColor = subscribeDemoLayout(() => {
+      if (host.firstElementChild) host.firstElementChild.className = cellAppearance(currentPosition, isFullscreenDemo());
+    });
     let released = false;
     metrics.mount();
     return {
-      update: mounted.update,
+      update(nextItem, nextPosition) {
+        currentPosition = nextPosition;
+        mounted.update(nextItem, nextPosition);
+      },
       unmount() {
         if (released) return;
         released = true;
+        stopColor();
         mounted.unmount();
         metrics.unmount();
       },

@@ -5,7 +5,7 @@
   import { cellAppearance } from '../shared';
   import { metrics } from './metrics';
 
-  let { item, position }: { readonly item: string; readonly position: Position } = $props();
+  let { item, position, fullscreen }: { readonly item: string; readonly position: Position; readonly fullscreen: boolean } = $props();
   onMount(() => {
     metrics.mount();
     return metrics.unmount;
@@ -13,7 +13,7 @@
 </script>
 
 <article
-  class={cellAppearance(position)}
+  class={cellAppearance(position, fullscreen)}
   style:height={DEMO_GEOMETRY.cell.height}
   style:box-sizing={DEMO_GEOMETRY.cell.boxSizing}
   data-item={item}

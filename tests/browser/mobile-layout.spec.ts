@@ -19,8 +19,10 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'])
     }
     const size = await selected.boundingBox();
     const other = await map.getByRole('button', { name: 'A2', exact: true }).boundingBox();
-    expect(size && { width: size.width, height: size.height }).toEqual({ width: 2, height: 2 });
-    expect(other && { width: other.width, height: other.height }).toEqual({ width: 1, height: 1 });
+    expect(size && { width: size.width, height: size.height }).toEqual({ width: 4, height: 4 });
+    expect(other && { width: other.width, height: other.height }).toEqual({ width: 2, height: 2 });
+    await expect(selected).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+    await expect(map.getByRole('button', { name: 'A2', exact: true })).toHaveCSS('background-color', 'rgb(0, 0, 0)');
     const rowBounds = [];
     for (const [index, count] of [10, 1, 3, 5].entries()) {
       const row = map.locator('[data-map-row]').nth(index);
@@ -84,5 +86,23 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'])
         return Boolean(field && bounds && bounds.x > field.x + field.width);
       })
       .toBe(true);
+  });
+}
+
+for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit']) {
+  test(`${framework} excludes the inverse swipe background only in mobile portrait`, async ({ page }) => {
+    await page.addInitScript(() => {
+      Math.random = () => 0.8;
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/demos/${framework}/`);
+    const cell = page.locator('[data-tikitaki-role="current"] [data-item]');
+    await expect(cell).not.toHaveClass(/theme-inverse/);
+    await expect(cell).toHaveClass(/theme-primary/);
+    await page.setViewportSize({ width: 844, height: 390 });
+    await expect(cell).toHaveClass(/theme-inverse/);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(cell).toHaveClass(/theme-primary/);
+    await expect(cell).toHaveAttribute('data-item', 'A1');
   });
 }

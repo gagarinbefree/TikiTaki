@@ -126,20 +126,22 @@ export const CELL_THEMES = Object.freeze(['primary', 'accent', 'success', 'dange
 
 /** Mobile portrait detection is independent of CSS pixel width on touch devices. */
 export const MOBILE_LAYOUT = Object.freeze({
+  excludedTheme: 'inverse',
+  fallbackTheme: 'primary',
   query: '(orientation: portrait) and (pointer: coarse), (orientation: portrait) and (width < 768px)',
   viewport: 'position-fixed top-0 start-0 dvw-100 dvh-100 border-0 rounded-0 overflow-hidden bg-1 z-2',
   map: 'carousel position-fixed bottom-0 start-0 dvw-100 z-3 d-flex flex-column align-items-center px-5 pb-5',
   rows: 'carousel-indicators flex-column align-items-start gap-1',
   row: 'd-flex align-items-center gap-1 m-0',
-  cell: 'border-0 bg-white opacity-50',
-  currentCell: 'border-0 bg-white opacity-100',
+  cell: 'border-0 bg-black opacity-100',
+  currentCell: 'border-0 bg-black opacity-100',
   label: 'visually-hidden',
-  currentCellGeometry: Object.freeze({ minWidth: '0', '--bs-carousel-indicator-width': '2px', '--bs-carousel-indicator-height': '2px' }),
+  currentCellGeometry: Object.freeze({ minWidth: '0', '--bs-carousel-indicator-width': '4px', '--bs-carousel-indicator-height': '4px' }),
   mapGeometry: Object.freeze({
     minWidth: '0',
     paddingBottom: 'max(var(--bs-spacer-5), env(safe-area-inset-bottom))',
-    '--bs-carousel-indicator-width': '1px',
-    '--bs-carousel-indicator-height': '1px',
-    '--bs-carousel-indicator-bg': 'var(--bs-white)',
+    '--bs-carousel-indicator-width': '2px',
+    '--bs-carousel-indicator-height': '2px',
+    '--bs-carousel-indicator-bg': 'var(--bs-black)',
   }),
 });

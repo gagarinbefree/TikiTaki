@@ -59,6 +59,6 @@
 ></div>
 {#each $cells as cell (cell.key)}
   <div use:portal={cell.host} style:height={DEMO_GEOMETRY.cell.height}>
-    <Cell item={cell.item} position={cell.position} />
+    <Cell {fullscreen} item={cell.item} position={cell.position} />
   </div>
 {/each}

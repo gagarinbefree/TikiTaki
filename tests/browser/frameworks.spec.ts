@@ -92,7 +92,7 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'] 
       await expect(active).toHaveText('A10');
       await active.scrollIntoViewIfNeeded();
       await expect(active).toBeInViewport({ ratio: 0.98 });
-      const highlightProperty = isMobile ? 'opacity' : 'background-color';
+      const highlightProperty = isMobile ? 'width' : 'background-color';
       expect(
         await active.evaluate((element, property) => getComputedStyle(element).getPropertyValue(property), highlightProperty),
       ).not.toBe(

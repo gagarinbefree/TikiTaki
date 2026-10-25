@@ -49,7 +49,7 @@ export default function EngineView({ grid, engineRef, onPosition, fullscreen }: 
         data-demo-container=""
         aria-label={DEMO_TEXT.viewportLabel}
       />
-      <ReactCellPortals bridge={bridge} renderCell={(item, position) => <Cell item={item} position={position} />} />
+      <ReactCellPortals bridge={bridge} renderCell={(item, position) => <Cell fullscreen={fullscreen} item={item} position={position} />} />
     </>
   );
 }
