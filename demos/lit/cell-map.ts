@@ -1,4 +1,5 @@
 import { html, nothing, render } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
 import { DEMO_LABELS, DEMO_TEXT, MOBILE_LAYOUT } from '../config';
 import { cellMapRows } from '../shared';
 import type { CellMapProps } from '../shared';
@@ -19,6 +20,7 @@ export function renderCellMap(host: HTMLElement, props: CellMapProps & { readonl
               html`<button
                 type="button"
                 class=${props.fullscreen ? (cell.current ? MOBILE_LAYOUT.currentCell : MOBILE_LAYOUT.cell) : cell.current ? DEMO_TEXT.gridMapCurrentCell : DEMO_TEXT.gridMapCell}
+                style=${styleMap(props.fullscreen && cell.current ? MOBILE_LAYOUT.currentCellGeometry : {})}
                 data-bs-target=${props.fullscreen ? '' : nothing}
                 title=${DEMO_LABELS.coordinates(cell.position)}
                 ?disabled=${!props.enabled}

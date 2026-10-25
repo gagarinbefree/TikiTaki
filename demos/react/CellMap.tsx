@@ -37,6 +37,7 @@ export default function CellMap({ grid, position, enabled, onSelect, fullscreen 
                       ? DEMO_TEXT.gridMapCurrentCell
                       : DEMO_TEXT.gridMapCell
                 }
+                style={fullscreen && cell.current ? MOBILE_LAYOUT.currentCellGeometry : undefined}
                 data-bs-target={fullscreen ? '' : undefined}
                 disabled={!enabled}
                 title={DEMO_LABELS.coordinates(cell.position)}

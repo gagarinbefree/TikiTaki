@@ -19,8 +19,20 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'])
     }
     const size = await selected.boundingBox();
     const other = await map.getByRole('button', { name: 'A2', exact: true }).boundingBox();
-    expect(size && other && size.width > other.width && size.height >= other.height).toBe(true);
-    expect(other && other.width <= 10 && other.height <= 10).toBe(true);
+    expect(size && { width: size.width, height: size.height }).toEqual({ width: 2, height: 2 });
+    expect(other && { width: other.width, height: other.height }).toEqual({ width: 1, height: 1 });
+    const rowBounds = [];
+    for (const [index, count] of [10, 1, 3, 5].entries()) {
+      const row = map.locator('[data-map-row]').nth(index);
+      await expect(row.getByRole('button')).toHaveCount(count);
+      rowBounds.push(await row.boundingBox());
+    }
+    for (let index = 1; index < rowBounds.length; index++) {
+      const previous = rowBounds[index - 1];
+      const current = rowBounds[index];
+      expect(previous && current && current.y > previous.y).toBe(true);
+      expect(previous && current && Math.abs(current.x - previous.x) < 1).toBe(true);
+    }
     await expect(selected.locator('span')).toHaveClass('visually-hidden');
     await expect(viewport).toHaveCSS('border-radius', '0px');
     await map.getByRole('button', { name: 'C3', exact: true }).click();

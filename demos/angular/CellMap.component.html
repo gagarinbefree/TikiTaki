@@ -24,6 +24,7 @@
                 ? text.gridMapCurrentCell
                 : text.gridMapCell
           "
+          [style]="fullscreen() && cell.current ? mobileLayout.currentCellGeometry : null"
           [attr.data-bs-target]="fullscreen() ? '' : null"
           [disabled]="!enabled()"
           [title]="labels.coordinates(cell.position)"

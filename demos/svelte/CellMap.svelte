@@ -34,6 +34,12 @@
               : cell.current
                 ? DEMO_TEXT.gridMapCurrentCell
                 : DEMO_TEXT.gridMapCell}
+            style:--bs-carousel-indicator-width={fullscreen && cell.current
+              ? MOBILE_LAYOUT.currentCellGeometry['--bs-carousel-indicator-width']
+              : undefined}
+            style:--bs-carousel-indicator-height={fullscreen && cell.current
+              ? MOBILE_LAYOUT.currentCellGeometry['--bs-carousel-indicator-height']
+              : undefined}
             data-bs-target={fullscreen ? '' : undefined}
             disabled={!enabled}
             title={DEMO_LABELS.coordinates(cell.position)}

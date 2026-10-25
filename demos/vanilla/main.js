@@ -78,7 +78,11 @@ function renderMap() {
         : cell.current
           ? DEMO_TEXT.gridMapCurrentCell
           : DEMO_TEXT.gridMapCell;
-      if (fullscreen) button.setAttribute('data-bs-target', '');
+      if (fullscreen) {
+        button.setAttribute('data-bs-target', '');
+        if (cell.current)
+          for (const [name, value] of Object.entries(MOBILE_LAYOUT.currentCellGeometry)) button.style.setProperty(name, value);
+      }
       const label = document.createElement('span');
       label.className = fullscreen ? MOBILE_LAYOUT.label : '';
       label.textContent = cell.label;

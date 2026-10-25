@@ -30,7 +30,7 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'])
     }
     await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveAttribute('data-item', 'A1');
     await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveText('A1');
-    await expect(page.locator('[aria-current="true"]')).toHaveClass(mobile ? /active/ : /theme-success/);
+    await expect(page.locator('[aria-current="true"]')).toHaveClass(mobile ? /opacity-100/ : /theme-success/);
     await expect(page.locator('[data-navigate]')).toHaveCount(0);
     await expect(page.locator('[data-tikitaki-role="current"] [data-item]')).toHaveClass(
       /(?=.*\btheme-(primary|accent|success|danger|warning|info|inverse|secondary)\b)(?=.*\btheme-contrast\b)/,

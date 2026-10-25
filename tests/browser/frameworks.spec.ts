@@ -92,12 +92,15 @@ for (const framework of ['vanilla', 'react', 'vue', 'svelte', 'angular', 'lit'] 
       await expect(active).toHaveText('A10');
       await active.scrollIntoViewIfNeeded();
       await expect(active).toBeInViewport({ ratio: 0.98 });
-      expect(await active.evaluate((element) => getComputedStyle(element).backgroundColor)).not.toBe(
+      const highlightProperty = isMobile ? 'opacity' : 'background-color';
+      expect(
+        await active.evaluate((element, property) => getComputedStyle(element).getPropertyValue(property), highlightProperty),
+      ).not.toBe(
         await rows
           .first()
           .getByRole('button')
           .first()
-          .evaluate((element) => getComputedStyle(element).backgroundColor),
+          .evaluate((element, property) => getComputedStyle(element).getPropertyValue(property), highlightProperty),
       );
       const mapBox = await map.boundingBox();
       const layoutBox = await page.locator('[data-demo-layout]').boundingBox();
