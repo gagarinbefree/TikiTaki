@@ -12,7 +12,7 @@
 
 TikiTaki is a TypeScript library for swipe navigation through a two-dimensional grid whose rows can have different lengths. Use it for paged interfaces, galleries, stories, or component-based feeds. You supply the content; TikiTaki handles navigation, pointer gestures, animation, and cell lifecycle.
 
-The core has **zero runtime dependencies**. It provides ESM exports and TypeScript declarations, with optional React, Vue, Svelte, and Angular adapters. Rendering mounts the current cell and valid neighboring cells instead of the entire grid. Multiple independent views are supported.
+The core has **zero runtime dependencies**. It provides ESM exports and TypeScript declarations, with optional React, Vue, Svelte, and Angular adapters. Lit templates integrate through the public rendering adapter contract. Rendering mounts the current cell and valid neighboring cells instead of the entire grid. Multiple independent views are supported.
 
 The project is under active development. Google Chrome Desktop and Chrome touch emulation are tested; physical Android verification is still pending. Other browsers are outside the current support target.
 
@@ -32,6 +32,7 @@ For a framework integration, choose the matching installation command:
 | Vue       | `npm install tikitaki @tikitaki_gagarinbefree/vue`     |
 | Svelte    | `npm install tikitaki @tikitaki_gagarinbefree/svelte`  |
 | Angular   | `npm install tikitaki @tikitaki_gagarinbefree/angular` |
+| Lit       | `npm install tikitaki lit`                             |
 
 Your application supplies the adapter's framework peer dependencies. Install only the adapter for your framework. The [core](https://www.npmjs.com/package/tikitaki) and adapters under [@tikitaki_gagarinbefree](https://www.npmjs.com/org/tikitaki_gagarinbefree) are available from npm. To install an archived build or inspect its contents, use the tested tarballs from [GitHub Releases](https://github.com/gagarinbefree/TikiTaki/releases) or build from source below. Release downloads include an integrity manifest; maintainer publication instructions are in [PUBLISHING.md](./PUBLISHING.md).
 
@@ -164,7 +165,7 @@ console.log(navigation.getPosition()); // { row: 1, col: 0 }
 
 `createGestureEngine` is also exported from `tikitaki`. Lower-level DOM integration uses `createDOMRenderer` and `createDOMAdapter` from `tikitaki/dom`. See [ARCHITECTURE.md](./ARCHITECTURE.md) before composing these layers yourself.
 
-## React, Vue, Svelte, and Angular
+## Framework integrations
 
 Use an adapter to render framework components with their lifecycle and parent context intact:
 
@@ -178,6 +179,55 @@ Use an adapter to render framework components with their lifecycle and parent co
 Create one adapter per engine view and pass its `adapter` to `createSwipeEngine` instead of `renderCell`. Keep the adapter stable across component renders, call `updateGrid` when data changes, and destroy the engine during cleanup. Framework-owned content is mounted through parent-tree portals, Teleport, or embedded views; it must not be manually converted into an `HTMLElement`. The core does not import any framework.
 
 React StrictMode lifecycle replay is covered by tests. Core navigation promises synchronize hosts and adapter snapshots; framework content still commits on the framework's schedule. Use the framework's rendering helpers when testing component content.
+
+### Lit
+
+Install the core and Lit in your application:
+
+```sh
+npm install tikitaki lit
+```
+
+Lit uses the public `CellAdapter` contract directly; there is no separate published TikiTaki Lit package. The [working demo](https://gagarinbefree.github.io/TikiTaki/lit/) renders cells and the cell map with Lit templates. See its [cell adapter](./demos/lit/cell.ts) and [map template](./demos/lit/cell-map.ts).
+
+Give the engine a dedicated container with explicit dimensions, as in the plain TypeScript quick start. Render only inside the cell hosts passed to your adapter:
+
+```ts
+import { html, nothing, render } from 'lit';
+import { createSwipeEngine, type CellAdapter } from 'tikitaki/dom';
+
+const container = document.querySelector<HTMLElement>('#swipe-view');
+if (!container) throw new Error('Missing swipe container');
+
+const adapter: CellAdapter<string> = {
+  mount(host, item) {
+    let destroyed = false;
+
+    /** Update the Lit template while retaining the engine-owned host. */
+    function update(nextItem: string): void {
+      if (destroyed) return;
+      render(html`<article><h1>${nextItem}</h1></article>`, host);
+    }
+
+    update(item);
+
+    return {
+      update,
+      unmount() {
+        if (destroyed) return;
+        destroyed = true;
+        render(nothing, host);
+      },
+    };
+  },
+};
+
+const engine = createSwipeEngine({ container, grid: [['A1', 'A2'], ['B1'], ['C1', 'C2', 'C3']], adapter });
+```
+
+Call `engine.updateGrid(nextGrid)` when your data changes. Call `engine.destroy()` when the owning view is removed; this invokes the adapter's cleanup for every mounted cell. If a `LitElement` owns the engine, destroy it in `disconnectedCallback()` and recreate it when the element reconnects. Keep the container's contents under engine ownership; Lit should render cell content only inside the supplied hosts. Any subscriptions added by your adapter must also be released in `unmount()`.
+
+Lit remains an application dependency. The TikiTaki core does not import Lit or any other UI framework.
 
 ## Run the demos locally
 
