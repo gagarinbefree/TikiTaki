@@ -1,6 +1,6 @@
 {
   "name": "@tikitaki_gagarinbefree/vue",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -16,7 +16,7 @@
   ],
   "sideEffects": false,
   "peerDependencies": {
-    "tikitaki": "^0.1.11",
+    "tikitaki": "^0.1.12",
     "vue": "^3.5.44"
   },
   "license": "MIT",
