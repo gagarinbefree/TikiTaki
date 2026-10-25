@@ -24,17 +24,19 @@ Install the core in your application:
 npm install tikitaki
 ```
 
-For a framework integration, choose the matching installation command:
+Choose the installation command for your framework:
 
-| Framework | Installation                                           |
-| --------- | ------------------------------------------------------ |
-| React     | `npm install tikitaki @tikitaki_gagarinbefree/react`   |
-| Vue       | `npm install tikitaki @tikitaki_gagarinbefree/vue`     |
-| Svelte    | `npm install tikitaki @tikitaki_gagarinbefree/svelte`  |
-| Angular   | `npm install tikitaki @tikitaki_gagarinbefree/angular` |
-| Lit       | `npm install tikitaki lit`                             |
+| Framework | Installation                                           | TikiTaki integration                                   |
+| --------- | ------------------------------------------------------ | ------------------------------------------------------ |
+| React     | `npm install tikitaki @tikitaki_gagarinbefree/react`   | Published React adapter                                |
+| Vue       | `npm install tikitaki @tikitaki_gagarinbefree/vue`     | Published Vue adapter                                  |
+| Svelte    | `npm install tikitaki @tikitaki_gagarinbefree/svelte`  | Published Svelte adapter                               |
+| Angular   | `npm install tikitaki @tikitaki_gagarinbefree/angular` | Published Angular adapter                              |
+| Lit       | `npm install tikitaki lit`                             | Application-owned adapter using the [Lit recipe](#lit) |
 
-Your application supplies the adapter's framework peer dependencies. Install only the adapter for your framework. The [core](https://www.npmjs.com/package/tikitaki) and adapters under [@tikitaki_gagarinbefree](https://www.npmjs.com/org/tikitaki_gagarinbefree) are available from npm. To install an archived build or inspect its contents, use the tested tarballs from [GitHub Releases](https://github.com/gagarinbefree/TikiTaki/releases) or build from source below. Release downloads include an integrity manifest; maintainer publication instructions are in [PUBLISHING.md](./PUBLISHING.md).
+React, Vue, Svelte, and Angular have separate TikiTaki adapter packages. Install only the adapter for your framework; your application supplies its framework peer dependencies. Lit currently uses an application-owned adapter through the core's public `CellAdapter` contract. The `lit` package in its command is the Lit rendering library, not a TikiTaki adapter. There is no published `@tikitaki_gagarinbefree/lit` package.
+
+The [core](https://www.npmjs.com/package/tikitaki) and the four published adapters under [@tikitaki_gagarinbefree](https://www.npmjs.com/org/tikitaki_gagarinbefree) are available from npm. To install an archived build or inspect its contents, use the tested tarballs from [GitHub Releases](https://github.com/gagarinbefree/TikiTaki/releases) or build from source below. Release downloads include an integrity manifest; maintainer publication instructions are in [PUBLISHING.md](./PUBLISHING.md).
 
 ### Build from source
 
@@ -54,18 +56,27 @@ For a reproducible integration, check out a release tag before installing depend
 npm install /absolute/path/to/the-generated-package.tgz
 ```
 
-CI assigns one version to the core, all adapters, and the lockfile before building. Release tarballs carry that exact tested version. Keep the release tag or commit in your integration notes.
+CI assigns one version to the core, the four published adapters, and the lockfile before building. Release tarballs carry that exact tested version. Keep the release tag or commit in your integration notes.
 
-Optional adapters can be packed from the same built checkout:
+For plain TypeScript or JavaScript, the core tarball is sufficient. For Lit, install that same core tarball together with the Lit rendering library in your application:
 
 ```sh
-npm pack ./packages/react
-npm pack ./packages/vue
-npm pack ./packages/svelte
-npm pack ./packages/angular
+npm install /absolute/path/to/the-generated-core-package.tgz lit
 ```
 
-Install the core tarball and the adapter tarball you need together in the consuming project. Your application supplies the adapter's framework peer dependencies. Check the corresponding adapter guide for supported versions and a complete integration example.
+Then implement the [Lit adapter recipe](#lit), or use the [demo adapter](./demos/lit/cell.ts) as a reference. Lit has no separate TikiTaki adapter tarball or `packages/lit` directory; the demo-local adapter is example source, not a published package.
+
+Packaging commands for each integration, run from the repository root after building:
+
+| Framework | Packaging command             | TikiTaki archives to install                 |
+| --------- | ----------------------------- | -------------------------------------------- |
+| React     | `npm pack ./packages/react`   | Core + React adapter                         |
+| Vue       | `npm pack ./packages/vue`     | Core + Vue adapter                           |
+| Svelte    | `npm pack ./packages/svelte`  | Core + Svelte adapter                        |
+| Angular   | `npm pack ./packages/angular` | Core + Angular adapter                       |
+| Lit       | `npm pack`                    | Core only; install `lit` from npm separately |
+
+Choose the row for your integration. For React, Vue, Svelte, or Angular, install the core tarball and the matching adapter tarball together in the consuming project, with the framework peer dependencies required by its guide. For Lit, use the core-tarball installation command above and the [Lit recipe](#lit); no additional TikiTaki archive is required.
 
 ## Quick start: plain TypeScript
 
@@ -167,16 +178,17 @@ console.log(navigation.getPosition()); // { row: 1, col: 0 }
 
 ## Framework integrations
 
-Use an adapter to render framework components with their lifecycle and parent context intact:
+Use the published adapter for React, Vue, Svelte, or Angular. For Lit, implement the public rendering contract using the recipe below. All integrations keep rendering and cleanup under the owning framework or application:
 
-| Framework | Optional package                  | Guide and working example                                               |
+| Framework | TikiTaki adapter                  | Guide and working example                                               |
 | --------- | --------------------------------- | ----------------------------------------------------------------------- |
 | React     | `@tikitaki_gagarinbefree/react`   | [Guide](./packages/react/README.md) · [Demo source](./demos/react/)     |
 | Vue       | `@tikitaki_gagarinbefree/vue`     | [Guide](./packages/vue/README.md) · [Demo source](./demos/vue/)         |
 | Svelte    | `@tikitaki_gagarinbefree/svelte`  | [Guide](./packages/svelte/README.md) · [Demo source](./demos/svelte/)   |
 | Angular   | `@tikitaki_gagarinbefree/angular` | [Guide](./packages/angular/README.md) · [Demo source](./demos/angular/) |
+| Lit       | Application-owned `CellAdapter`   | [Guide](#lit) · [Demo source](./demos/lit/)                             |
 
-Create one adapter per engine view and pass its `adapter` to `createSwipeEngine` instead of `renderCell`. Keep the adapter stable across component renders, call `updateGrid` when data changes, and destroy the engine during cleanup. Framework-owned content is mounted through parent-tree portals, Teleport, or embedded views; it must not be manually converted into an `HTMLElement`. The core does not import any framework.
+React, Vue, and Svelte factories return a bridge: pass `bridge.adapter` to `createSwipeEngine`. The Angular factory returns a `CellAdapter` directly; the Lit recipe builds one in your application. Pass those objects directly as the `adapter` option. Use `adapter` instead of `renderCell` for these integrations. Keep the adapter stable across component renders, call `updateGrid` when data changes, and destroy the engine during cleanup. The published framework adapters use parent-tree portals, Teleport, or embedded views; Lit renders templates into the supplied cell hosts. Framework components must not be manually converted into an `HTMLElement`. The core does not import any framework.
 
 React StrictMode lifecycle replay is covered by tests. Core navigation promises synchronize hosts and adapter snapshots; framework content still commits on the framework's schedule. Use the framework's rendering helpers when testing component content.
 
@@ -343,7 +355,7 @@ No application or maintainer invitation is needed to start contributing. Pick an
 
 The [GitHub Actions workflow](./.github/workflows/npm-publish.yml) validates pull requests and pushes to `main`. It runs type checks, lint, formatting, unit/integration tests, package validation, production builds, and Chrome desktop/touch E2E. PR runs do not publish upstream releases or deploy upstream Pages. A new commit cancels the earlier pipeline for the same branch or PR.
 
-After a successful `main` run, the tested demo artifact is deployed to [GitHub Pages](https://gagarinbefree.github.io/TikiTaki/) and a matching [GitHub Release](https://github.com/gagarinbefree/TikiTaki/releases) is created. Stable release versions advance by one patch, such as `v0.1.1` → `v0.1.2`. The release includes the demo archive, `version.json`, npm package tarballs, and their integrity manifest. A bot updates the README badge and package versions. The same run then shows a separate **Publish npm packages** job, which automatically publishes all five verified packages through the trusted publisher. A manual run remains available for retries. Contributors do not need to edit those generated release fields in feature PRs.
+After a successful `main` run, the tested demo artifact is deployed to [GitHub Pages](https://gagarinbefree.github.io/TikiTaki/) and a matching [GitHub Release](https://github.com/gagarinbefree/TikiTaki/releases) is created. Stable release versions advance by one patch, such as `v0.1.1` → `v0.1.2`. The release includes the demo archive, `version.json`, npm package tarballs, and their integrity manifest. A bot updates the README badge and package versions. The same run then shows a separate **Publish npm packages** job, which automatically publishes the five verified packages (the core and the React, Vue, Svelte, and Angular adapters) through the trusted publisher. Lit uses the documented application-owned adapter and is not a sixth release package. A manual run remains available for retries. Contributors do not need to edit those generated release fields in feature PRs.
 
 If you want Pages for your own fork, enable Actions, select **Settings → Pages → Source → GitHub Actions**, and allow the `github-pages` environment to deploy from your fork's `main`. If you rename the repository, update `DEPLOYMENT_CONFIG.basePath` in [tooling.config.mjs](./tooling.config.mjs). Fork deployments and releases belong to the fork; upstream releases follow the upstream workflow.
 
