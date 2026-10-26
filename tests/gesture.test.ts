@@ -2,11 +2,23 @@ import { assert, describe, expect, it } from 'vitest';
 import { DEFAULT_GESTURE_OPTIONS, createGestureEngine } from '../src/gesture';
 import type { GestureContext, GestureOptions, PointerSample } from '../src/gesture';
 import type { Direction } from '../src/navigation';
+/**
+ * context
+ * @returns The viewport dimensions and available neighboring directions.
+ */
 function context(): GestureContext {
   const result: GestureContext = { width: 300, height: 600, neighbors: { up: true, down: true, left: true, right: true } };
 
   return result;
 }
+/**
+ * point
+ * @param x The x argument.
+ * @param y The y argument.
+ * @param time The time argument.
+ * @param pointerId The pointer id argument.
+ * @returns The pointer coordinates, identifier, and timestamp.
+ */
 function point(x = 0, y = 0, time = 0, pointerId = 1): PointerSample {
   const result: PointerSample = { x, y, time, pointerId };
 

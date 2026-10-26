@@ -24,28 +24,53 @@ export default class App {
   readonly visible = signal(true);
   readonly position = signal<Position>(INITIAL_POSITION);
   readonly engine = signal<SwipeEngine<string> | null>(null);
+  /**
+   * receiveEngine
+   * @param engine The engine argument.
+   */
   readonly receiveEngine = (engine: SwipeEngine<string> | null) => {
     this.engine.set(engine);
   };
-  /** Pair framework lifecycle ownership with the controller and its diagnostics. */
+  /**
+   * constructor
+   *
+   * Pair framework lifecycle ownership with the controller and its diagnostics.
+   */
   constructor() {
     const stopLayout = subscribeDemoLayout(() => {
       this.fullscreen.set(isFullscreenDemo());
     });
     inject(DestroyRef).onDestroy(stopLayout);
     window.tikitakiDemo.commands = {
+      /**
+       * navigate
+       * @param direction The requested navigation direction.
+       */
       navigate: (direction) => {
         void this.engine()?.navigate(direction).catch(metrics.error);
       },
+      /**
+       * goTo
+       * @param target The requested target.
+       */
       goTo: (target) => {
         this.select(target);
       },
+      /**
+       * update
+       */
       update: () => {
         this.grid.update((grid) => grid.map((row) => row.map((item) => item + DEMO_TEXT.updateSuffix)));
       },
+      /**
+       * shrink
+       */
       shrink: () => {
         this.grid.set([[DEMO_TEXT.only]]);
       },
+      /**
+       * toggle
+       */
       toggle: () => {
         this.remount();
       },
@@ -54,11 +79,20 @@ export default class App {
       window.tikitakiDemo.commands = null;
     });
   }
-  /** Select a map cell and report controller failures. */
+  /**
+   * select
+   *
+   * Select a map cell and report controller failures.
+   * @param position Zero based cell coordinates.
+   */
   select(position: Position) {
     void this.engine()?.goTo(position).catch(metrics.error);
   }
-  /** Reset initial data before creating another independent controller. */
+  /**
+   * remount
+   *
+   * Reset initial data before creating another independent controller.
+   */
   remount() {
     if (!this.visible()) {
       this.grid.set(initialGrid);

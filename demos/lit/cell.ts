@@ -7,14 +7,33 @@ import type { createMetrics } from '../shared';
 import type { Position } from 'tikitaki';
 import type { CellAdapter } from 'tikitaki/dom';
 
-/** Render Lit templates only inside engine-owned cell hosts and release them on unmount. */
+/**
+ * createLitCellAdapter
+ *
+ * Render Lit templates only inside engine owned cell hosts and release them on unmount.
+ * @param metrics The lifecycle diagnostics to update.
+ * @returns The cell adapter with mount, update, and unmount operations.
+ */
 export function createLitCellAdapter(metrics: ReturnType<typeof createMetrics>): CellAdapter<string> {
   return {
+    /**
+     * mount
+     * @param host The engine owned cell host.
+     * @param item The cell data to render.
+     * @param position Zero based cell coordinates.
+     * @returns The callback or factory created by this function.
+     */
     mount(host, item, position) {
       let released = false;
       let currentItem = item;
       let currentPosition = position;
-      /** Update one mounted Lit template without replacing its engine-owned host. */
+      /**
+       * update
+       *
+       * Update one mounted Lit template without replacing its engine owned host.
+       * @param nextItem The updated cell data.
+       * @param nextPosition The updated cell coordinates.
+       */
       function update(nextItem: string, nextPosition: Position): void {
         if (released) return;
         currentItem = nextItem;
@@ -38,6 +57,9 @@ export function createLitCellAdapter(metrics: ReturnType<typeof createMetrics>):
       });
       return {
         update,
+        /**
+         * unmount
+         */
         unmount() {
           if (released) return;
           released = true;

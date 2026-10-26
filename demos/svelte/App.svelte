@@ -14,7 +14,11 @@
   let visible = $state(true);
   let position = $state.raw<Position>(INITIAL_POSITION);
   let engine = $state.raw<SwipeEngine<string> | null>(null);
-  /** Restore initial data before mounting another independent controller. */
+  /**
+   * remount
+   *
+   * Restore initial data before mounting another independent controller.
+   */
   function remount() {
     if (!visible) {
       grid = initialGrid;
@@ -22,7 +26,12 @@
     }
     visible = !visible;
   }
-  /** Select a map cell and report controller failures. */
+  /**
+   * select
+   *
+   * Select a map cell and report controller failures.
+   * @param target The requested target.
+   */
   function select(target: Position) {
     void engine?.goTo(target).catch(metrics.error);
   }
@@ -31,13 +40,23 @@
       fullscreen = isFullscreenDemo();
     });
     window.tikitakiDemo.commands = {
+      /**
+       * navigate
+       * @param direction The requested navigation direction.
+       */
       navigate: (direction) => {
         void engine?.navigate(direction).catch(metrics.error);
       },
       goTo: select,
+      /**
+       * update
+       */
       update: () => {
         grid = grid.map((row) => row.map((item) => item + DEMO_TEXT.updateSuffix));
       },
+      /**
+       * shrink
+       */
       shrink: () => {
         grid = [[DEMO_TEXT.only]];
       },

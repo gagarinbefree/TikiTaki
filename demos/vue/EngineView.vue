@@ -22,6 +22,10 @@ onMounted(() => {
     grid: props.grid,
     initialPosition: INITIAL_POSITION,
     adapter: bridge.adapter,
+    /**
+     * onPositionChange
+     * @param next The replacement value.
+     */
     onPositionChange: (next) => emit('position', next),
     onError: metrics.error,
   });

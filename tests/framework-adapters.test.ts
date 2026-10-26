@@ -4,13 +4,24 @@ import { createReactCellAdapter } from '../packages/react/src/index';
 import { createVueCellAdapter } from '../packages/vue/src/index';
 for (const framework of ['react', 'vue'] as const) {
   describe(`${framework} adapter snapshots`, () => {
+    /**
+     * setup
+     * @returns The callback or factory created by this function.
+     */
     function setup() {
       const react = createReactCellAdapter<string>();
       const vue = createVueCellAdapter<string>();
       const result =
         framework === 'react'
           ? { adapter: react.adapter, snapshot: react.getSnapshot }
-          : { adapter: vue.adapter, snapshot: () => vue.cells.value };
+          : {
+              adapter: vue.adapter,
+              /**
+               * snapshot
+               * @returns The resulting array.
+               */
+              snapshot: () => vue.cells.value,
+            };
 
       return result;
     }

@@ -13,25 +13,51 @@ interface SwipeEngineBaseOptions<T> {
   readonly grid: Grid<T>;
   readonly initialPosition?: Position;
   readonly gesture?: Partial<GestureOptions>;
-  /** Notify after the new position and hosts have committed; callback errors do not roll back the position. */
+  /**
+   * onPositionChange
+   *
+   * Notify after the new position and hosts have committed; callback errors do not roll back the position.
+   * @param position Zero based cell coordinates.
+   * @param previous The previous value or position.
+   */
   readonly onPositionChange?: (position: Position, previous: Position) => void;
-  /** Report event-driven failures after owned cleanup; programmatic operations expose their own errors. */
+  /**
+   * onError
+   *
+   * Report event driven failures after owned cleanup; programmatic operations expose their own errors.
+   * @param error The failure to report or normalize.
+   */
   readonly onError?: (error: Error) => void;
 }
 export type SwipeEngineOptions<T> = SwipeEngineBaseOptions<T> &
   (
     | {
-        /** Render item content inside the adapter or framework ownership boundary. */
+        /**
+         * renderCell
+         *
+         * Render item content inside the adapter or framework ownership boundary.
+         * @param item The cell data to render.
+         * @param position Zero based cell coordinates.
+         * @returns The rendered HTML element.
+         */
         readonly renderCell: (item: T, position: Position) => HTMLElement;
         readonly adapter?: never;
       }
     | { readonly adapter: CellAdapter<T>; readonly renderCell?: never }
   );
-/** Identity-bearing ownership record for one pending controller transaction. */
+/** Identity bearing ownership record for one pending controller transaction. */
 interface Transition {
   readonly target: Position | null;
   readonly gesture: GestureSettlement | null;
+  /**
+   * resolve
+   * @param changed Whether the position changed.
+   */
   readonly resolve: (changed: boolean) => void;
+  /**
+   * reject
+   * @param error The failure to report or normalize.
+   */
   readonly reject: (error: Error) => void;
 }
 /** An owned DOM subscription and the exact arguments needed to remove it. */
@@ -47,7 +73,12 @@ interface Capture {
   readonly id: number;
 }
 /**
- * Validate an object-shaped runtime input before reading its fields.
+ * object
+ *
+ * Validate an object shaped runtime input before reading its fields.
+ * @param value The value to process.
+ * @param label The label used in validation messages.
+ * @returns The validated object with readable fields.
  */
 function object(value: unknown, label: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -58,7 +89,11 @@ function object(value: unknown, label: string): Record<string, unknown> {
   return result;
 }
 /**
+ * errorFrom
+ *
  * Normalize an unknown failure without discarding its original cause.
+ * @param value The value to process.
+ * @returns The original error or an Error retaining the original cause.
  */
 function errorFrom(value: unknown): Error {
   const result = value instanceof Error ? value : new Error(CORE_TEXT.swipeEngineOperationFailed, { cause: value });
@@ -66,7 +101,11 @@ function errorFrom(value: unknown): Error {
   return result;
 }
 /**
+ * isNotFound
+ *
  * Recognize pointer capture races reported as NotFoundError.
+ * @param value The value to process.
+ * @returns Whether the operation succeeded or the condition holds.
  */
 function isNotFound(value: unknown): boolean {
   const result = typeof value === 'object' && value !== null && CORE_TEXT.name in value && value.name === CORE_TEXT.notFoundError;
@@ -74,7 +113,11 @@ function isNotFound(value: unknown): boolean {
   return result;
 }
 /**
- * Require exactly one rendering strategy and resolve the framework-independent adapter.
+ * resolveAdapter
+ *
+ * Require exactly one rendering strategy and resolve the framework independent adapter.
+ * @param options Configuration for this operation.
+ * @returns The cell adapter with mount, update, and unmount operations.
  */
 function resolveAdapter<T>(options: SwipeEngineOptions<T>): CellAdapter<T> {
   const input = object(options, CORE_TEXT.swipeEngineOptions);
@@ -98,7 +141,11 @@ function resolveAdapter<T>(options: SwipeEngineOptions<T>): CellAdapter<T> {
   return result;
 }
 /**
+ * sample
+ *
  * Normalize a browser pointer event into a gesture sample.
+ * @param event The incoming event.
+ * @returns The pointer coordinates, identifier, and timestamp.
  */
 function sample(event: PointerEvent): PointerSample {
   const result: PointerSample = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp };
@@ -109,18 +156,46 @@ function sample(event: PointerEvent): PointerSample {
  * Functional public controller operations with terminal, idempotent cleanup.
  */
 export interface SwipeEngine<T> {
-  /** Read the immutable last committed grid position. */
+  /**
+   * getPosition
+   *
+   * Read the immutable last committed grid position.
+   * @returns The resulting cell coordinates.
+   */
   readonly getPosition: () => Position;
-  /** Request one neighboring transition without queuing conflicting commands. */
+  /**
+   * navigate
+   *
+   * Request one neighboring transition without queuing conflicting commands.
+   * @param direction The requested navigation direction.
+   * @returns A promise that resolves to whether the operation succeeded.
+   */
   readonly navigate: (direction: Direction) => Promise<boolean>;
-  /** Commit a valid target position without traversing intermediate cells. */
+  /**
+   * goTo
+   *
+   * Commit a valid target position without traversing intermediate cells.
+   * @param position Zero based cell coordinates.
+   * @returns A promise that resolves to whether the operation succeeded.
+   */
   readonly goTo: (position: Position) => Promise<boolean>;
-  /** Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources. */
+  /**
+   * updateGrid
+   *
+   * Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources.
+   * @param grid Grid rows and their cell data.
+   */
   readonly updateGrid: (grid: Grid<T>) => void;
-  /** Release owned resources once and settle pending work without leaving stale callbacks. */
+  /**
+   * destroy
+   *
+   * Release owned resources once and settle pending work without leaving stale callbacks.
+   */
   readonly destroy: () => void;
 }
 /**
+ * createSwipeEngine
+ *
  * Connect navigation, gesture handling, and rendering through an independent functional controller.
  * @param options Validated container, grid, rendering strategy, and optional lifecycle callbacks.
  * @returns Independent operations that can be called without binding a receiver.
@@ -143,7 +218,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
   let stateOwnsMarker = false;
   let statePreviousMarker: string | null = null;
   let stateWheelTime: number | null = null;
-  /** Consume one vertical transition per wheel burst only inside the owned cell viewport. */
+  /**
+   * stateWheel
+   *
+   * Consume one vertical transition per wheel burst only inside the owned cell viewport.
+   * @param event The incoming event.
+   */
   const stateWheel = (event: Event): void => {
     guardEvent(() => {
       const wheel = event as WheelEvent;
@@ -173,7 +253,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       });
     });
   };
-  /** Accept an eligible primary pointer and acquire capture on its original element. */
+  /**
+   * stateDown
+   *
+   * Accept an eligible primary pointer and acquire capture on its original element.
+   * @param event The incoming event.
+   */
   const stateDown = (event: Event): void => {
     guardEvent(() => {
       const pointer = event as PointerEvent;
@@ -213,7 +298,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       }
     });
   };
-  /** Forward pointer movement and schedule drag rendering on the locked axis. */
+  /**
+   * stateMove
+   *
+   * Forward pointer movement and schedule drag rendering on the locked axis.
+   * @param event The incoming event.
+   */
   const stateMove = (event: Event): void => {
     guardEvent(() => {
       const gesture = stateGesture;
@@ -229,25 +319,45 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       }
     });
   };
-  /** Finish the active pointer and launch its settlement plan. */
+  /**
+   * stateUp
+   *
+   * Finish the active pointer and launch its settlement plan.
+   * @param event The incoming event.
+   */
   const stateUp = (event: Event): void => {
     guardEvent(() => {
       finishPointer(event as PointerEvent, false);
     });
   };
-  /** Roll back a cancelled pointer without committing a grid position. */
+  /**
+   * stateCancel
+   *
+   * Roll back a cancelled pointer without committing a grid position.
+   * @param event The incoming event.
+   */
   const stateCancel = (event: Event): void => {
     guardEvent(() => {
       finishPointer(event as PointerEvent, true);
     });
   };
-  /** Release a pointer whose native capture ownership was lost. */
+  /**
+   * stateLost
+   *
+   * Release a pointer whose native capture ownership was lost.
+   * @param event The incoming event.
+   */
   const stateLost = (event: Event): void => {
     guardEvent(() => {
       dropCapture((event as PointerEvent).pointerId);
     });
   };
-  /** Detect removed capture targets before accepting subsequent pointer events. */
+  /**
+   * stateVerifyCapture
+   *
+   * Detect removed capture targets before accepting subsequent pointer events.
+   * @param event The incoming event.
+   */
   const stateVerifyCapture = (event: Event): void => {
     guardEvent(() => {
       const pointer = event as PointerEvent;
@@ -260,7 +370,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       }
     });
   };
-  /** Suppress the accidental pointer click following a drag while preserving keyboard activation. */
+  /**
+   * stateClick
+   *
+   * Suppress the accidental pointer click following a drag while preserving keyboard activation.
+   * @param event The incoming event.
+   */
   const stateClick = (event: Event): void => {
     if (stateSuppressClick && (event as MouseEvent).detail > 0 && ownsEvent(event)) {
       stateSuppressClick = false;
@@ -268,7 +383,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       event.stopPropagation();
     }
   };
-  /** Prevent native drag and selection only while this controller owns an active gesture. */
+  /**
+   * stateNativeDrag
+   *
+   * Prevent native drag and selection only while this controller owns an active gesture.
+   * @param event The incoming event.
+   */
   const stateNativeDrag = (event: Event): void => {
     const state = stateGesture?.getSnapshot().state;
     if ((state === CORE_TEXT.tracking || state === CORE_TEXT.dragging) && ownsEvent(event)) {
@@ -276,13 +396,20 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   };
   /**
+   * getPosition
+   *
    * Read the immutable last committed grid position.
+   * @returns The resulting cell coordinates.
    */
   function getPosition(): Position {
     return statePosition;
   }
   /**
+   * navigate
+   *
    * Request one neighboring transition without queuing conflicting commands.
+   * @param direction The requested navigation direction.
+   * @returns A promise that resolves to whether the operation succeeded.
    */
   function navigate(direction: Direction): Promise<boolean> {
     if (stateDestroyed || stateModel === null) {
@@ -321,7 +448,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
+   * goTo
+   *
    * Commit a valid target position without traversing intermediate cells.
+   * @param position Zero based cell coordinates.
+   * @returns A promise that resolves to whether the operation succeeded.
    */
   function goTo(position: Position): Promise<boolean> {
     if (stateDestroyed || stateModel === null) {
@@ -346,7 +477,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
+   * updateGrid
+   *
    * Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources.
+   * @param grid Grid rows and their cell data.
    */
   function updateGrid(grid: Grid<T>): void {
     if (stateDestroyed || stateModel === null || stateRenderer === null) return;
@@ -383,6 +517,8 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
+   * destroy
+   *
    * Release owned resources once and settle pending work without leaving stale callbacks.
    */
   function destroy(): void {
@@ -393,6 +529,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     stateTransaction = null;
     transaction?.resolve(false);
     const errors: unknown[] = [];
+    /**
+     * attempt
+     * @param callback The callback invoked by this operation.
+     */
     const attempt = (callback: () => void): void => {
       try {
         callback();
@@ -443,7 +583,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
+   * isAlive
+   *
    * Check disposal state after a potentially reentrant lifecycle callback.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function isAlive(): boolean {
     const result = !stateDestroyed;
@@ -451,7 +594,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return result;
   }
   /**
+   * readVisible
+   *
    * Check cached viewport dimensions before accepting animated input.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function readVisible(): boolean {
     const size = stateRenderer?.getSize();
@@ -460,7 +606,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return result;
   }
   /**
+   * readBusy
+   *
    * Check structural mutation, gesture tracking, and pending transition ownership.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function readBusy(): boolean {
     const result =
@@ -469,7 +618,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return result;
   }
   /**
+   * context
+   *
    * Build a positive gesture context from cached size and currently available neighbors.
+   * @returns The viewport dimensions and available neighboring directions.
    */
   function context(): GestureContext {
     const model = stateModel;
@@ -488,13 +640,18 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return result;
   }
   /**
+   * refreshGesture
+   *
    * Reset gesture ownership against the latest viewport and navigation snapshot.
    */
   function refreshGesture(): void {
     stateGesture?.updateContext(context());
   }
   /**
+   * interrupt
+   *
    * Resolve the current transaction as cancelled and release pointer ownership.
+   * @param resetRenderer The reset renderer argument.
    */
   function interrupt(resetRenderer: boolean): void {
     const transaction = stateTransaction;
@@ -507,7 +664,13 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
+   * start
+   *
    * Own one cancellable visual transition and ignore completions from stale transactions.
+   * @param plan The plan argument.
+   * @param target The requested target.
+   * @param gesture The gesture argument.
+   * @returns A promise that resolves to whether the operation succeeded.
    */
   function start(plan: GestureSettlement, target: Position | null, gesture: GestureSettlement | null): Promise<boolean> {
     const renderer = stateRenderer;
@@ -536,7 +699,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return result;
   }
   /**
+   * finish
+   *
    * Commit only the current successfully completed transition or finish its rollback.
+   * @param transaction The transaction argument.
+   * @param completed The completed argument.
    */
   function finish(transaction: Transition, completed: boolean): void {
     if (stateTransaction !== transaction || stateDestroyed) return;
@@ -560,7 +727,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
+   * animationError
+   *
    * Reject the current failed animation and release all controller resources.
+   * @param transaction The transaction argument.
+   * @param error The failure to report or normalize.
    */
   function animationError(transaction: Transition, error: unknown): void {
     if (stateTransaction !== transaction) return;
@@ -569,7 +740,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     transaction.reject(fatal(error));
   }
   /**
+   * commit
+   *
    * Synchronize the target hosts before publishing the position and invoking its callback.
+   * @param position Zero based cell coordinates.
+   * @param transaction The transaction argument.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function commit(position: Position, transaction?: Transition): boolean {
     const model = stateModel;
@@ -608,6 +784,8 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return result;
   }
   /**
+   * releaseCapture
+   *
    * Release the original pointer capture while tolerating native NotFoundError races.
    */
   function releaseCapture(): void {
@@ -626,7 +804,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
+   * dropCapture
+   *
    * Invalidate lost pointer ownership and launch a rollback when dragging had begun.
+   * @param id The id argument.
    */
   function dropCapture(id: number): void {
     if (stateCapture?.id !== id) return;
@@ -636,7 +817,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     launch(plan);
   }
   /**
+   * ownsEvent
+   *
    * Resolve the innermost owning controller from the event composed path.
+   * @param event The incoming event.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function ownsEvent(event: Event): boolean {
     const view = stateView;
@@ -659,14 +844,23 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return result;
   }
   /**
+   * listen
+   *
    * Register a removable listener and record its exact target and capture mode.
+   * @param target The requested target.
+   * @param type The type argument.
+   * @param listener The listener to register.
+   * @param capture The capture argument.
    */
   function listen(target: EventTarget, type: string, listener: EventListener, capture = false): void {
     target.addEventListener(type, listener, { capture, passive: false });
     stateSubscriptions.push({ target, type, listener, capture });
   }
   /**
+   * guardEvent
+   *
    * Report browser event failures after completing terminal resource cleanup.
+   * @param callback The callback invoked by this operation.
    */
   function guardEvent(callback: () => void): void {
     if (stateDestroyed) return;
@@ -679,7 +873,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     }
   }
   /**
-   * Start a gesture-owned settlement and route asynchronous failures to the error reporter.
+   * launch
+   *
+   * Start a gesture owned settlement and route asynchronous failures to the error reporter.
+   * @param plan The plan argument.
    */
   function launch(plan: GestureSettlement | null): void {
     if (plan === null) return;
@@ -691,7 +888,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     });
   }
   /**
+   * fatal
+   *
    * Normalize an operation failure and aggregate any cleanup failures without skipping cleanup.
+   * @param error The failure to report or normalize.
+   * @returns The operation error combined with any cleanup failures.
    */
   function fatal(error: unknown): Error {
     const failure = errorFrom(error);
@@ -706,7 +907,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     return failure;
   }
   /**
+   * finishPointer
+   *
    * Complete or cancel the owned pointer, release capture, and launch its settlement.
+   * @param pointer The pointer argument.
+   * @param cancelled The cancelled argument.
    */
   function finishPointer(pointer: PointerEvent, cancelled: boolean): void {
     const gesture = stateGesture;
@@ -748,6 +953,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
   stateView = view;
   stateOnChange = options.onPositionChange;
   const onError = options.onError;
+  /**
+   * fallback
+   * @param error The failure to report or normalize.
+   */
   const fallback = (error: Error): void => {
     if (typeof view.reportError === 'function') {
       view.reportError(error);
@@ -773,6 +982,9 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       container,
       navigation: model,
       adapter,
+      /**
+       * onResize
+       */
       onResize: () => {
         guardEvent(() => {
           interrupt(false);

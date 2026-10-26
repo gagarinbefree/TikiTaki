@@ -9,11 +9,19 @@ const Observer = createResizeObserverMock();
 let frames: Map<number, FrameRequestCallback>;
 let frameId: number;
 let engines: SwipeEngine<string>[];
+/**
+ * frame
+ * @param time The time argument.
+ */
 function frame(time = 0) {
   const callbacks = [...frames.values()];
   frames.clear();
   for (const callback of callbacks) callback(time);
 }
+/**
+ * finish
+ * @returns A promise that resolves when the operation completes.
+ */
 async function finish() {
   frame(0);
   frame(300);
@@ -21,10 +29,31 @@ async function finish() {
   await Promise.resolve();
 }
 const grid: Grid<string> = [['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10'], ['B1'], ['C1', 'C2', 'C3'], ['D1', 'D2']];
+/**
+ * viewport
+ * @param width The width argument.
+ * @param height The height argument.
+ * @returns The callback or factory created by this function.
+ */
 function viewport(width = 300, height = 600) {
   const container = document.createElement('div');
   const size = { width, height };
-  Object.defineProperties(container, { clientWidth: { get: () => size.width }, clientHeight: { get: () => size.height } });
+  Object.defineProperties(container, {
+    clientWidth: {
+      /**
+       * get
+       * @returns The computed numeric value.
+       */
+      get: () => size.width,
+    },
+    clientHeight: {
+      /**
+       * get
+       * @returns The computed numeric value.
+       */
+      get: () => size.height,
+    },
+  });
   const captured = new Set<number>();
   const capture = vi.fn((id: number) => {
     captured.add(id);
@@ -35,6 +64,11 @@ function viewport(width = 300, height = 600) {
   Object.assign(container, {
     setPointerCapture: capture,
     releasePointerCapture: release,
+    /**
+     * hasPointerCapture
+     * @param id The id argument.
+     * @returns Whether the operation succeeded or the condition holds.
+     */
     hasPointerCapture: (id: number) => captured.has(id),
   });
   document.body.append(container);
@@ -42,6 +76,13 @@ function viewport(width = 300, height = 600) {
 
   return result;
 }
+/**
+ * setup
+ * @param extra The extra argument.
+ * @param width The width argument.
+ * @param height The height argument.
+ * @returns The callback or factory created by this function.
+ */
 function setup(extra: Partial<SwipeEngineOptions<string>> = {}, width = 300, height = 600) {
   const view = viewport(width, height);
   const changes = vi.fn<(position: Position, previous: Position) => void>();
@@ -66,12 +107,27 @@ function setup(extra: Partial<SwipeEngineOptions<string>> = {}, width = 300, hei
 
   return result;
 }
+/**
+ * current
+ * @param container The dedicated engine container.
+ * @returns The rendered HTML element.
+ */
 function current(container: HTMLElement) {
   const element = container.querySelector<HTMLElement>('[data-tikitaki-role="current"]');
   assert(element !== null);
 
   return element;
 }
+/**
+ * pointer
+ * @param target The requested target.
+ * @param type The type argument.
+ * @param x The x argument.
+ * @param y The y argument.
+ * @param time The time argument.
+ * @param overrides The overrides argument.
+ * @returns The dispatched pointer event.
+ */
 function pointer(
   target: EventTarget,
   type: string,
@@ -255,6 +311,11 @@ describe('pointer events and capture', () => {
     Object.assign(button, {
       setPointerCapture: capture,
       releasePointerCapture: release,
+      /**
+       * hasPointerCapture
+       * @param id The id argument.
+       * @returns Whether the operation succeeded or the condition holds.
+       */
       hasPointerCapture: (id: number) => captured.has(id),
     });
     pointer(button, 'pointerdown', 0, 0, 0);
@@ -510,6 +571,11 @@ describe('grid, resize, and cleanup', () => {
     const fresh = createSwipeEngine({
       container,
       grid: [['fresh']],
+      /**
+       * renderCell
+       * @param item The cell data to render.
+       * @returns The rendered cell content.
+       */
       renderCell: (item) => {
         const node = document.createElement('div');
         node.textContent = item;
@@ -529,6 +595,11 @@ describe('grid, resize, and cleanup', () => {
     const nested = createSwipeEngine({
       container: nestedView.container,
       grid: [['inner'], ['inner-next']],
+      /**
+       * renderCell
+       * @param item The cell data to render.
+       * @returns The rendered cell content.
+       */
       renderCell: (item) => {
         const node = document.createElement('div');
         node.textContent = item;
@@ -554,6 +625,12 @@ describe('grid, resize, and cleanup', () => {
       throw new Error('unmount failure');
     });
     const adapter: CellAdapter<string> = {
+      /**
+       * mount
+       * @param host The engine owned cell host.
+       * @param item The cell data to render.
+       * @returns The callback or factory created by this function.
+       */
       mount(host, item) {
         host.textContent = item;
         const result = { update: vi.fn(), unmount };
@@ -576,9 +653,18 @@ describe('grid, resize, and cleanup', () => {
     const view = viewport();
     const unmount = vi.fn();
     const adapter: CellAdapter<string> = {
+      /**
+       * mount
+       * @param host The engine owned cell host.
+       * @param item The cell data to render.
+       * @returns The mounted cell update and cleanup operations.
+       */
       mount(host, item) {
         host.textContent = item;
         const result = {
+          /**
+           * update
+           */
           update() {
             throw new Error('adapter update failed');
           },
@@ -604,9 +690,17 @@ describe('grid, resize, and cleanup', () => {
     vi.spyOn(view.container, 'addEventListener').mockImplementationOnce(() => {
       throw new Error('subscription failed');
     });
-    expect(() => createSwipeEngine({ container: view.container, grid: [['A']], renderCell: () => document.createElement('div') })).toThrow(
-      'subscription failed',
-    );
+    expect(() =>
+      createSwipeEngine({
+        container: view.container,
+        grid: [['A']],
+        /**
+         * renderCell
+         * @returns The rendered cell content.
+         */
+        renderCell: () => document.createElement('div'),
+      }),
+    ).toThrow('subscription failed');
     expect(view.container.children).toHaveLength(0);
     expect(view.container.style.cssText).toBe('');
     expect(Observer.instances[0]?.disconnect).toHaveBeenCalledOnce();
@@ -622,6 +716,10 @@ describe('grid, resize, and cleanup', () => {
       createSwipeEngine({
         container: view.container,
         grid: [['A']],
+        /**
+         * renderCell
+         * @returns The rendered cell content.
+         */
         renderCell: () => document.createElement('div'),
         ...extra,
       } as unknown as SwipeEngineOptions<string>),
@@ -638,6 +736,10 @@ describe('grid, resize, and cleanup', () => {
         container: view.container,
         grid: [['A']],
         adapter,
+        /**
+         * renderCell
+         * @returns The rendered cell content.
+         */
         renderCell: () => document.createElement('div'),
       } as unknown as SwipeEngineOptions<string>),
     ).toThrow(TypeError);
@@ -646,6 +748,14 @@ describe('grid, resize, and cleanup', () => {
 });
 
 describe('wheel navigation', () => {
+  /**
+   * wheel
+   * @param target The requested target.
+   * @param deltaY The delta y argument.
+   * @param time The time argument.
+   * @param options Configuration for this operation.
+   * @returns The dispatched wheel event.
+   */
   function wheel(target: EventTarget, deltaY: number, time: number, options: WheelEventInit = {}) {
     const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY, ...options });
     Object.defineProperty(event, 'timeStamp', { value: time });

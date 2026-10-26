@@ -17,7 +17,7 @@ export interface GestureOptions {
   readonly distanceThreshold: number;
   /** Positive finite flick velocity in CSS pixels per millisecond; defaults to DEFAULT_GESTURE_OPTIONS.velocityThreshold. */
   readonly velocityThreshold: number;
-  /** Positive finite dead-zone distance in CSS pixels; defaults to DEFAULT_GESTURE_OPTIONS.axisLockThreshold. */
+  /** Positive finite dead zone distance in CSS pixels; defaults to DEFAULT_GESTURE_OPTIONS.axisLockThreshold. */
   readonly axisLockThreshold: number;
   /** Finite nonnegative settlement duration in milliseconds; defaults to DEFAULT_GESTURE_OPTIONS.animationDuration. */
   readonly animationDuration: number;
@@ -39,7 +39,7 @@ export interface GestureContext {
   readonly height: number;
   readonly neighbors: Readonly<Record<Direction, boolean>>;
 }
-/** An immutable axis-aligned displacement measured in CSS pixels. */
+/** An immutable axis aligned displacement measured in CSS pixels. */
 export interface GestureOffset {
   readonly x: number;
   readonly y: number;
@@ -52,7 +52,7 @@ export interface GestureSnapshot {
   readonly offset: GestureOffset;
   readonly destroyed: boolean;
 }
-/** An identity-bearing animation plan for committing a neighbor or rolling back. */
+/** An identity bearing animation plan for committing a neighbor or rolling back. */
 export interface GestureSettlement {
   readonly direction: Direction | null;
   readonly from: GestureOffset;
@@ -73,7 +73,12 @@ interface ActiveGesture {
   samples: MotionSample[];
 }
 /**
- * Validate an object-shaped runtime input before reading its fields.
+ * record
+ *
+ * Validate an object shaped runtime input before reading its fields.
+ * @param value The value to process.
+ * @param label The label used in validation messages.
+ * @returns The validated object with readable fields.
  */
 function record(value: unknown, label: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -84,7 +89,12 @@ function record(value: unknown, label: string): Record<string, unknown> {
   return result;
 }
 /**
+ * finiteNumber
+ *
  * Validate a finite numeric input without coercion.
+ * @param value The value to process.
+ * @param label The label used in validation messages.
+ * @returns The computed numeric value.
  */
 function finiteNumber(value: unknown, label: string): number {
   if (typeof value !== 'number') {
@@ -97,7 +107,11 @@ function finiteNumber(value: unknown, label: string): number {
   return value;
 }
 /**
+ * resolveOptions
+ *
  * Merge gesture overrides with central defaults and validate every supported option.
+ * @param input The input argument.
+ * @returns The validated gesture options.
  */
 function resolveOptions(input: unknown): Readonly<GestureOptions> {
   const overrides = input === undefined ? {} : record(input, CORE_TEXT.gestureOptions);
@@ -106,6 +120,11 @@ function resolveOptions(input: unknown): Readonly<GestureOptions> {
       throw new TypeError(CORE_MESSAGES.option(key));
     }
   }
+  /**
+   * option
+   * @param key The stable record identifier.
+   * @returns The computed numeric value.
+   */
   const option = (key: keyof GestureOptions): number =>
     finiteNumber(Object.hasOwn(overrides, key) ? overrides[key] : DEFAULT_GESTURE_OPTIONS[key], key);
   const options: GestureOptions = {
@@ -130,7 +149,11 @@ function resolveOptions(input: unknown): Readonly<GestureOptions> {
   return result;
 }
 /**
+ * snapshotContext
+ *
  * Copy viewport geometry and neighbor availability into an immutable context.
+ * @param input The input argument.
+ * @returns The validated immutable viewport dimensions and neighbor availability.
  */
 function snapshotContext(input: unknown): GestureContext {
   const value = record(input, CORE_TEXT.gestureContext);
@@ -140,6 +163,11 @@ function snapshotContext(input: unknown): GestureContext {
     throw new RangeError(CORE_TEXT.viewportDimensionsMustBeIn0NumberMAXSAFEINTEGER);
   }
   const neighbors = record(value.neighbors, CORE_TEXT.neighbors);
+  /**
+   * flag
+   * @param direction The requested navigation direction.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   const flag = (direction: Direction): boolean => {
     const available = neighbors[direction];
     if (typeof available !== 'boolean') {
@@ -162,7 +190,11 @@ function snapshotContext(input: unknown): GestureContext {
   return result;
 }
 /**
+ * pointerId
+ *
  * Validate a nonnegative safe pointer identifier.
+ * @param input The input argument.
+ * @returns The computed numeric value.
  */
 function pointerId(input: unknown): number {
   const id = finiteNumber(input, CORE_TEXT.pointerId);
@@ -173,7 +205,11 @@ function pointerId(input: unknown): number {
   return id;
 }
 /**
+ * snapshotSample
+ *
  * Validate and snapshot a timestamped pointer sample.
+ * @param input The input argument.
+ * @returns The validated immutable pointer sample.
  */
 function snapshotSample(input: unknown): PointerSample {
   const value = record(input, CORE_TEXT.pointerSample);
@@ -189,7 +225,12 @@ function snapshotSample(input: unknown): PointerSample {
   return result;
 }
 /**
+ * directionFor
+ *
  * Convert a nonzero axis displacement into a supported navigation direction.
+ * @param axis The axis argument.
+ * @param delta The delta argument.
+ * @returns The direction matching the displacement, or null for zero movement.
  */
 function directionFor(axis: GestureAxis, delta: number): Direction | null {
   if (delta === 0) {
@@ -204,7 +245,11 @@ function directionFor(axis: GestureAxis, delta: number): Direction | null {
   return direction;
 }
 /**
+ * recentVelocity
+ *
  * Estimate velocity over the bounded recent motion window.
+ * @param samples The samples argument.
+ * @returns The computed numeric value.
  */
 function recentVelocity(samples: readonly MotionSample[]): number {
   const first = samples[0];
@@ -228,7 +273,12 @@ function recentVelocity(samples: readonly MotionSample[]): number {
   return result;
 }
 /**
+ * trackMotion
+ *
  * Maintain bounded velocity history and reset its segment after a reversal or pause.
+ * @param active The active argument.
+ * @param axis The axis argument.
+ * @param next The replacement value.
  */
 function trackMotion(active: ActiveGesture, axis: GestureAxis, next: PointerSample): void {
   const stepSign = Math.sign(next[axis] - active.last[axis]);
@@ -240,7 +290,7 @@ function trackMotion(active: ActiveGesture, axis: GestureAxis, next: PointerSamp
   const motion = { coordinate: next[axis], time: next.time };
   const previous = active.samples.at(PREVIOUS_MOTION_INDEX);
   const last = active.samples.at(-1);
-  // Keep a time-spaced history and the latest point, regardless of input rate.
+  // Keep a time spaced history and the latest point, regardless of input rate.
   if (last?.time === next.time || (previous !== undefined && next.time - previous.time < SAMPLE_INTERVAL_MS)) {
     active.samples[active.samples.length - 1] = motion;
   } else {
@@ -256,7 +306,14 @@ function trackMotion(active: ActiveGesture, axis: GestureAxis, next: PointerSamp
   }
 }
 /**
+ * dragOffset
+ *
  * Compute a bounded drag displacement with elastic resistance at unavailable edges.
+ * @param axis The axis argument.
+ * @param delta The delta argument.
+ * @param context The context used by this operation.
+ * @param resistance The resistance argument.
+ * @returns The displacement limited to one viewport and reduced by boundary resistance.
  */
 function dragOffset(axis: GestureAxis, delta: number, context: GestureContext, resistance: number): GestureOffset {
   const direction = directionFor(axis, delta);
@@ -276,29 +333,86 @@ function dragOffset(axis: GestureAxis, delta: number, context: GestureContext, r
  * Functional pointer state machine operations; every instance owns its history and tokens.
  */
 export interface GestureEngine {
-  /** Read the validated immutable gesture configuration. */
+  /**
+   * getOptions
+   *
+   * Read the validated immutable gesture configuration.
+   * @returns The validated gesture options.
+   */
   readonly getOptions: () => Readonly<GestureOptions>;
-  /** Read a stable snapshot of the current state without exposing mutable internals. */
+  /**
+   * getSnapshot
+   *
+   * Read a stable snapshot of the current state without exposing mutable internals.
+   * @returns The current gesture state snapshot.
+   */
   readonly getSnapshot: () => GestureSnapshot;
-  /** Start tracking a primary pointer when the state machine is idle. */
+  /**
+   * pointerDown
+   *
+   * Start tracking a primary pointer when the state machine is idle.
+   * @param sample The sample argument.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   readonly pointerDown: (sample: PointerSample) => boolean;
-  /** Advance the active gesture while preserving the locked axis. */
+  /**
+   * pointerMove
+   *
+   * Advance the active gesture while preserving the locked axis.
+   * @param sample The sample argument.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   readonly pointerMove: (sample: PointerSample) => boolean;
-  /** Resolve a commit or rollback plan using distance and recent directional velocity. */
+  /**
+   * pointerUp
+   *
+   * Resolve a commit or rollback plan using distance and recent directional velocity.
+   * @param sample The sample argument.
+   * @returns The commit or rollback plan, or null when no settlement is needed.
+   */
   readonly pointerUp: (sample: PointerSample) => GestureSettlement | null;
-  /** Cancel the active pointer and request a visual rollback when needed. */
+  /**
+   * pointerCancel
+   *
+   * Cancel the active pointer and request a visual rollback when needed.
+   * @param id The id argument.
+   * @returns The rollback plan, or null when the pointer is inactive.
+   */
   readonly pointerCancel: (id: number) => GestureSettlement | null;
-  /** Cancel a gesture whose pointer capture is no longer available. */
+  /**
+   * lostPointerCapture
+   *
+   * Cancel a gesture whose pointer capture is no longer available.
+   * @param id The id argument.
+   * @returns The rollback plan, or null when the pointer is inactive.
+   */
   readonly lostPointerCapture: (id: number) => GestureSettlement | null;
-  /** Accept only the current settlement token and reset the gesture state. */
+  /**
+   * finishSettling
+   *
+   * Accept only the current settlement token and reset the gesture state.
+   * @param settlement The settlement argument.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   readonly finishSettling: (settlement: GestureSettlement) => boolean;
-  /** Validate a replacement viewport and neighbor snapshot before resetting the gesture. */
+  /**
+   * updateContext
+   *
+   * Validate a replacement viewport and neighbor snapshot before resetting the gesture.
+   * @param context The context used by this operation.
+   */
   readonly updateContext: (context: GestureContext) => void;
-  /** Release owned resources once and settle pending work without leaving stale callbacks. */
+  /**
+   * destroy
+   *
+   * Release owned resources once and settle pending work without leaving stale callbacks.
+   */
   readonly destroy: () => void;
 }
 /**
- * Create a DOM-independent gesture state machine with isolated closure state.
+ * createGestureEngine
+ *
+ * Create a DOM independent gesture state machine with isolated closure state.
  * @param context Positive viewport dimensions and currently available navigation neighbors.
  * @param options Validated container, grid, rendering strategy, and optional lifecycle callbacks.
  * @returns Independent operations that can be called without binding a receiver.
@@ -311,13 +425,19 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
   let stateOffset: GestureOffset = ZERO_OFFSET;
   let stateDestroyed = false;
   /**
+   * getOptions
+   *
    * Read the validated immutable gesture configuration.
+   * @returns The validated gesture options.
    */
   function getOptions(): Readonly<GestureOptions> {
     return stateOptions;
   }
   /**
+   * getSnapshot
+   *
    * Read a stable snapshot of the current state without exposing mutable internals.
+   * @returns The current gesture state snapshot.
    */
   function getSnapshot(): GestureSnapshot {
     const result = Object.freeze({
@@ -331,7 +451,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return result;
   }
   /**
+   * pointerDown
+   *
    * Start tracking a primary pointer when the state machine is idle.
+   * @param sample The sample argument.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function pointerDown(sample: PointerSample): boolean {
     if (stateDestroyed || readState() !== CORE_TEXT.idle) {
@@ -346,7 +470,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return result;
   }
   /**
+   * pointerMove
+   *
    * Advance the active gesture while preserving the locked axis.
+   * @param sample The sample argument.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function pointerMove(sample: PointerSample): boolean {
     const active = stateActive;
@@ -367,7 +495,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return result;
   }
   /**
+   * pointerUp
+   *
    * Resolve a commit or rollback plan using distance and recent directional velocity.
+   * @param sample The sample argument.
+   * @returns The commit or rollback plan, or null when no settlement is needed.
    */
   function pointerUp(sample: PointerSample): GestureSettlement | null {
     const active = stateActive;
@@ -402,7 +534,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return result;
   }
   /**
+   * pointerCancel
+   *
    * Cancel the active pointer and request a visual rollback when needed.
+   * @param id The id argument.
+   * @returns The rollback plan, or null when the pointer is inactive.
    */
   function pointerCancel(id: number): GestureSettlement | null {
     const active = stateActive;
@@ -427,7 +563,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return result;
   }
   /**
+   * lostPointerCapture
+   *
    * Cancel a gesture whose pointer capture is no longer available.
+   * @param id The id argument.
+   * @returns The rollback plan, or null when the pointer is inactive.
    */
   function lostPointerCapture(id: number): GestureSettlement | null {
     const result = pointerCancel(id);
@@ -435,7 +575,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return result;
   }
   /**
+   * finishSettling
+   *
    * Accept only the current settlement token and reset the gesture state.
+   * @param settlement The settlement argument.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function finishSettling(settlement: GestureSettlement): boolean {
     if (stateSettlement === null || stateSettlement !== settlement) {
@@ -449,7 +593,10 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return result;
   }
   /**
+   * updateContext
+   *
    * Validate a replacement viewport and neighbor snapshot before resetting the gesture.
+   * @param context The context used by this operation.
    */
   function updateContext(context: GestureContext): void {
     if (stateDestroyed) return;
@@ -459,6 +606,8 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     reset();
   }
   /**
+   * destroy
+   *
    * Release owned resources once and settle pending work without leaving stale callbacks.
    */
   function destroy(): void {
@@ -468,7 +617,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     reset();
   }
   /**
+   * advance
+   *
    * Advance pointer history and lock the dominant axis after the dead zone.
+   * @param active The active argument.
+   * @param next The replacement value.
    */
   function advance(active: ActiveGesture, next: PointerSample): void {
     const dx = next.x - active.start.x;
@@ -485,7 +638,11 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     active.last = next;
   }
   /**
+   * settle
+   *
    * Create an immutable settlement token and relinquish the active pointer.
+   * @param direction The requested navigation direction.
+   * @returns The immutable animation plan for committing a neighbor or rolling back.
    */
   function settle(direction: Direction | null): GestureSettlement {
     let to = ZERO_OFFSET;
@@ -503,6 +660,8 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     return plan;
   }
   /**
+   * reset
+   *
    * Cancel pending motion and restore the viewport origin.
    */
   function reset(): void {
@@ -512,7 +671,10 @@ export function createGestureEngine(context: GestureContext, options?: Partial<G
     stateOffset = ZERO_OFFSET;
   }
   /**
+   * readState
+   *
    * Derive the gesture phase from the active pointer and settlement token.
+   * @returns The current gesture phase.
    */
   function readState(): GestureState {
     if (stateSettlement !== null) {

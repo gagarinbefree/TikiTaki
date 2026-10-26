@@ -1,5 +1,5 @@
 import type { GestureOptions, GestureOffset } from './gesture';
-/** Immutable gesture defaults: CSS pixels, CSS pixels per millisecond, milliseconds, and a resistance ratio. */
+/** Immutable gesture defaults in CSS pixels, CSS pixels per millisecond, milliseconds, and a resistance ratio. */
 export const DEFAULT_GESTURE_OPTIONS: Readonly<GestureOptions> = Object.freeze({
   distanceThreshold: 80,
   velocityThreshold: 0.5,
@@ -19,7 +19,7 @@ export const MAX_SAMPLES = 64;
 export const MIN_MOTION_SAMPLES = 2;
 /** Array offset of the sample preceding the most recently stored motion sample. */
 export const PREVIOUS_MOTION_INDEX = -2;
-/** Cubic ease-out exponent. */
+/** Cubic easing exponent. */
 export const EASING_POWER = 3;
 /** Shared immutable origin; never mutated by an engine instance. */
 export const ZERO_OFFSET: GestureOffset = Object.freeze({ x: 0, y: 0 });
@@ -149,18 +149,70 @@ export const ORIGIN_POSITION = Object.freeze({ row: 0, col: 0 });
 
 /** Dynamic validation messages are centralized with static ownership and protocol messages. */
 export const CORE_MESSAGES = Object.freeze({
+  /**
+   * object
+   * @param label The label used in validation messages.
+   * @returns The resulting string.
+   */
   object: (label: string) => `${label} must be an object`,
+  /**
+   * array
+   * @param label The label used in validation messages.
+   * @returns The resulting string.
+   */
   array: (label: string) => `${label} must be an array`,
+  /**
+   * nonempty
+   * @param label The label used in validation messages.
+   * @returns The resulting string.
+   */
   nonempty: (label: string) => `${label} must not be empty`,
+  /**
+   * dense
+   * @param label The label used in validation messages.
+   * @returns The resulting string.
+   */
   dense: (label: string) => `${label} must not contain holes`,
+  /**
+   * numeric
+   * @param label The label used in validation messages.
+   * @returns The resulting string.
+   */
   numeric: (label: string) => `${label} must be a number`,
+  /**
+   * finite
+   * @param label The label used in validation messages.
+   * @returns The resulting string.
+   */
   finite: (label: string) => `${label} must be finite`,
+  /**
+   * option
+   * @param key The stable record identifier.
+   * @returns The resulting string.
+   */
   option: (key: string) => `Unknown gesture option: ${key}`,
+  /**
+   * neighbor
+   * @param direction The requested navigation direction.
+   * @returns The resulting string.
+   */
   neighbor: (direction: string) => `neighbors.${direction} must be a boolean`,
+  /**
+   * callback
+   * @param key The stable record identifier.
+   * @returns The resulting string.
+   */
   callback: (key: string) => `${key} must be a function`,
 });
 
-/** Format a renderer offset as a compositor-friendly CSS transform. */
+/**
+ * translateOffset
+ *
+ * Format a renderer offset as a compositor friendly CSS transform.
+ * @param x The x argument.
+ * @param y The y argument.
+ * @returns The resulting string.
+ */
 export function translateOffset(x: number, y: number): string {
   const transform = `translate3d(${String(x)}px, ${String(y)}px, 0px)`;
 

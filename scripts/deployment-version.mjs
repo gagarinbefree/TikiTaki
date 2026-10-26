@@ -1,6 +1,11 @@
 import { RELEASE_BADGE_CONFIG, VERSION_CONFIG } from '../tooling.config.mjs';
 
-/** Reject malformed version labels before placing them in Markdown or SVG. @param {string} version Untagged release version. */
+/**
+ * validateReleaseVersion
+ *
+ * Reject malformed version labels before placing them in Markdown or SVG.
+ * @param {string} version Untagged release version.
+ */
 function validateReleaseVersion(version) {
   if (!VERSION_CONFIG.versionPattern.test(version)) {
     throw new Error(VERSION_CONFIG.invalidVersion);
@@ -8,12 +13,15 @@ function validateReleaseVersion(version) {
 }
 
 /**
+ * createDeploymentMetadata
+ *
  * Increment the greatest published stable version; workflow identifiers remain trace metadata.
  * @param {string} baseVersion Package version of the tested source.
  * @param {string} runNumber Monotonically increasing deployment workflow number.
- * @param {string} attempt GitHub's attempt number, including deploy-only retries.
+ * @param {string} attempt GitHub's attempt number, including deploy only retries.
  * @param {string} commit Full SHA of the source verified by the upstream workflow.
  * @param {readonly string[]} releaseTags Previously published GitHub release tags.
+ * @returns The release version, workflow identity, and source commit metadata.
  */
 export function createDeploymentMetadata(baseVersion, runNumber, attempt, commit, releaseTags = []) {
   validateReleaseVersion(baseVersion);
@@ -35,9 +43,12 @@ export function createDeploymentMetadata(baseVersion, runNumber, attempt, commit
 }
 
 /**
+ * updateReadmeRelease
+ *
  * Update the marked version while preserving all other README content.
  * @param {string} source Original README content.
  * @param {string} version Successfully deployed release version.
+ * @returns The resulting string.
  */
 export function updateReadmeRelease(source, version) {
   validateReleaseVersion(version);
@@ -51,7 +62,13 @@ export function updateReadmeRelease(source, version) {
   return result;
 }
 
-/** Render a self-contained SVG badge without external badge-service requests. @param {string} version Published release version. */
+/**
+ * createReleaseBadge
+ *
+ * Render a self contained SVG badge without external badge service requests.
+ * @param {string} version Published release version.
+ * @returns The resulting string.
+ */
 export function createReleaseBadge(version) {
   validateReleaseVersion(version);
   const config = RELEASE_BADGE_CONFIG;

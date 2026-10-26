@@ -20,7 +20,14 @@ test.afterEach(async ({ page }) => {
   expect(await page.evaluate(() => window.tikitakiDemo.metrics().errors)).toEqual([]);
   expect(messages.get(page)).toEqual([]);
 });
-/** Exercise lifecycle operations without exposing a control panel in the demo. */
+/**
+ * command
+ *
+ * Exercise lifecycle operations without exposing a control panel in the demo.
+ * @param page The browser page used for verification.
+ * @param name The name identifying this operation.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function command(page: Page, name: 'goto' | 'update' | 'shrink' | 'toggle') {
   await page.evaluate((name) => {
     const commands = window.tikitakiDemo.commands;
@@ -29,7 +36,15 @@ async function command(page: Page, name: 'goto' | 'update' | 'shrink' | 'toggle'
     else commands[name]();
   }, name);
 }
-/** Start navigation without awaiting settling so conflicting commands remain testable. */
+/**
+ * navigate
+ *
+ * Start navigation without awaiting settling so conflicting commands remain testable.
+ * @param page The browser page used for verification.
+ * @param direction The requested navigation direction.
+ * @param repeat Whether to repeat the operation.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function navigate(page: Page, direction: Direction, repeat = false) {
   await page.evaluate(
     ({ direction, repeat }) => {
@@ -41,6 +56,11 @@ async function navigate(page: Page, direction: Direction, repeat = false) {
     { direction, repeat },
   );
 }
+/**
+ * centered
+ * @param page The browser page used for verification.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function centered(page: Page) {
   await expect
     .poll(async () => {
@@ -52,6 +72,14 @@ async function centered(page: Page) {
     })
     .toBe(true);
 }
+/**
+ * item
+ * @param page The browser page used for verification.
+ * @param name The name identifying this operation.
+ * @param row The row argument.
+ * @param col The col argument.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function item(page: Page, name: string, row: number, col: number) {
   await expect(page.locator(`${current} [data-item]`)).toHaveAttribute('data-item', name);
   await expect(page.locator('[aria-current="true"]')).toHaveAttribute('title', `row: ${String(row)}, col: ${String(col)}`);

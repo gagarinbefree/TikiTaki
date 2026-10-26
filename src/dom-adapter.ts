@@ -2,11 +2,24 @@ import { CORE_TEXT } from './config';
 import type { Position } from './navigation';
 import type { CellAdapter, MountedCell } from './dom-renderer';
 import { isHTMLElement } from './dom-element';
-/** Plain DOM convenience adapter. Framework adapters own their content themselves. */
+/**
+ * createDOMAdapter
+ *
+ * Plain DOM convenience adapter. Framework adapters own their content themselves.
+ * @param renderCell The render cell argument.
+ * @returns The cell adapter with mount, update, and unmount operations.
+ */
 export function createDOMAdapter<T>(renderCell: (item: T, position: Position) => HTMLElement): CellAdapter<T> {
   if (typeof renderCell !== 'function') {
     throw new TypeError(CORE_TEXT.renderCellMustBeAFunction);
   }
+  /**
+   * render
+   * @param item The cell data to render.
+   * @param position Zero based cell coordinates.
+   * @param current The current argument.
+   * @returns The rendered HTML element.
+   */
   const render = (item: T, position: Position, current: HTMLElement | null): HTMLElement => {
     const element = renderCell(item, position);
     if (!isHTMLElement(element)) {
@@ -20,14 +33,24 @@ export function createDOMAdapter<T>(renderCell: (item: T, position: Position) =>
   };
   const result: CellAdapter<T> = {
     /**
+     * mount
+     *
      * Register one owned host and return its isolated update and cleanup operations.
+     * @param host The engine owned cell host.
+     * @param item The cell data to render.
+     * @param position Zero based cell coordinates.
+     * @returns The mounted cell update and cleanup operations.
      */
     mount(host: HTMLElement, item: T, position: Position): MountedCell<T> {
       let current: HTMLElement | null = render(item, position, null);
       host.append(current);
       const result: MountedCell<T> = {
         /**
+         * update
+         *
          * Update a live host while retaining its identity and component state.
+         * @param nextItem The updated cell data.
+         * @param nextPosition The updated cell coordinates.
          */
         update(nextItem, nextPosition) {
           if (current === null) return;
@@ -39,6 +62,8 @@ export function createDOMAdapter<T>(renderCell: (item: T, position: Position) =>
           }
         },
         /**
+         * unmount
+         *
          * Release one mounted host exactly once and ignore stale updates.
          */
         unmount() {

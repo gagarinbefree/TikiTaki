@@ -99,7 +99,7 @@ export const DEMO_TEXT = Object.freeze({
   previousCellLabel: '→ Previous cell',
 });
 
-/** A 9:16 portrait viewport, at most 360px wide and 70svh tall; Bootstrap supplies its appearance. */
+/** A portrait viewport with a 9 to 16 aspect ratio, at most 360px wide and 70svh tall; Bootstrap supplies its appearance. */
 export const DEMO_GEOMETRY = Object.freeze({
   phoneColumn: Object.freeze({ width: 'min(100%, 360px, 39.375svh)' }),
   map: Object.freeze({ minWidth: '0', minHeight: '0' }),
@@ -109,7 +109,17 @@ export const DEMO_GEOMETRY = Object.freeze({
 
 /** Format demo UI labels consistently without duplicating strings across frameworks. */
 export const DEMO_LABELS = Object.freeze({
+  /**
+   * coordinates
+   * @param position Zero based cell coordinates.
+   * @returns The resulting string.
+   */
   coordinates: (position: Position) => `row: ${String(position.row)}, col: ${String(position.col)}`,
+  /**
+   * row
+   * @param row The row argument.
+   * @returns The resulting string.
+   */
   row: (row: number) => `Row ${String(row)}`,
 });
 
@@ -121,7 +131,7 @@ export const initialGrid: Grid<string> = [
   [DEMO_TEXT.d1, DEMO_TEXT.d2, DEMO_TEXT.d3, DEMO_TEXT.d4, DEMO_TEXT.d5],
 ];
 
-/** Built-in button themes; no custom color values are introduced. */
+/** Built in button themes; no custom color values are introduced. */
 export const CELL_THEMES = Object.freeze(['primary', 'accent', 'success', 'danger', 'warning', 'info', 'inverse', 'secondary']);
 
 /** Mobile portrait detection is independent of CSS pixel width on touch devices. */

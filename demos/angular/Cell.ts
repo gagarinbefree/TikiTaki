@@ -13,11 +13,19 @@ export class Cell implements OnInit, OnDestroy {
   readonly appearance = computed(() => cellAppearance(this.position(), this.fullscreen()));
   readonly text = DEMO_TEXT;
   readonly geometry = DEMO_GEOMETRY;
-  /** Count each component mount for browser lifecycle verification. */
+  /**
+   * ngOnInit
+   *
+   * Count each component mount for browser lifecycle verification.
+   */
   ngOnInit() {
     metrics.mount();
   }
-  /** Pair every mount with cleanup under the owning view. */
+  /**
+   * ngOnDestroy
+   *
+   * Pair every mount with cleanup under the owning view.
+   */
   ngOnDestroy() {
     metrics.unmount();
   }

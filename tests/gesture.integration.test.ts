@@ -1,6 +1,11 @@
 import { assert, expect, it } from 'vitest';
 import { createGestureEngine, createNavigationModel, type NavigationModel } from '../src/index';
 import type { Direction, GestureContext } from '../src/index';
+/**
+ * context
+ * @param model The model argument.
+ * @returns The viewport dimensions and available neighboring directions.
+ */
 function context(model: NavigationModel<string>): GestureContext {
   const result: GestureContext = {
     width: 300,
@@ -15,6 +20,13 @@ function context(model: NavigationModel<string>): GestureContext {
 
   return result;
 }
+/**
+ * sample
+ * @param x The x argument.
+ * @param y The y argument.
+ * @param time The time argument.
+ * @returns The pointer coordinates, identifier, and timestamp.
+ */
 function sample(x: number, y: number, time: number) {
   const result = { pointerId: 1, x, y, time };
 
@@ -27,6 +39,12 @@ it('connects gesture plans to ragged navigation with a single deferred commit', 
   });
   const gesture = createGestureEngine(context(model));
   const vectors: Record<Direction, readonly [number, number]> = { up: [0, -10000], down: [0, 10000], left: [-10000, 0], right: [10000, 0] };
+  /**
+   * swipe
+   * @param direction The requested navigation direction.
+   * @param expectedItem The expected item argument.
+   * @param expectedCommit The expected commit argument.
+   */
   const swipe = (direction: Direction, expectedItem: string, expectedCommit: boolean) => {
     const before = model.getPosition();
     const [x, y] = vectors[direction];

@@ -5,6 +5,11 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { DEPLOYMENT_CONFIG, SERVER_CONFIG } from './tooling.config.mjs';
 
+/**
+ * path
+ * @param relative The relative argument.
+ * @returns The resulting string.
+ */
 const path = (relative: string) => fileURLToPath(new URL(relative, import.meta.url));
 
 export default defineConfig(({ command }) => {

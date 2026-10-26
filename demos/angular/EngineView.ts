@@ -19,7 +19,7 @@ import { INITIAL_POSITION } from '../shared';
 import { Cell } from './Cell';
 import { metrics } from './metrics';
 
-/** Own one controller and its parent-attached Angular embedded views. */
+/** Own one controller and its parent attached Angular embedded views. */
 @Component({
   selector: 'tikitaki-angular-view',
   standalone: true,
@@ -39,7 +39,11 @@ export class EngineView {
   private readonly template = viewChild.required<TemplateRef<AngularCellContext<string>>>('cell');
   private readonly views = inject(ViewContainerRef);
   private engine: SwipeEngine<string> | null = null;
-  /** Pair framework lifecycle ownership with the controller and its diagnostics. */
+  /**
+   * constructor
+   *
+   * Pair framework lifecycle ownership with the controller and its diagnostics.
+   */
   constructor() {
     afterNextRender(() => {
       const adapter = createAngularCellAdapter<string>((context) => this.views.createEmbeddedView(this.template(), context));
@@ -48,6 +52,10 @@ export class EngineView {
         grid: this.grid(),
         initialPosition: INITIAL_POSITION,
         adapter,
+        /**
+         * onPositionChange
+         * @param next The replacement value.
+         */
         onPositionChange: (next) => {
           this.positionChange.emit(next);
         },

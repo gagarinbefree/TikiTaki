@@ -5,15 +5,54 @@ declare global {
   interface Window {
     swipeFixture: {
       state: { errors: string[]; changes: { position: Position; previous: Position }[]; taps: number; mounts: number; unmounts: number };
+      /**
+       * position
+       * @returns The resulting cell coordinates.
+       */
       position(): Position;
+      /**
+       * navigate
+       * @param direction The requested navigation direction.
+       * @returns A promise that resolves to whether the operation succeeded.
+       */
       navigate(direction: Direction): Promise<boolean>;
+      /**
+       * goTo
+       * @param position Zero based cell coordinates.
+       * @returns A promise that resolves to whether the operation succeeded.
+       */
       goTo(position: Position): Promise<boolean>;
+      /**
+       * update
+       * @param grid Grid rows and their cell data.
+       */
       update(grid: Grid<string>): void;
+      /**
+       * resize
+       * @param width The width argument.
+       * @param height The height argument.
+       */
       resize(width: number, height: number): void;
+      /**
+       * captured
+       * @returns Whether the operation succeeded or the condition holds.
+       */
       captured(): boolean;
+      /**
+       * release
+       */
       release(): void;
+      /**
+       * cancel
+       */
       cancel(): void;
+      /**
+       * destroy
+       */
       destroy(): void;
+      /**
+       * reinit
+       */
       reinit(): void;
     };
   }
@@ -39,6 +78,15 @@ test.afterEach(async ({ page }) => {
   expect(await page.evaluate(() => window.swipeFixture.state.errors)).toEqual([]);
   expect(errors.get(page)).toEqual([]);
 });
+/**
+ * startInput
+ * @param page The browser page used for verification.
+ * @param context The context used by this operation.
+ * @param touch The touch argument.
+ * @param x The x argument.
+ * @param y The y argument.
+ * @returns A promise that resolves to the operation result.
+ */
 async function startInput(page: Page, context: BrowserContext, touch: boolean, x: number, y: number): Promise<CDPSession | null> {
   if (touch) {
     const session = await context.newCDPSession(page);
@@ -52,6 +100,14 @@ async function startInput(page: Page, context: BrowserContext, touch: boolean, x
 
   return result;
 }
+/**
+ * moveInput
+ * @param page The browser page used for verification.
+ * @param session The session argument.
+ * @param x The x argument.
+ * @param y The y argument.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function moveInput(page: Page, session: CDPSession | null, x: number, y: number) {
   if (session !== null) {
     await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y, id: 1 }] });
@@ -59,6 +115,12 @@ async function moveInput(page: Page, session: CDPSession | null, x: number, y: n
     await page.mouse.move(x, y, { steps: 5 });
   }
 }
+/**
+ * endInput
+ * @param page The browser page used for verification.
+ * @param session The session argument.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function endInput(page: Page, session: CDPSession | null) {
   if (session !== null) {
     await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
@@ -67,6 +129,11 @@ async function endInput(page: Page, session: CDPSession | null) {
     await page.mouse.up();
   }
 }
+/**
+ * centered
+ * @param page The browser page used for verification.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function centered(page: Page) {
   await expect
     .poll(async () => {

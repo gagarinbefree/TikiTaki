@@ -16,7 +16,15 @@
   }: {
     readonly fullscreen: boolean;
     readonly grid: Grid<string>;
+    /**
+     * onengine
+     * @param engine The engine argument.
+     */
     readonly onengine: (engine: SwipeEngine<string> | null) => void;
+    /**
+     * onposition
+     * @param position Zero based cell coordinates.
+     */
     readonly onposition: (position: Position) => void;
   } = $props();
   let container: HTMLDivElement;
@@ -29,6 +37,10 @@
       grid,
       initialPosition: INITIAL_POSITION,
       adapter: bridge.adapter,
+      /**
+       * onPositionChange
+       * @param next The replacement value.
+       */
       onPositionChange: (next) => {
         onposition(next);
       },

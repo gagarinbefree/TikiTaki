@@ -215,7 +215,12 @@ const adapter: CellAdapter<string> = {
   mount(host, item) {
     let destroyed = false;
 
-    /** Update the Lit template while retaining the engine-owned host. */
+    /**
+     * update
+     *
+     * Update the Lit template while retaining the engine host.
+     * @param nextItem The updated cell data.
+     */
     function update(nextItem: string): void {
       if (destroyed) return;
       render(html`<article><h1>${nextItem}</h1></article>`, host);

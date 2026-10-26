@@ -4,10 +4,14 @@ import { basename } from 'node:path';
 import { validatePublicVersion } from './package-release.mjs';
 
 /** @typedef {{name: string, version: string, filename: string, integrity: string}} ReleaseArchive */
-/** Verify the complete release before allowing any registry interactions.
- * @param {{version: string, packages: ReleaseArchive[]}} metadata
- * @param {readonly string[]} expectedNames
- * @param {ReadonlyMap<string, Uint8Array>} archives
+/**
+ * verifyReleaseArtifacts
+ *
+ * Verify the complete release before allowing any registry interactions.
+ * @param {{version: string, packages: ReleaseArchive[]}} metadata The metadata argument.
+ * @param {readonly string[]} expectedNames The expectedNames argument.
+ * @param {ReadonlyMap<string, Uint8Array>} archives The archives argument.
+ * @returns The resulting array.
  */
 export function verifyReleaseArtifacts(metadata, expectedNames, archives) {
   validatePublicVersion(metadata.version);

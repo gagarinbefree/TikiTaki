@@ -6,7 +6,13 @@ import { initialGrid, INITIAL_POSITION, cellAppearance, cellMapRows, createMetri
 import { showRepositoryLink } from '../version';
 import { isFullscreenDemo, subscribeDemoLayout, applyDOMDemoLayout } from '../responsive';
 
-/** Require an existing element from the static demo template. @param {string} selector */
+/**
+ * requireElement
+ *
+ * Require an existing element from the static demo template.
+ * @param {string} selector The selector argument.
+ * @returns The rendered HTML element.
+ */
 function requireElement(selector) {
   const element = document.querySelector(selector);
   if (!(element instanceof HTMLElement)) throw new Error(DEMO_TEXT.missingDemoRoot);
@@ -24,7 +30,14 @@ let position = INITIAL_POSITION;
 /** @type {import('tikitaki/dom').SwipeEngine<string> | null} */
 let engine = null;
 
-/** Render an ordinary DOM cell without a framework. @param {string} item @param {import('tikitaki').Position} coordinates */
+/**
+ * renderCell
+ *
+ * Render an ordinary DOM cell without a framework.
+ * @param {string} item The cell data to render.
+ * @param {import('tikitaki').Position} coordinates The coordinates argument.
+ * @returns The rendered HTML element.
+ */
 function renderCell(item, coordinates) {
   const cell = document.createElement('article');
   cell.className = cellAppearance(coordinates, isFullscreenDemo());
@@ -41,6 +54,13 @@ function renderCell(item, coordinates) {
 const dom = createDOMAdapter(renderCell);
 /** Track owned DOM hosts so cleanup can be checked alongside the framework demos. @type {import('tikitaki/dom').CellAdapter<string>} */
 const adapter = {
+  /**
+   * mount
+   * @param host The engine owned cell host.
+   * @param item The cell data to render.
+   * @param coordinates The coordinates argument.
+   * @returns The resulting cell coordinates.
+   */
   mount(host, item, coordinates) {
     const mounted = dom.mount(host, item, coordinates);
     let currentPosition = coordinates;
@@ -50,10 +70,18 @@ const adapter = {
     let released = false;
     metrics.mount();
     return {
+      /**
+       * update
+       * @param nextItem The updated cell data.
+       * @param nextPosition The updated cell coordinates.
+       */
       update(nextItem, nextPosition) {
         currentPosition = nextPosition;
         mounted.update(nextItem, nextPosition);
       },
+      /**
+       * unmount
+       */
       unmount() {
         if (released) return;
         released = true;
@@ -65,7 +93,11 @@ const adapter = {
   },
 };
 
-/** Refresh map labels, selection, and disabled state from the committed engine state. */
+/**
+ * renderMap
+ *
+ * Refresh map labels, selection, and disabled state from the committed engine state.
+ */
 function renderMap() {
   const fullscreen = isFullscreenDemo();
   applyDOMDemoLayout(column.querySelector('[data-demo-container]'), map, rows, fullscreen);
@@ -107,7 +139,11 @@ function renderMap() {
   }
 }
 
-/** Mount one independently owned engine into the portrait viewport. */
+/**
+ * mount
+ *
+ * Mount one independently owned engine into the portrait viewport.
+ */
 function mount() {
   const container = document.createElement('div');
   container.className = DEMO_TEXT.viewport;
@@ -121,6 +157,10 @@ function mount() {
     grid,
     initialPosition: INITIAL_POSITION,
     adapter,
+    /**
+     * onPositionChange
+     * @param next The replacement value.
+     */
     onPositionChange(next) {
       position = next;
       renderMap();
@@ -131,7 +171,11 @@ function mount() {
   renderMap();
 }
 
-/** Release the engine before removing its viewport; repeated cleanup is safe. */
+/**
+ * unmount
+ *
+ * Release the engine before removing its viewport; repeated cleanup is safe.
+ */
 function unmount() {
   if (engine === null) return;
   engine.destroy();
@@ -141,7 +185,12 @@ function unmount() {
   renderMap();
 }
 
-/** Replace demo data through the public API and reflect clamped coordinates. @param {import('tikitaki').Grid<string>} next */
+/**
+ * updateGrid
+ *
+ * Replace demo data through the public API and reflect clamped coordinates.
+ * @param {import('tikitaki').Grid<string>} next The replacement value.
+ */
 function updateGrid(next) {
   grid = next;
   engine?.updateGrid(grid);
@@ -153,20 +202,35 @@ mount();
 const stopLayout = subscribeDemoLayout(renderMap);
 import.meta.hot?.dispose(stopLayout);
 window.tikitakiDemo.commands = {
-  /** @param {import('tikitaki').Direction} direction */
+  /**
+   * navigate
+   * @param {import('tikitaki').Direction} direction The requested navigation direction.
+   */
   navigate: (direction) => {
     void engine?.navigate(direction).catch(metrics.error);
   },
-  /** @param {import('tikitaki').Position} target */
+  /**
+   * goTo
+   * @param {import('tikitaki').Position} target The requested target.
+   */
   goTo: (target) => {
     void engine?.goTo(target).catch(metrics.error);
   },
+  /**
+   * update
+   */
   update: () => {
     updateGrid(grid.map((row) => row.map((item) => item + DEMO_TEXT.updateSuffix)));
   },
+  /**
+   * shrink
+   */
   shrink: () => {
     updateGrid([[DEMO_TEXT.only]]);
   },
+  /**
+   * toggle
+   */
   toggle: () => {
     if (engine !== null) unmount();
     else {

@@ -75,6 +75,11 @@ it('creates a swipe controller with detached commands and terminal cleanup', asy
   const engine = create({
     container,
     grid: [['A1', 'A2'], ['B1']],
+    /**
+     * renderCell
+     * @param item The cell data to render.
+     * @returns The rendered cell content.
+     */
     renderCell(item) {
       const element = document.createElement('div');
       element.textContent = item;

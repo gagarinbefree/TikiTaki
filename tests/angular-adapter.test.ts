@@ -2,6 +2,11 @@
 import { expect, it, vi } from 'vitest';
 import { createAngularCellAdapter, type AngularCellContext, type AngularCellView } from '../packages/angular/src/index';
 
+/**
+ * setup
+ * @param fail The fail argument.
+ * @returns The callback or factory created by this function.
+ */
 function setup(fail = false) {
   const node = document.createElement('article');
   const views: AngularCellView<string>[] = [];

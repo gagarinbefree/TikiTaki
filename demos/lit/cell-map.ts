@@ -4,7 +4,13 @@ import { DEMO_LABELS, DEMO_TEXT, MOBILE_LAYOUT } from '../config';
 import { cellMapRows } from '../shared';
 import type { CellMapProps } from '../shared';
 
-/** Render the shared ragged-grid map using Lit event and attribute bindings. */
+/**
+ * renderCellMap
+ *
+ * Render the shared ragged grid map using Lit event and attribute bindings.
+ * @param host The engine owned cell host.
+ * @param props The props argument.
+ */
 export function renderCellMap(host: HTMLElement, props: CellMapProps & { readonly fullscreen: boolean }): void {
   render(
     html`${cellMapRows(props).map(

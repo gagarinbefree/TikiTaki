@@ -7,15 +7,25 @@ import { INITIAL_POSITION } from '../shared';
 import { metrics } from './context';
 import Cell from './Cell';
 
-/** Data, controller ownership, and committed-position notifications for one view. */
+/** Data, controller ownership, and committed position notifications for one view. */
 interface ViewProps {
   readonly fullscreen: boolean;
   readonly grid: Grid<string>;
   readonly engineRef: { current: SwipeEngine<string> | null };
+  /**
+   * onPosition
+   * @param position Zero based cell coordinates.
+   */
   readonly onPosition: (position: Position) => void;
 }
 
-/** Pair engine ownership with StrictMode-safe effect setup and cleanup. */
+/**
+ * EngineView
+ *
+ * Pair engine ownership with StrictMode safe effect setup and cleanup.
+ * @param options Named arguments grid, engineRef, onPosition, fullscreen.
+ * @returns The rendered engine container.
+ */
 export default function EngineView({ grid, engineRef, onPosition, fullscreen }: ViewProps) {
   const container = useRef<HTMLDivElement>(null);
   const [bridge] = useState(createReactCellAdapter<string>);

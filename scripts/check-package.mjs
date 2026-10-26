@@ -11,6 +11,12 @@ assert(['all', 'prepare', 'verify'].includes(mode), 'Unknown package check mode'
 if (mode === 'all') {
   assert(npmCli, 'Run this check through npm run test:package');
 }
+/**
+ * run
+ * @param args Arguments forwarded to the command.
+ * @param cwd The cwd argument.
+ * @returns The resulting string.
+ */
 function run(args, cwd) {
   const result = spawnSync(process.execPath, args, { cwd, encoding: 'utf8', windowsHide: true });
   assert.ifError(result.error);

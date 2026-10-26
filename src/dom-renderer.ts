@@ -4,25 +4,57 @@ import type { Direction, Position } from './navigation';
 import type { GestureOffset, GestureSettlement } from './gesture';
 import { isHTMLElement } from './dom-element';
 /**
- * Isolated operations for an adapter-owned subtree inside one host.
+ * Isolated operations for an adapter owned subtree inside one host.
  */
 export interface MountedCell<T> {
-  /** Update a still-mounted item while preserving host and component identity. */
+  /**
+   * update
+   *
+   * Update a still mounted item while preserving host and component identity.
+   * @param item The cell data to render.
+   * @param position Zero based cell coordinates.
+   */
   readonly update: (item: T, position: Position) => void;
-  /** Release the owned subtree once; stale handles must remain inactive. */
+  /**
+   * unmount
+   *
+   * Release the owned subtree once; stale handles must remain inactive.
+   */
   readonly unmount: () => void;
 }
 /**
- * Framework-independent cell ownership contract over renderer-provided hosts.
+ * Framework independent cell ownership contract over renderer provided hosts.
  */
 export interface CellAdapter<T> {
-  /** Mount one item into the supplied host and return isolated update and cleanup operations. */
+  /**
+   * mount
+   *
+   * Mount one item into the supplied host and return isolated update and cleanup operations.
+   * @param host The engine owned cell host.
+   * @param item The cell data to render.
+   * @param position Zero based cell coordinates.
+   * @returns The mounted cell update and cleanup operations.
+   */
   readonly mount: (host: HTMLElement, item: T, position: Position) => MountedCell<T>;
 }
 /** Readonly navigation queries used to build a bounded rendering window. */
 export interface NavigationSource<T> {
+  /**
+   * getPosition
+   * @returns The resulting cell coordinates.
+   */
   readonly getPosition: () => Position;
+  /**
+   * getNeighbor
+   * @param direction The requested navigation direction.
+   * @returns The neighboring cell coordinates, or null when no neighbor exists.
+   */
   readonly getNeighbor: (direction: Direction) => Position | null;
+  /**
+   * getItem
+   * @param position Zero based cell coordinates.
+   * @returns The item at the validated grid coordinates.
+   */
   readonly getItem: (position: Position) => T;
 }
 /** Cached viewport dimensions measured in CSS pixels. */
@@ -35,7 +67,12 @@ export interface DOMRendererOptions<T> {
   readonly container: HTMLElement;
   readonly navigation: NavigationSource<T>;
   readonly adapter: CellAdapter<T>;
-  /** Notify after cached geometry is updated and conflicting visual motion has been cancelled. */
+  /**
+   * onResize
+   *
+   * Notify after cached geometry is updated and conflicting visual motion has been cancelled.
+   * @param size The size argument.
+   */
   readonly onResize?: (size: RendererSize) => void;
 }
 type Role = 'current' | Direction;
@@ -57,6 +94,10 @@ interface Animation {
   readonly from: GestureOffset;
   readonly to: GestureOffset;
   readonly duration: number;
+  /**
+   * resolve
+   * @param completed The completed argument.
+   */
   readonly resolve: (completed: boolean) => void;
   start: number | null;
 }
@@ -67,7 +108,12 @@ interface SavedStyle {
   readonly applied: string;
 }
 /**
- * Validate an object-shaped runtime input before reading its fields.
+ * object
+ *
+ * Validate an object shaped runtime input before reading its fields.
+ * @param value The value to process.
+ * @param label The label used in validation messages.
+ * @returns The validated object with readable fields.
  */
 function object(value: unknown, label: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -78,7 +124,11 @@ function object(value: unknown, label: string): Record<string, unknown> {
   return result;
 }
 /**
+ * checkedPosition
+ *
  * Validate coordinates and return an immutable position snapshot.
+ * @param input The input argument.
+ * @returns The resulting cell coordinates.
  */
 function checkedPosition(input: unknown): Position {
   const position = object(input, CORE_TEXT.position);
@@ -94,10 +144,20 @@ function checkedPosition(input: unknown): Position {
   return result;
 }
 /**
+ * readWindow
+ *
  * Snapshot and validate only the current cell and its existing immediate neighbors.
+ * @param source The source content to process.
+ * @returns The resulting array.
  */
 function readWindow<T>(source: NavigationSource<T>): Descriptor<T>[] {
   const current = checkedPosition(source.getPosition());
+  /**
+   * descriptor
+   * @param position Zero based cell coordinates.
+   * @param role The role argument.
+   * @returns The cell item, coordinates, and role to render.
+   */
   const descriptor = (position: Position, role: Role): Descriptor<T> => ({
     key: `${String(position.row)}:${String(position.col)}`,
     position,
@@ -126,7 +186,11 @@ function readWindow<T>(source: NavigationSource<T>): Descriptor<T>[] {
   return result;
 }
 /**
+ * measure
+ *
  * Read container geometry once and return a validated immutable size.
+ * @param container The dedicated engine container.
+ * @returns The validated container width and height in CSS pixels.
  */
 function measure(container: HTMLElement): RendererSize {
   const width = container.clientWidth;
@@ -146,7 +210,12 @@ function measure(container: HTMLElement): RendererSize {
   return result;
 }
 /**
- * Validate axis-aligned viewport-relative motion before scheduling a frame.
+ * checkedOffset
+ *
+ * Validate axis aligned viewport relative motion before scheduling a frame.
+ * @param input The input argument.
+ * @param size The size argument.
+ * @returns The validated displacement along one axis in CSS pixels.
  */
 function checkedOffset(input: unknown, size: RendererSize): GestureOffset {
   const value = object(input, CORE_TEXT.offset);
@@ -162,7 +231,12 @@ function checkedOffset(input: unknown, size: RendererSize): GestureOffset {
   return result;
 }
 /**
- * Calculate the single-viewport target offset for a direction.
+ * targetOffset
+ *
+ * Calculate the single viewport target offset for a direction.
+ * @param direction The requested navigation direction.
+ * @param size The size argument.
+ * @returns The displacement for the requested direction in CSS pixels.
  */
 function targetOffset(direction: Direction | null, size: RendererSize): GestureOffset {
   const result = Object.freeze({
@@ -173,7 +247,12 @@ function targetOffset(direction: Direction | null, size: RendererSize): GestureO
   return result;
 }
 /**
+ * checkedPlan
+ *
  * Validate a settlement plan before interrupting an existing animation.
+ * @param input The input argument.
+ * @param size The size argument.
+ * @returns The validated animation plan.
  */
 function checkedPlan(input: unknown, size: RendererSize): GestureSettlement {
   const plan = object(input, CORE_TEXT.animationPlan);
@@ -198,7 +277,11 @@ function checkedPlan(input: unknown, size: RendererSize): GestureSettlement {
   return result;
 }
 /**
+ * checkedHandle
+ *
  * Validate adapter update and unmount operations before accepting host ownership.
+ * @param input The input argument.
+ * @returns The mounted cell update and cleanup operations.
  */
 function checkedHandle<T>(input: MountedCell<T>): MountedCell<T> {
   const value = object(input, CORE_TEXT.mountedCellHandle);
@@ -212,20 +295,51 @@ function checkedHandle<T>(input: MountedCell<T>): MountedCell<T> {
  * Functional renderer operations with bounded cell ownership and cancellable animation.
  */
 export interface DOMRenderer {
-  /** Read cached viewport dimensions without triggering layout. */
+  /**
+   * getSize
+   *
+   * Read cached viewport dimensions without triggering layout.
+   * @returns The cached container width and height in CSS pixels.
+   */
   readonly getSize: () => RendererSize;
-  /** Schedule an axis-aligned offset update without reading layout. */
+  /**
+   * setOffset
+   *
+   * Schedule an axis aligned offset update without reading layout.
+   * @param offset The offset argument.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   readonly setOffset: (offset: GestureOffset) => boolean;
-  /** Animate one settlement plan and resolve every completion or cancellation. */
+  /**
+   * animate
+   *
+   * Animate one settlement plan and resolve every completion or cancellation.
+   * @param plan The plan argument.
+   * @returns A promise that resolves to whether the operation succeeded.
+   */
   readonly animate: (plan: GestureSettlement) => Promise<boolean>;
-  /** Reconcile the bounded rendering window with the current navigation snapshot. */
+  /**
+   * sync
+   *
+   * Reconcile the bounded rendering window with the current navigation snapshot.
+   */
   readonly sync: () => void;
-  /** Cancel pending motion and restore the viewport origin. */
+  /**
+   * reset
+   *
+   * Cancel pending motion and restore the viewport origin.
+   */
   readonly reset: () => void;
-  /** Release owned resources once and settle pending work without leaving stale callbacks. */
+  /**
+   * destroy
+   *
+   * Release owned resources once and settle pending work without leaving stale callbacks.
+   */
   readonly destroy: () => void;
 }
 /**
+ * createDOMRenderer
+ *
  * Create a bounded DOM rendering window with cancellable RAF animation and resource ownership.
  * @param options Validated container, grid, rendering strategy, and optional lifecycle callbacks.
  * @returns Independent operations that can be called without binding a receiver.
@@ -249,13 +363,20 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
   let stateDestroyed = false;
   let stateSyncing = false;
   /**
+   * getSize
+   *
    * Read cached viewport dimensions without triggering layout.
+   * @returns The cached container width and height in CSS pixels.
    */
   function getSize(): RendererSize {
     return stateSize;
   }
   /**
-   * Schedule an axis-aligned offset update without reading layout.
+   * setOffset
+   *
+   * Schedule an axis aligned offset update without reading layout.
+   * @param offset The offset argument.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function setOffset(offset: GestureOffset): boolean {
     if (!readAcceptsMotion()) {
@@ -271,7 +392,11 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     return result;
   }
   /**
+   * animate
+   *
    * Animate one settlement plan and resolve every completion or cancellation.
+   * @param plan The plan argument.
+   * @returns A promise that resolves to whether the operation succeeded.
    */
   function animate(plan: GestureSettlement): Promise<boolean> {
     if (!readAcceptsMotion()) {
@@ -301,6 +426,8 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     return result;
   }
   /**
+   * sync
+   *
    * Reconcile the bounded rendering window with the current navigation snapshot.
    */
   function sync(): void {
@@ -324,6 +451,8 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     }
   }
   /**
+   * reset
+   *
    * Cancel pending motion and restore the viewport origin.
    */
   function reset(): void {
@@ -337,6 +466,8 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     }
   }
   /**
+   * destroy
+   *
    * Release owned resources once and settle pending work without leaving stale callbacks.
    */
   function destroy(): void {
@@ -345,6 +476,10 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     stateDestroyed = true;
     cancelWork();
     const errors: unknown[] = [];
+    /**
+     * attempt
+     * @param callback The callback invoked by this operation.
+     */
     const attempt = (callback: () => void) => {
       try {
         callback();
@@ -406,19 +541,31 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     }
   }
   /**
+   * readDestroyed
+   *
    * Read disposal state across potentially reentrant adapter lifecycle operations.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function readDestroyed(): boolean {
     return stateDestroyed;
   }
-  /** Guard against motion during cleanup, reconciliation, and active animation. */
+  /**
+   * readAcceptsMotion
+   *
+   * Guard against motion during cleanup, reconciliation, and active animation.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   function readAcceptsMotion(): boolean {
     const result = !stateDestroyed && !stateSyncing && stateAnimation === null && stateSize.width > 0 && stateSize.height > 0;
 
     return result;
   }
   /**
+   * applyStyle
+   *
    * Apply a local container style while retaining the original value and priority.
+   * @param property The property argument.
+   * @param applied The applied argument.
    */
   function applyStyle(property: string, applied: string): void {
     const style = stateContainer?.style;
@@ -428,7 +575,10 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     style.setProperty(property, applied);
   }
   /**
+   * reconcile
+   *
    * Unmount outgoing cells and update or mount only the current bounded neighbor window.
+   * @param descriptors The descriptors argument.
    */
   function reconcile(descriptors: readonly Descriptor<T>[]): void {
     const root = stateRoot;
@@ -476,7 +626,11 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     }
   }
   /**
+   * decorate
+   *
    * Assign host coordinates, accessibility metadata, and renderer role before adapter updates.
+   * @param host The engine owned cell host.
+   * @param descriptor The descriptor argument.
    */
   function decorate(host: HTMLElement, descriptor: Descriptor<T>): void {
     host.dataset.tikitakiCell = descriptor.key;
@@ -485,6 +639,8 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     host.setAttribute(CORE_TEXT.ariaHidden, descriptor.role === CORE_TEXT.current ? CORE_TEXT.false : CORE_TEXT.true);
   }
   /**
+   * paint
+   *
    * Write cached transforms for the current cell and its valid adjacent hosts without layout reads.
    */
   function paint(): void {
@@ -499,6 +655,8 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     }
   }
   /**
+   * schedule
+   *
    * Coalesce pending geometry and motion work into one owned animation frame.
    */
   function schedule(): void {
@@ -518,7 +676,10 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     });
   }
   /**
+   * frame
+   *
    * Measure pending resize once, interpolate settlement progress, and paint the next frame.
+   * @param time The time argument.
    */
   function frame(time: number): void {
     if (stateResizePending && stateContainer !== null) {
@@ -555,6 +716,8 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     }
   }
   /**
+   * cancelWork
+   *
    * Invalidate scheduled callbacks and settle any pending animation as cancelled.
    */
   function cancelWork(): void {
@@ -568,7 +731,10 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
     animation?.resolve(false);
   }
   /**
+   * fail
+   *
    * Destroy the rendering window and rethrow the original operation failure with cleanup errors.
+   * @param error The failure to report or normalize.
    */
   function fail(error: unknown): never {
     try {

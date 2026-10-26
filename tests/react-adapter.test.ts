@@ -8,6 +8,11 @@ import { createReactCellAdapter, ReactCellPortals } from '../packages/react/src/
 import { frameworkEnvironment } from './helpers/framework-environment';
 const grid: Grid<string> = [Array.from({ length: 10 }, (_, i) => `A${String(i + 1)}`), ['B1'], ['C1', 'C2']];
 const Context = createContext('missing');
+/**
+ * flush
+ * @param work The work argument.
+ * @returns A promise that resolves when the operation completes.
+ */
 async function flush(work: () => void) {
   await act(async () => {
     work();
@@ -25,6 +30,11 @@ afterEach(async () => {
   environment.restore();
   document.body.replaceChildren();
 });
+/**
+ * setup
+ * @param strict The strict argument.
+ * @returns A promise that resolves to the operation result.
+ */
 async function setup(strict = false) {
   const parent = document.createElement('div');
   document.body.append(parent);
@@ -34,11 +44,19 @@ async function setup(strict = false) {
     unmounted: string[] = [];
   const engines: SwipeEngine<string>[] = [];
   const changes = vi.fn();
+  /**
+   * Cell
+   * @param options Named arguments item.
+   * @returns The callback or factory created by this function.
+   */
   function Cell({ item }: { readonly item: string }) {
     const context = useContext(Context);
     const [count, setCount] = useState(0);
     useEffect(() => {
       mounted.push(item);
+      /**
+       * result
+       */
       const result = () => {
         unmounted.push(item);
       };
@@ -48,6 +66,9 @@ async function setup(strict = false) {
     const result = h(
       'button',
       {
+        /**
+         * onClick
+         */
         onClick: () => {
           setCount((value) => value + 1);
         },
@@ -57,6 +78,10 @@ async function setup(strict = false) {
 
     return result;
   }
+  /**
+   * App
+   * @returns The rendered demo view.
+   */
   function App() {
     const ref = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -70,6 +95,9 @@ async function setup(strict = false) {
         onPositionChange: changes,
       });
       engines.push(engine);
+      /**
+       * result
+       */
       const result = () => {
         engine.destroy();
       };
@@ -83,7 +111,15 @@ async function setup(strict = false) {
         Fragment,
         null,
         h('div', { ref, 'data-container': '' }),
-        h(ReactCellPortals<string>, { bridge, renderCell: (item) => h(Cell, { item }) }),
+        h(ReactCellPortals<string>, {
+          bridge,
+          /**
+           * renderCell
+           * @param item The cell data to render.
+           * @returns The rendered cell content.
+           */
+          renderCell: (item) => h(Cell, { item }),
+        }),
       ),
     );
 
@@ -105,6 +141,10 @@ async function setup(strict = false) {
   assert(container !== null);
   const engine = engines.at(-1);
   assert(engine !== undefined);
+  /**
+   * current
+   * @returns The rendered HTML element.
+   */
   const current = () => container.querySelector<HTMLElement>('[data-tikitaki-role="current"]');
   const result = { parent, root, bridge, mounted, unmounted, engines, changes, container, engine, current };
 

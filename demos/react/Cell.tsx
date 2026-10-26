@@ -4,7 +4,13 @@ import { DEMO_TEXT, DEMO_GEOMETRY } from '../config';
 import { cellAppearance } from '../shared';
 import { metrics } from './context';
 
-/** Render a cell label and track its component lifecycle. */
+/**
+ * Cell
+ *
+ * Render a cell label and track its component lifecycle.
+ * @param options Named arguments item, position, fullscreen.
+ * @returns The rendered cell content.
+ */
 export default function Cell({
   item,
   position,

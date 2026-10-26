@@ -1,7 +1,13 @@
 import { DEMO_TEXT, DEMO_LABELS, DEMO_GEOMETRY, MOBILE_LAYOUT } from '../config';
 import { cellMapRows, type CellMapProps } from '../shared';
 
-/** Display the ragged grid and highlight its committed position. */
+/**
+ * CellMap
+ *
+ * Display the ragged grid and highlight its committed position.
+ * @param options Named arguments grid, position, enabled, onSelect, fullscreen.
+ * @returns The rendered cell map.
+ */
 export default function CellMap({ grid, position, enabled, onSelect, fullscreen }: CellMapProps & { readonly fullscreen: boolean }) {
   return (
     <nav

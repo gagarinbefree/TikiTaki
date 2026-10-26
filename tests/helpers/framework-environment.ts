@@ -1,5 +1,9 @@
 import { vi } from 'vitest';
 import { createResizeObserverMock } from './resize-observer';
+/**
+ * frameworkEnvironment
+ * @returns The mocked resize observer and animation controls for framework tests.
+ */
 export function frameworkEnvironment() {
   let id = 0;
   const frames = new Map<number, FrameRequestCallback>();
@@ -28,6 +32,10 @@ export function frameworkEnvironment() {
   const result = {
     frames,
     observers,
+    /**
+     * finish
+     * @returns A promise that resolves when the operation completes.
+     */
     async finish() {
       for (const time of [0, 300]) {
         const batch = [...frames.values()];
@@ -37,6 +45,9 @@ export function frameworkEnvironment() {
       }
       await Promise.resolve();
     },
+    /**
+     * restore
+     */
     restore() {
       for (const [index, name] of names.entries()) {
         const original = originals[index];

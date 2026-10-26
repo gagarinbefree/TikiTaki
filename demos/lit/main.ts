@@ -9,7 +9,13 @@ import { renderCellMap } from './cell-map';
 import type { Direction, Grid, Position } from 'tikitaki';
 import type { SwipeEngine } from 'tikitaki/dom';
 
-/** Require an existing element from the static demo template. */
+/**
+ * requireElement
+ *
+ * Require an existing element from the static demo template.
+ * @param selector The selector argument.
+ * @returns The rendered HTML element.
+ */
 function requireElement(selector: string) {
   const element = document.querySelector(selector);
   if (!(element instanceof HTMLElement)) throw new Error(DEMO_TEXT.missingDemoRoot);
@@ -28,7 +34,11 @@ let engine: SwipeEngine<string> | null = null;
 
 const adapter = createLitCellAdapter(metrics);
 
-/** Update the Lit map after navigation, data replacement, or lifecycle changes. */
+/**
+ * renderMap
+ *
+ * Update the Lit map after navigation, data replacement, or lifecycle changes.
+ */
 function renderMap(): void {
   const fullscreen = isFullscreenDemo();
   applyDOMDemoLayout(column.querySelector('[data-demo-container]'), map, rows, fullscreen);
@@ -37,13 +47,21 @@ function renderMap(): void {
     position,
     fullscreen,
     enabled: engine !== null,
+    /**
+     * onSelect
+     * @param target The requested target.
+     */
     onSelect: (target) => {
       void engine?.goTo(target).catch(metrics.error);
     },
   });
 }
 
-/** Mount one independently owned engine into the portrait viewport. */
+/**
+ * mount
+ *
+ * Mount one independently owned engine into the portrait viewport.
+ */
 function mount() {
   const container = document.createElement('div');
   container.className = DEMO_TEXT.viewport;
@@ -57,6 +75,10 @@ function mount() {
     grid,
     initialPosition: INITIAL_POSITION,
     adapter,
+    /**
+     * onPositionChange
+     * @param next The replacement value.
+     */
     onPositionChange(next) {
       position = next;
       renderMap();
@@ -67,7 +89,11 @@ function mount() {
   renderMap();
 }
 
-/** Release the engine before removing its viewport; repeated cleanup is safe. */
+/**
+ * unmount
+ *
+ * Release the engine before removing its viewport; repeated cleanup is safe.
+ */
 function unmount() {
   if (engine === null) return;
   engine.destroy();
@@ -77,7 +103,12 @@ function unmount() {
   renderMap();
 }
 
-/** Replace demo data through the public API and reflect clamped coordinates. */
+/**
+ * updateGrid
+ *
+ * Replace demo data through the public API and reflect clamped coordinates.
+ * @param next The replacement value.
+ */
 function updateGrid(next: Grid<string>) {
   grid = next;
   engine?.updateGrid(grid);
@@ -89,20 +120,39 @@ mount();
 const stopLayout = subscribeDemoLayout(renderMap);
 import.meta.hot?.dispose(stopLayout);
 window.tikitakiDemo.commands = {
-  /** Request one animated transition through the public API. */
+  /**
+   * navigate
+   *
+   * Request one animated transition through the public API.
+   * @param direction The requested navigation direction.
+   */
   navigate: (direction: Direction) => {
     void engine?.navigate(direction).catch(metrics.error);
   },
-  /** Jump to a valid cell through the public API. */
+  /**
+   * goTo
+   *
+   * Jump to a valid cell through the public API.
+   * @param target The requested target.
+   */
   goTo: (target: Position) => {
     void engine?.goTo(target).catch(metrics.error);
   },
+  /**
+   * update
+   */
   update: () => {
     updateGrid(grid.map((row) => row.map((item) => item + DEMO_TEXT.updateSuffix)));
   },
+  /**
+   * shrink
+   */
   shrink: () => {
     updateGrid([[DEMO_TEXT.only]]);
   },
+  /**
+   * toggle
+   */
   toggle: () => {
     if (engine !== null) unmount();
     else {

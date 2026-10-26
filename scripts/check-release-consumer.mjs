@@ -6,7 +6,12 @@ import process from 'node:process';
 import { NPM_RELEASE_CONFIG } from '../tooling.config.mjs';
 import { npmCommand } from './npm-command.mjs';
 
-/** Run a local verifier without shell interpolation. @param {string[]} args */
+/**
+ * nodeCommand
+ *
+ * Run a local verifier without shell interpolation.
+ * @param {string[]} args Arguments forwarded to the command.
+ */
 function nodeCommand(args) {
   const result = spawnSync(process.execPath, args, { encoding: 'utf8', windowsHide: true });
   if (result.error) throw result.error;

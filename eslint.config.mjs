@@ -10,7 +10,16 @@ const functionalStyle = {
       extension: 'Use extensionless relative imports in source modules.',
     },
   },
+  /**
+   * create
+   * @param context The context used by this operation.
+   * @returns The callback or factory created by this function.
+   */
   create(context) {
+    /**
+     * receiver
+     * @param node The syntax node to process.
+     */
     function receiver(node) {
       context.report({ node, messageId: 'receiver' });
     }
@@ -18,6 +27,10 @@ const functionalStyle = {
       ClassDeclaration: receiver,
       ClassExpression: receiver,
       ThisExpression: receiver,
+      /**
+       * ImportDeclaration
+       * @param node The syntax node to process.
+       */
       ImportDeclaration(node) {
         if (/^\..*\.js$/.test(node.source.value)) {
           context.report({ node, messageId: 'extension' });

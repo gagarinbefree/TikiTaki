@@ -19,19 +19,37 @@ const visible = ref(true);
 const position = shallowRef<Position>(INITIAL_POSITION);
 const engine = shallowRef<SwipeEngine<string> | null>(null);
 
-/** Request an animated transition and report rejected operations. */
+/**
+ * navigate
+ *
+ * Request an animated transition and report rejected operations.
+ * @param direction The requested navigation direction.
+ */
 function navigate(direction: Direction) {
   void engine.value?.navigate(direction).catch(metrics.error);
 }
-/** Select a valid map cell without creating another framework root. */
+/**
+ * select
+ *
+ * Select a valid map cell without creating another framework root.
+ * @param target The requested target.
+ */
 function select(target: Position) {
   void engine.value?.goTo(target).catch(metrics.error);
 }
-/** Replace item data while preserving component identities and local state. */
+/**
+ * update
+ *
+ * Replace item data while preserving component identities and local state.
+ */
 function update() {
   grid.value = grid.value.map((row) => row.map((item) => item + DEMO_TEXT.updateSuffix));
 }
-/** Restore initial data before mounting another independent engine. */
+/**
+ * remount
+ *
+ * Restore initial data before mounting another independent engine.
+ */
 function remount() {
   if (!visible.value) {
     grid.value = initialGrid;
@@ -44,6 +62,9 @@ onMounted(() => {
     navigate,
     goTo: select,
     update,
+    /**
+     * shrink
+     */
     shrink: () => {
       grid.value = [[DEMO_TEXT.only]];
     },

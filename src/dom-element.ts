@@ -1,5 +1,9 @@
 /**
+ * isHTMLElement
+ *
  * Check an element against the HTMLElement constructor of its owning document.
+ * @param value The value to process.
+ * @returns Whether the operation succeeded or the condition holds.
  */
 export function isHTMLElement(value: unknown): value is HTMLElement {
   if (typeof value !== 'object' || value === null) {

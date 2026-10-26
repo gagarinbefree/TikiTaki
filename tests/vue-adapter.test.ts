@@ -17,6 +17,10 @@ afterEach(async () => {
   environment.restore();
   document.body.replaceChildren();
 });
+/**
+ * setup
+ * @returns A promise that resolves to the operation result.
+ */
 async function setup() {
   const parent = document.createElement('div');
   document.body.append(parent);
@@ -28,6 +32,11 @@ async function setup() {
   const engines: SwipeEngine<string>[] = [];
   const Cell = defineComponent({
     props: { item: { type: String, required: true } },
+    /**
+     * setup
+     * @param props The props argument.
+     * @returns The callback or factory created by this function.
+     */
     setup(props) {
       const context = inject<string>('context', 'missing');
       const count = ref(0);
@@ -38,10 +47,17 @@ async function setup() {
       onUnmounted(() => {
         unmounted.push(initial);
       });
+      /**
+       * result
+       * @returns The rendered component content.
+       */
       const result = () =>
         h(
           'button',
           {
+            /**
+             * onClick
+             */
             onClick: () => {
               count.value++;
             },
@@ -53,6 +69,10 @@ async function setup() {
     },
   });
   const App = defineComponent({
+    /**
+     * setup
+     * @returns The callback or factory created by this function.
+     */
     setup() {
       const container = ref<HTMLElement | null>(null);
       provide('context', 'parent');
@@ -72,10 +92,22 @@ async function setup() {
       onUnmounted(() => {
         engines.at(-1)?.destroy();
       });
+      /**
+       * result
+       * @returns The rendered component content.
+       */
       const result = () =>
         h(Fragment, [
           h('div', { ref: container, 'data-container': '' }),
-          h(VueCellPortals<string>, { bridge, renderCell: (item: string) => h(Cell, { item }) }),
+          h(VueCellPortals<string>, {
+            bridge,
+            /**
+             * renderCell
+             * @param item The cell data to render.
+             * @returns The rendered cell content.
+             */
+            renderCell: (item: string) => h(Cell, { item }),
+          }),
         ]);
 
       return result;
@@ -97,6 +129,10 @@ async function setup() {
   assert(container !== null);
   const engine = engines.at(-1);
   assert(engine !== undefined);
+  /**
+   * current
+   * @returns The rendered HTML element.
+   */
   const current = () => container.querySelector<HTMLElement>('[data-tikitaki-role="current"]');
   const result = { parent, app, bridge, mounted, unmounted, errors, changes, container, engine, current };
 

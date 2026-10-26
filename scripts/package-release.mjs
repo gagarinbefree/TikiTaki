@@ -1,12 +1,21 @@
 /** @typedef {{ name?: string, version?: string, private?: boolean, peerDependencies?: Record<string, string>, publishConfig?: { access: string, registry: string }, [key: string]: unknown }} PackageManifest */
-/** Reject prerelease labels and malformed numeric components. @param {string} version */
+/**
+ * validatePublicVersion
+ *
+ * Reject prerelease labels and malformed numeric components.
+ * @param {string} version The release version.
+ */
 export function validatePublicVersion(version) {
   if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) throw new Error('Expected a stable major.minor.patch release version');
 }
 
-/** Resolve a manual retry or the exact release artifact produced by the completed source run.
- * @param {string} manualTag
- * @param {readonly string[]} artifactNames
+/**
+ * resolvePublicationTag
+ *
+ * Resolve a manual retry or the exact release artifact produced by the completed source run.
+ * @param {string} manualTag The manualTag argument.
+ * @param {readonly string[]} artifactNames The artifactNames argument.
+ * @returns The resulting string.
  */
 export function resolvePublicationTag(manualTag, artifactNames) {
   let tag = manualTag;
@@ -20,7 +29,14 @@ export function resolvePublicationTag(manualTag, artifactNames) {
   return tag;
 }
 
-/** Prepare an immutable manifest snapshot for the chosen public release. @param {PackageManifest} manifest @param {string} version */
+/**
+ * preparePackageManifest
+ *
+ * Prepare an immutable manifest snapshot for the chosen public release.
+ * @param {PackageManifest} manifest The manifest argument.
+ * @param {string} version The release version.
+ * @returns The package manifest updated for the public release.
+ */
 export function preparePackageManifest(manifest, version) {
   validatePublicVersion(version);
   const result = {
@@ -33,10 +49,13 @@ export function preparePackageManifest(manifest, version) {
   return result;
 }
 
-/** Synchronize lockfile root metadata without resolving or changing dependencies.
- * @param {{version?: string, packages: Record<string, {version?: string, [key: string]: unknown}>, [key: string]: unknown}} lock
- * @param {string} version
- * @returns {{version: string, packages: Record<string, {version?: string, [key: string]: unknown}> & {"": {version: string, license: string}}, [key: string]: unknown}}
+/**
+ * preparePackageLock
+ *
+ * Synchronize lockfile root metadata without resolving or changing dependencies.
+ * @param {{version?: string, packages: Record<string, {version?: string, [key: string]: unknown}>, [key: string]: unknown}} lock The lock argument.
+ * @param {string} version The release version.
+ * @returns {{version: string, packages: Record<string, {version?: string, [key: string]: unknown}> & {"": {version: string, license: string}}, [key: string]: unknown}} The result of this operation.
  */
 export function preparePackageLock(lock, version) {
   validatePublicVersion(version);

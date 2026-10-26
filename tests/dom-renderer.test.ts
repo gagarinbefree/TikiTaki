@@ -9,11 +9,21 @@ const TestObserver = createResizeObserverMock();
 let frames: Map<number, FrameRequestCallback>;
 let nextFrame: number;
 let renderers: DOMRenderer[];
+/**
+ * frame
+ * @param time The time argument.
+ */
 function frame(time = 0) {
   const scheduled = [...frames.values()];
   frames.clear();
   for (const callback of scheduled) callback(time);
 }
+/**
+ * viewport
+ * @param width The width argument.
+ * @param height The height argument.
+ * @returns The callback or factory created by this function.
+ */
 function viewport(width = 300, height = 600) {
   const container = document.createElement('div');
   const size = { width, height };
@@ -28,6 +38,10 @@ function viewport(width = 300, height = 600) {
 
   return result;
 }
+/**
+ * adapter
+ * @returns The callback or factory created by this function.
+ */
 function adapter() {
   const records: {
     host: HTMLElement;
@@ -52,6 +66,11 @@ function adapter() {
 
   return result;
 }
+/**
+ * setup
+ * @param position Zero based cell coordinates.
+ * @returns The callback or factory created by this function.
+ */
 function setup(position: Position = { row: 0, col: 9 }) {
   const view = viewport();
   const model = createNavigationModel<string>(
@@ -65,12 +84,24 @@ function setup(position: Position = { row: 0, col: 9 }) {
 
   return result;
 }
+/**
+ * cell
+ * @param container The dedicated engine container.
+ * @param role The role argument.
+ * @returns The rendered HTML element.
+ */
 function cell(container: HTMLElement, role: 'current' | Direction): HTMLElement {
   const element = container.querySelector<HTMLElement>(`[data-tikitaki-role="${role}"]`);
   assert(element !== null);
 
   return element;
 }
+/**
+ * plan
+ * @param direction The requested navigation direction.
+ * @param duration The duration argument.
+ * @returns The animation plan for the requested direction and duration.
+ */
 function plan(direction: Direction | null = 'up', duration = 300): GestureSettlement {
   const result: GestureSettlement = { direction, from: { x: 0, y: -100 }, to: { x: 0, y: direction === null ? 0 : -600 }, duration };
 

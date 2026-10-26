@@ -11,35 +11,68 @@ export interface ReactCell<T> {
   readonly item: T;
   readonly position: Position;
 }
-/** A private external-store bridge between cell ownership and parent-root portals. */
+/** A private external store bridge between cell ownership and parent root portals. */
 export interface ReactCellBridge<T> {
   readonly adapter: CellAdapter<T>;
-  /** Read the current immutable snapshot without exposing internal mutable state. */
+  /**
+   * getSnapshot
+   *
+   * Read the current immutable snapshot without exposing internal mutable state.
+   * @returns The resulting array.
+   */
   readonly getSnapshot: () => readonly ReactCell<T>[];
-  /** Subscribe to committed snapshots and return an idempotent unsubscribe operation. */
+  /**
+   * subscribe
+   *
+   * Subscribe to committed snapshots and return an idempotent unsubscribe operation.
+   * @param listener The listener to register.
+   * @returns The callback or factory created by this function.
+   */
   readonly subscribe: (listener: () => void) => () => void;
 }
 /** The owning React cell bridge and framework render callback. */
 export interface ReactCellPortalsProps<T> {
   readonly bridge: ReactCellBridge<T>;
-  /** Render item content inside the adapter or framework ownership boundary. */
+  /**
+   * renderCell
+   *
+   * Render item content inside the adapter or framework ownership boundary.
+   * @param item The cell data to render.
+   * @param position Zero based cell coordinates.
+   * @returns The rendered component content.
+   */
   readonly renderCell: (item: T, position: Position) => ReactNode;
 }
 /**
- * Create an immutable host record without cloning or freezing user-owned item content.
+ * entry
+ *
+ * Create an immutable host record without cloning or freezing user owned item content.
+ * @param key The stable record identifier.
+ * @param host The engine owned cell host.
+ * @param item The cell data to render.
+ * @param position Zero based cell coordinates.
+ * @returns The immutable cell host record with its item and copied coordinates.
  */
 function entry<T>(key: string, host: HTMLElement, item: T, position: Position): ReactCell<T> {
   const result = Object.freeze({ key, host, item, position: Object.freeze({ row: position.row, col: position.col }) });
 
   return result;
 }
-/** Create once per engine view; render ReactCellPortals under its parent root. */
+/**
+ * createReactCellAdapter
+ *
+ * Create once per engine view; render ReactCellPortals under its parent root.
+ * @returns The cell bridge used to connect the engine to the framework.
+ */
 export function createReactCellAdapter<T>(): ReactCellBridge<T> {
   let cells: readonly ReactCell<T>[] = Object.freeze([]);
   let id = 0;
   const listeners = new Set<() => void>();
   /**
+   * publish
+   *
    * Publish a committed immutable snapshot to current subscribers.
+   * @param next The replacement value.
    */
   function publish(next: readonly ReactCell<T>[]) {
     cells = Object.freeze(next);
@@ -48,7 +81,13 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
   const result: ReactCellBridge<T> = {
     adapter: {
       /**
+       * mount
+       *
        * Register one owned host and return its isolated update and cleanup operations.
+       * @param host The engine owned cell host.
+       * @param item The cell data to render.
+       * @param position Zero based cell coordinates.
+       * @returns The mounted cell update and cleanup operations.
        */
       mount(host: HTMLElement, item: T, position: Position): MountedCell<T> {
         if (cells.some((cell) => cell.host === host)) {
@@ -59,7 +98,11 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
         let mounted = true;
         const result: MountedCell<T> = {
           /**
+           * update
+           *
            * Update a live host while retaining its identity and component state.
+           * @param next The replacement value.
+           * @param coordinates The coordinates argument.
            */
           update(next, coordinates) {
             if (!mounted) return;
@@ -67,6 +110,8 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
             publish(cells.map((cell) => (cell.key === key ? entry(key, host, next, coordinates) : cell)));
           },
           /**
+           * unmount
+           *
            * Release one mounted host exactly once and ignore stale updates.
            */
           unmount() {
@@ -80,12 +125,23 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
         return result;
       },
     },
+    /**
+     * getSnapshot
+     * @returns The resulting array.
+     */
     getSnapshot: () => cells,
     /**
+     * subscribe
+     *
      * Subscribe to committed snapshots and return an idempotent unsubscribe operation.
+     * @param listener The listener to register.
+     * @returns The callback or factory created by this function.
      */
     subscribe(listener) {
       listeners.add(listener);
+      /**
+       * result
+       */
       const result = () => {
         listeners.delete(listener);
       };
@@ -96,7 +152,13 @@ export function createReactCellAdapter<T>(): ReactCellBridge<T> {
 
   return result;
 }
-/** Portal content retains the parent context, events, and component lifecycle. */
+/**
+ * ReactCellPortals
+ *
+ * Portal content retains the parent context, events, and component lifecycle.
+ * @param options Named arguments bridge, renderCell.
+ * @returns The rendered component content.
+ */
 export function ReactCellPortals<T>({ bridge, renderCell }: ReactCellPortalsProps<T>): ReactNode {
   const cells = useSyncExternalStore(bridge.subscribe, bridge.getSnapshot, bridge.getSnapshot);
   const result = cells.map((cell) => createPortal(renderCell(cell.item, cell.position), cell.host, cell.key));

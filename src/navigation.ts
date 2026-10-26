@@ -1,6 +1,6 @@
 import { CORE_TEXT, CORE_MESSAGES, ORIGIN_POSITION } from './config';
 /**
- * Immutable zero-based ragged-grid coordinates.
+ * Immutable zero based ragged grid coordinates.
  */
 export interface Position {
   readonly row: number;
@@ -9,7 +9,11 @@ export interface Position {
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type Grid<T> = readonly (readonly T[])[];
 /**
+ * assertNonEmptyDenseArray
+ *
  * Validate that an input is a nonempty array without missing indices.
+ * @param value The value to process.
+ * @param label The label used in validation messages.
  */
 function assertNonEmptyDenseArray(value: unknown, label: string): asserts value is readonly unknown[] {
   if (!Array.isArray(value)) {
@@ -25,7 +29,11 @@ function assertNonEmptyDenseArray(value: unknown, label: string): asserts value 
   }
 }
 /**
+ * snapshotGrid
+ *
  * Copy and freeze grid structure while preserving item identity.
+ * @param grid Grid rows and their cell data.
+ * @returns The validated immutable grid snapshot.
  */
 function snapshotGrid<T>(grid: Grid<T>): Grid<T> {
   assertNonEmptyDenseArray(grid, CORE_TEXT.grid);
@@ -41,7 +49,12 @@ function snapshotGrid<T>(grid: Grid<T>): Grid<T> {
   return result;
 }
 /**
+ * checkedPosition
+ *
  * Validate coordinates and return an immutable position snapshot.
+ * @param grid Grid rows and their cell data.
+ * @param position Zero based cell coordinates.
+ * @returns The resulting cell coordinates.
  */
 function checkedPosition<T>(grid: Grid<T>, position: unknown): Position {
   if (
@@ -66,7 +79,13 @@ function checkedPosition<T>(grid: Grid<T>, position: unknown): Position {
   return result;
 }
 /**
- * Apply strict ragged-grid navigation, resetting the column only on successful vertical movement.
+ * findNeighbor
+ *
+ * Apply strict ragged grid navigation, resetting the column only on successful vertical movement.
+ * @param grid Grid rows and their cell data.
+ * @param position Zero based cell coordinates.
+ * @param direction The requested navigation direction.
+ * @returns The neighboring cell coordinates, or null when no neighbor exists.
  */
 function findNeighbor<T>(grid: Grid<T>, position: Position, direction: Direction): Position | null {
   const { row, col } = position;
@@ -101,21 +120,57 @@ function findNeighbor<T>(grid: Grid<T>, position: Position, direction: Direction
  * Functional synchronous navigation operations; methods do not depend on a receiver.
  */
 export interface NavigationModel<T> {
-  /** Read the immutable last committed grid position. */
+  /**
+   * getPosition
+   *
+   * Read the immutable last committed grid position.
+   * @returns The resulting cell coordinates.
+   */
   readonly getPosition: () => Position;
-  /** Read an item after validating its coordinates against the owned grid snapshot. */
+  /**
+   * getItem
+   *
+   * Read an item after validating its coordinates against the owned grid snapshot.
+   * @param position Zero based cell coordinates.
+   * @returns The item at the validated grid coordinates.
+   */
   readonly getItem: (position: Position) => T;
-  /** Resolve one adjacent position without changing navigation state. */
+  /**
+   * getNeighbor
+   *
+   * Resolve one adjacent position without changing navigation state.
+   * @param direction The requested navigation direction.
+   * @returns The neighboring cell coordinates, or null when no neighbor exists.
+   */
   readonly getNeighbor: (direction: Direction) => Position | null;
-  /** Request one neighboring transition without queuing conflicting commands. */
+  /**
+   * navigate
+   *
+   * Request one neighboring transition without queuing conflicting commands.
+   * @param direction The requested navigation direction.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   readonly navigate: (direction: Direction) => boolean;
-  /** Commit a valid target position without traversing intermediate cells. */
+  /**
+   * goTo
+   *
+   * Commit a valid target position without traversing intermediate cells.
+   * @param position Zero based cell coordinates.
+   * @returns Whether the operation succeeded or the condition holds.
+   */
   readonly goTo: (position: Position) => boolean;
-  /** Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources. */
+  /**
+   * updateGrid
+   *
+   * Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources.
+   * @param grid Grid rows and their cell data.
+   */
   readonly updateGrid: (grid: Grid<T>) => void;
 }
 /**
- * Create independent ragged-grid operations backed by a private grid snapshot.
+ * createNavigationModel
+ *
+ * Create independent ragged grid operations backed by a private grid snapshot.
  * @param grid Nonempty ragged grid; structure is copied while item identity is retained.
  * @param initialPosition Validated initial coordinates; defaults to the configured origin.
  * @returns Independent operations that can be called without binding a receiver.
@@ -124,13 +179,20 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
   let stateGrid: Grid<T>;
   let statePosition: Position;
   /**
+   * getPosition
+   *
    * Read the immutable last committed grid position.
+   * @returns The resulting cell coordinates.
    */
   function getPosition(): Position {
     return statePosition;
   }
   /**
+   * getItem
+   *
    * Read an item after validating its coordinates against the owned grid snapshot.
+   * @param position Zero based cell coordinates.
+   * @returns The item at the validated grid coordinates.
    */
   function getItem(position: Position): T {
     const checked = checkedPosition(stateGrid, position);
@@ -139,7 +201,11 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
     return result;
   }
   /**
+   * getNeighbor
+   *
    * Resolve one adjacent position without changing navigation state.
+   * @param direction The requested navigation direction.
+   * @returns The neighboring cell coordinates, or null when no neighbor exists.
    */
   function getNeighbor(direction: Direction): Position | null {
     const result = findNeighbor(stateGrid, statePosition, direction);
@@ -147,7 +213,11 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
     return result;
   }
   /**
+   * navigate
+   *
    * Request one neighboring transition without queuing conflicting commands.
+   * @param direction The requested navigation direction.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function navigate(direction: Direction): boolean {
     const target = getNeighbor(direction);
@@ -162,7 +232,11 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
     return result;
   }
   /**
+   * goTo
+   *
    * Commit a valid target position without traversing intermediate cells.
+   * @param position Zero based cell coordinates.
+   * @returns Whether the operation succeeded or the condition holds.
    */
   function goTo(position: Position): boolean {
     const target = checkedPosition(stateGrid, position);
@@ -177,7 +251,10 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
     return result;
   }
   /**
+   * updateGrid
+   *
    * Validate and replace the grid, clamp coordinates when necessary, and synchronize owned resources.
+   * @param grid Grid rows and their cell data.
    */
   function updateGrid(grid: Grid<T>): void {
     const nextGrid = snapshotGrid(grid);

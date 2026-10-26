@@ -1,21 +1,40 @@
 import { MOBILE_LAYOUT, DEMO_GEOMETRY, DEMO_TEXT } from './config';
 const media = window.matchMedia(MOBILE_LAYOUT.query);
-/** Report mobile portrait mode for touch devices of any width and narrow portrait windows. */
+/**
+ * isFullscreenDemo
+ *
+ * Report mobile portrait mode for touch devices of any width and narrow portrait windows.
+ * @returns Whether the operation succeeded or the condition holds.
+ */
 export function isFullscreenDemo(): boolean {
   return media.matches;
 }
-/** Subscribe framework state to device and orientation changes without owning its DOM. */
+/**
+ * subscribeDemoLayout
+ *
+ * Subscribe framework state to device and orientation changes without owning its DOM.
+ * @param listener The listener to register.
+ * @returns The callback or factory created by this function.
+ */
 export function subscribeDemoLayout(listener: () => void): () => void {
   media.addEventListener('change', listener);
   return () => {
     media.removeEventListener('change', listener);
   };
 }
-/** Apply Bootstrap visibility and overflow utilities only to the static page chrome. */
+/**
+ * startResponsiveLayout
+ *
+ * Apply Bootstrap visibility and overflow utilities only to the static page chrome.
+ * @returns The callback or factory created by this function.
+ */
 export function startResponsiveLayout(): () => void {
   const chrome = [...document.querySelectorAll<HTMLElement>('body > header, body > nav, body > footer')];
   const overflow = document.body.classList.contains('overflow-hidden');
   const classes = chrome.map((element) => element.className);
+  /**
+   * update
+   */
   function update(): void {
     document.body.classList.toggle('overflow-hidden', media.matches || overflow);
     for (const element of chrome) element.classList.toggle('d-none', media.matches);
@@ -31,7 +50,15 @@ export function startResponsiveLayout(): () => void {
   };
 }
 
-/** Apply the Bootstrap layout to the DOM-owned Vanilla JS and Lit demo shells. */
+/**
+ * applyDOMDemoLayout
+ *
+ * Apply the Bootstrap layout to the DOM owned Vanilla JS and Lit demo shells.
+ * @param viewport The viewport argument.
+ * @param map The map argument.
+ * @param rows The rows argument.
+ * @param fullscreen Whether mobile portrait mode is active.
+ */
 export function applyDOMDemoLayout(viewport: HTMLElement | null, map: HTMLElement, rows: HTMLElement, fullscreen: boolean): void {
   if (viewport) {
     viewport.className = fullscreen ? MOBILE_LAYOUT.viewport : DEMO_TEXT.viewport;

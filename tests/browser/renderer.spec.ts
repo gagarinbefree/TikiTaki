@@ -7,13 +7,46 @@ declare global {
     fixture: {
       errors: string[];
       lifecycle: { mounts: number; unmounts: number };
+      /**
+       * getPosition
+       * @returns The resulting cell coordinates.
+       */
       getPosition(): Position;
+      /**
+       * getSize
+       * @returns The cached container width and height in CSS pixels.
+       */
       getSize(): RendererSize;
+      /**
+       * state
+       * @returns The resulting string.
+       */
       state(): string;
+      /**
+       * slide
+       * @param direction The requested navigation direction.
+       * @param duration The duration argument.
+       * @returns A promise that resolves to whether the operation succeeded.
+       */
       slide(direction: Direction, duration?: number): Promise<boolean>;
+      /**
+       * rollback
+       * @returns A promise that resolves to whether the operation succeeded.
+       */
       rollback(): Promise<boolean>;
+      /**
+       * resize
+       * @param width The width argument.
+       * @param height The height argument.
+       */
       resize(width: number, height: number): void;
+      /**
+       * cancelInput
+       */
       cancelInput(): void;
+      /**
+       * destroy
+       */
       destroy(): void;
     };
   }
