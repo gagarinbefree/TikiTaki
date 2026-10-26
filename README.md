@@ -1,14 +1,14 @@
 # TikiTaki
 
 [![Tests and build](https://github.com/gagarinbefree/TikiTaki/actions/workflows/npm-publish.yml/badge.svg?branch=main)](https://github.com/gagarinbefree/TikiTaki/actions/workflows/npm-publish.yml)
-[![Release](docs/badges/release.svg?version=0.1.13)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
+[![Release](docs/badges/release.svg?version=0.1.14)](https://github.com/gagarinbefree/TikiTaki/releases/latest)
 [![npm version](https://img.shields.io/npm/v/tikitaki.svg)](https://www.npmjs.com/package/tikitaki)
 
 [Live demo](https://gagarinbefree.github.io/TikiTaki/) · [Releases](https://github.com/gagarinbefree/TikiTaki/releases) · [Report an issue](https://github.com/gagarinbefree/TikiTaki/issues/new)
 
 [Read the introduction on DEV Community](https://dev.to/gagarinbefree/tikitaki-two-dimensional-swipe-navigation-in-typescript-without-runtime-dependencies-285j)
 
-**Latest release:** <!-- release-version -->v0.1.13<!-- /release-version -->
+**Latest release:** <!-- release-version -->v0.1.14<!-- /release-version -->
 
 TikiTaki is a TypeScript library for swipe navigation through a two-dimensional grid whose rows can have different lengths. Use it for paged interfaces, galleries, stories, or component-based feeds. You supply the content; TikiTaki handles navigation, pointer gestures, animation, and cell lifecycle.
 
