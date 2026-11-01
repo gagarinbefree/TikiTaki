@@ -482,3 +482,9 @@ If you want Pages for your own fork, enable Actions, select **Settings → Pages
 ## License
 
 [MIT](./LICENSE), copyright 2026 gagarinbefree. Vendored third-party assets retain their own notices.
+
+## Built with TikiTaki
+
+[ZoomWeather](https://github.com/gagarinbefree/ZoomWeather) is a weather application built with TikiTaki. Swipe between current weather, daily and hourly forecasts, and weather maps.
+
+[Try ZoomWeather](https://gagarinbefree.github.io/ZoomWeather/) or explore its [source code](https://github.com/gagarinbefree/ZoomWeather).
