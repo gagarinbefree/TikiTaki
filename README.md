@@ -172,7 +172,7 @@ An upward swipe from A1, A4, or A5 opens B4. Another upward swipe opens C4. Down
 
 For the synchronous core use `createNavigationModel(grid, initialPosition, navigationOptions)`. `NavigationOptions` is exported from `tikitaki`. All coordinates passed to `goTo` and `getItem`, and all reported positions, use logical columns. Each row must contain the primary column. Row starts and ends must be nonnegative safe integers. Invalid construction or grid replacement throws before changing the previous valid state.
 
-Boundary actions remain optional and independent of the primary column. To enable a downward pull only on A4, use `edgeAction` with `direction: 'down'` and `enabled: (position) => position.row === 0 && position.col === 3`. The application supplies `onTrigger`; other cells keep ordinary edge resistance. See [Boundary actions](#boundary-actions) for the complete asynchronous lifecycle.
+Boundary actions remain optional and independent of the primary column. To enable a downward pull only on A4, use `edgeAction` with `direction: 'down'` and `enabled: (position) => position.row === 0 && position.col === 3`. The application supplies `onTrigger`; other cells keep ordinary edge resistance. See [Boundary actions](#pull-to-refresh-and-other-boundary-actions) for the complete asynchronous lifecycle.
 
 ### Gesture options
 
