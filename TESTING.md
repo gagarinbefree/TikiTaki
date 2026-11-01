@@ -797,3 +797,26 @@ neither runtime dependencies nor framework peer dependencies.
 Unit and integration coverage in `tests/swipe-engine.test.ts` exercises an armed release, short fast pulls, eligibility, all four boundaries, pointer cancellation, capture loss, final direction changes, action errors, callback reentrancy, busy navigation, immutable state, resize, destroy, same position updates, coordinate clamping, and invalid options. `tests/dom-renderer.test.ts` checks partial displacement and validation while retaining full navigation plan checks.
 
 `tests/browser/edge-action.spec.ts` uses real Google Chrome mouse and CDP touch input. It checks visible displacement, the application owned spinner area, single request ownership, return after completion or failure, and updating the current card while loading. Run `npm run test:browser` for the complete browser gate. Physical Android testing belongs to the consuming application's integration checks.
+
+## Primary vertical column
+
+Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
+
+```ts
+const engine = createSwipeEngine({
+  container,
+  grid: [
+    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
+    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
+  ],
+  initialPosition: { row: 0, col: 3 },
+  navigation: { primaryColumn: 3 },
+  renderCell,
+});
+```
+
+For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
+
+Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
+
+Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.

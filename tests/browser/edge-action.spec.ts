@@ -112,3 +112,41 @@ test('returns after a failed request and permits another swipe', async ({ page, 
   expect(await page.evaluate(() => window.edgeFixture.engine.navigate('up'))).toBe(true);
   await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('B1');
 });
+
+test('uses the primary column for vertical swipes and refreshes only its upper boundary', async ({ page, context }, info) => {
+  await page.goto('/edge?primary');
+  await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('A4');
+  await page.evaluate(() => window.edgeFixture.engine.goTo({ row: 0, col: 0 }));
+  const touch = info.project.name.includes('touch');
+  if (touch) {
+    const session = await context.newCDPSession(page);
+    await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 150, y: 450, id: 1 }] });
+    await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 150, y: 200, id: 1 }] });
+    await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await session.detach();
+  } else {
+    await page.mouse.move(150, 450);
+    await page.mouse.down();
+    await page.mouse.move(150, 200, { steps: 10 });
+    await page.mouse.up();
+  }
+  await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('B4');
+  const previous = await pull(page, context, touch, 250);
+  await previous();
+  await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('A4');
+  await page.evaluate(() => window.edgeFixture.engine.goTo({ row: 0, col: 0 }));
+  const boundary = await pull(page, context, touch);
+  await boundary();
+  await expect(page.locator('[data-tikitaki-role="current"]')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+  expect(await page.evaluate(() => window.edgeFixture.state.requests)).toBe(0);
+  await page.evaluate(() => window.edgeFixture.engine.goTo({ row: 0, col: 3 }));
+  const refresh = await pull(page, context, touch);
+  await refresh();
+  await expect(page.locator('#indicator')).toHaveAttribute('data-phase', 'loading');
+  expect(await page.evaluate(() => window.edgeFixture.state.requests)).toBe(1);
+  await page.evaluate(() => {
+    window.edgeFixture.finish();
+  });
+  await expect(page.locator('#indicator')).toBeHidden();
+  expect(await page.evaluate(() => window.edgeFixture.engine.getPosition())).toEqual({ row: 0, col: 3 });
+});

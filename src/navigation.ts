@@ -6,6 +6,10 @@ export interface Position {
   readonly row: number;
   readonly col: number;
 }
+/** Options for vertical navigation through one shared column. */
+export interface NavigationOptions {
+  readonly primaryColumn?: number;
+}
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type Grid<T> = readonly (readonly T[])[];
 /**
@@ -33,13 +37,17 @@ function assertNonEmptyDenseArray(value: unknown, label: string): asserts value 
  *
  * Copy and freeze grid structure while preserving item identity.
  * @param grid Grid rows and their cell data.
+ * @param primaryColumn The column required in every row.
  * @returns The validated immutable grid snapshot.
  */
-function snapshotGrid<T>(grid: Grid<T>): Grid<T> {
+function snapshotGrid<T>(grid: Grid<T>, primaryColumn: number): Grid<T> {
   assertNonEmptyDenseArray(grid, CORE_TEXT.grid);
   const result = Object.freeze(
     grid.map((row) => {
       assertNonEmptyDenseArray(row, CORE_TEXT.gridRow);
+      if (row.length <= primaryColumn) {
+        throw new RangeError(CORE_TEXT.primaryColumnMissing);
+      }
       const result = Object.freeze([...row]);
 
       return result;
@@ -79,23 +87,22 @@ function checkedPosition<T>(grid: Grid<T>, position: unknown): Position {
   return result;
 }
 /**
- * findNeighbor
- *
- * Apply strict ragged grid navigation, resetting the column only on successful vertical movement.
+ * findNeighbor. Resolve adjacent cells using the primary column for vertical movement.
  * @param grid Grid rows and their cell data.
  * @param position Zero based cell coordinates.
  * @param direction The requested navigation direction.
+ * @param primaryColumn The target column for vertical movement.
  * @returns The neighboring cell coordinates, or null when no neighbor exists.
  */
-function findNeighbor<T>(grid: Grid<T>, position: Position, direction: Direction): Position | null {
+function findNeighbor<T>(grid: Grid<T>, position: Position, direction: Direction, primaryColumn: number): Position | null {
   const { row, col } = position;
   let target: Position;
   switch (direction) {
     case CORE_TEXT.up:
-      target = { row: row + 1, col: 0 };
+      target = { row: row + 1, col: primaryColumn };
       break;
     case CORE_TEXT.down:
-      target = { row: row - 1, col: 0 };
+      target = { row: row - 1, col: primaryColumn };
       break;
     case CORE_TEXT.left:
       target = { row, col: col + 1 };
@@ -173,9 +180,23 @@ export interface NavigationModel<T> {
  * Create independent ragged grid operations backed by a private grid snapshot.
  * @param grid Nonempty ragged grid; structure is copied while item identity is retained.
  * @param initialPosition Validated initial coordinates; defaults to the configured origin.
+ * @param options The optional shared primary column with zero as the default.
  * @returns Independent operations that can be called without binding a receiver.
  */
-export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Position = ORIGIN_POSITION): NavigationModel<T> {
+export function createNavigationModel<T>(
+  grid: Grid<T>,
+  initialPosition: Position = ORIGIN_POSITION,
+  options: NavigationOptions = {},
+): NavigationModel<T> {
+  const input: unknown = options;
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+    throw new TypeError(CORE_TEXT.invalidNavigationOptions);
+  }
+  const candidate: unknown = options.primaryColumn ?? 0;
+  if (typeof candidate !== 'number' || !Number.isSafeInteger(candidate) || candidate < 0) {
+    throw new RangeError(CORE_TEXT.invalidPrimaryColumn);
+  }
+  const primaryColumn = candidate;
   let stateGrid: Grid<T>;
   let statePosition: Position;
   /**
@@ -208,7 +229,7 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
    * @returns The neighboring cell coordinates, or null when no neighbor exists.
    */
   function getNeighbor(direction: Direction): Position | null {
-    const result = findNeighbor(stateGrid, statePosition, direction);
+    const result = findNeighbor(stateGrid, statePosition, direction, primaryColumn);
 
     return result;
   }
@@ -257,7 +278,7 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
    * @param grid Grid rows and their cell data.
    */
   function updateGrid(grid: Grid<T>): void {
-    const nextGrid = snapshotGrid(grid);
+    const nextGrid = snapshotGrid(grid, primaryColumn);
     const row = Math.min(statePosition.row, nextGrid.length - 1);
     const nextRow = nextGrid[row];
     if (nextRow === undefined) {
@@ -267,7 +288,7 @@ export function createNavigationModel<T>(grid: Grid<T>, initialPosition: Positio
     stateGrid = nextGrid;
     statePosition = Object.freeze({ row, col });
   }
-  stateGrid = snapshotGrid(grid);
+  stateGrid = snapshotGrid(grid, primaryColumn);
   statePosition = checkedPosition(stateGrid, initialPosition);
   const api: NavigationModel<T> = { getPosition, getItem, getNeighbor, navigate, goTo, updateGrid };
 

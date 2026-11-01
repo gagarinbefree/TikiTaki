@@ -24,22 +24,22 @@ type Grid<T> = readonly (readonly T[])[];
 `NavigationModel<T>` — синхронная модель, независимая от DOM. Экспорт модели
 на этапе alpha не означает готовность контрактов полного SwipeEngine.
 
-| Вызов                                              | Результат                                                        |
-| -------------------------------------------------- | ---------------------------------------------------------------- |
-| `createNavigationModel<T>(grid, initialPosition?)` | Проверяет и копирует структуру сетки; по умолчанию `(0, 0)`      |
-| `getPosition(): Position`                          | Замороженная текущая позиция                                     |
-| `getItem(position): T`                             | Значение ячейки без перемещения                                  |
-| `getNeighbor(direction): Position \| null`         | Замороженный сосед либо `null` на границе; состояние не меняется |
-| `navigate(direction): boolean`                     | Один соседний переход; `false` на границе                        |
-| `goTo(position): boolean`                          | Прямой переход; `false` для текущей позиции                      |
-| `updateGrid(grid): void`                           | Атомарная замена сетки и коррекция позиции                       |
+| Вызов                                                        | Результат                                                        |
+| ------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `createNavigationModel<T>(grid, initialPosition?, options?)` | Проверяет и копирует структуру сетки; по умолчанию `(0, 0)`      |
+| `getPosition(): Position`                                    | Замороженная текущая позиция                                     |
+| `getItem(position): T`                                       | Значение ячейки без перемещения                                  |
+| `getNeighbor(direction): Position \| null`                   | Замороженный сосед либо `null` на границе; состояние не меняется |
+| `navigate(direction): boolean`                               | Один соседний переход; `false` на границе                        |
+| `goTo(position): boolean`                                    | Прямой переход; `false` для текущей позиции                      |
+| `updateGrid(grid): void`                                     | Атомарная замена сетки и коррекция позиции                       |
 
 ## Направления и границы
 
 | Направление свайпа | Допустимая целевая позиция |
 | ------------------ | -------------------------- |
-| `up`               | `(row + 1, 0)`             |
-| `down`             | `(row - 1, 0)`             |
+| `up`               | `(row + 1, primaryColumn)` |
+| `down`             | `(row - 1, primaryColumn)` |
 | `left`             | `(row, col + 1)`           |
 | `right`            | `(row, col - 1)`           |
 
@@ -538,3 +538,26 @@ Indicators remain application owned. Place them behind the cell hosts in the con
 ### Partial renderer motion
 
 `DOMRenderer.animateOffset(from, to, duration)` animates visible displacement without requiring a neighbor. Both offsets must be finite, axis aligned, inside the viewport bounds, and on the same axis. Duration must be finite and nonnegative. It resolves `true` after motion finishes or `false` when busy, hidden, cancelled, or destroyed. Invalid motion rejects without replacing existing work. `animate(plan)` retains its original full neighbor or zero rollback target validation.
+
+## Primary vertical column
+
+Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
+
+```ts
+const engine = createSwipeEngine({
+  container,
+  grid: [
+    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
+    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
+  ],
+  initialPosition: { row: 0, col: 3 },
+  navigation: { primaryColumn: 3 },
+  renderCell,
+});
+```
+
+For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
+
+Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
+
+Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.

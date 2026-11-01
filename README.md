@@ -127,12 +127,12 @@ Keep the container dedicated to the engine. The DOM controller manages its cell 
 
 Directions describe the swipe, so moving content upward opens the next row:
 
-| Direction | Destination                        |
-| --------- | ---------------------------------- |
-| `up`      | Next row, always column `0`        |
-| `down`    | Previous row, always column `0`    |
-| `left`    | Next column in the current row     |
-| `right`   | Previous column in the current row |
+| Direction | Destination                               |
+| --------- | ----------------------------------------- |
+| `up`      | Next row, primary column, default `0`     |
+| `down`    | Previous row, primary column, default `0` |
+| `left`    | Next column in the current row            |
+| `right`   | Previous column in the current row        |
 
 An unavailable transition preserves the complete position, including the column. Previous row columns are never remembered. A gesture locks to one axis and moves at most one neighboring cell. For example: `A3 → up → B1 → up → C1 → left → C2 → down → B1 → down → A1`.
 
@@ -456,3 +456,26 @@ If you want Pages for your own fork, enable Actions, select **Settings → Pages
 ## License
 
 [MIT](./LICENSE), copyright 2026 gagarinbefree. Vendored third-party assets retain their own notices.
+
+## Primary vertical column
+
+Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
+
+```ts
+const engine = createSwipeEngine({
+  container,
+  grid: [
+    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
+    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
+  ],
+  initialPosition: { row: 0, col: 3 },
+  navigation: { primaryColumn: 3 },
+  renderCell,
+});
+```
+
+For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
+
+Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
+
+Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.

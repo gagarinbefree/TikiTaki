@@ -1,7 +1,7 @@
 import { createEdgeAction, type EdgeAction, type EdgeActionOptions } from './edge-action';
 import { CORE_TEXT, CORE_MESSAGES, POINTER_TYPES, ORIGIN_POSITION, WHEEL_IDLE_MS } from './config';
 import { createNavigationModel, type NavigationModel } from './navigation';
-import type { Direction, Grid, Position } from './navigation';
+import type { Direction, Grid, Position, NavigationOptions } from './navigation';
 import { createGestureEngine, type GestureEngine } from './gesture';
 import type { GestureOptions, GestureContext, GestureSettlement, PointerSample } from './gesture';
 import { createDOMRenderer, type DOMRenderer } from './dom-renderer';
@@ -13,6 +13,7 @@ interface SwipeEngineBaseOptions<T> {
   readonly container: HTMLElement;
   readonly grid: Grid<T>;
   readonly initialPosition?: Position;
+  readonly navigation?: NavigationOptions;
   readonly gesture?: Partial<GestureOptions>;
   readonly edgeAction?: EdgeActionOptions;
   /**
@@ -978,7 +979,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     },
   });
   const adapter = resolveAdapter(options);
-  const model = createNavigationModel(options.grid, options.initialPosition);
+  const model = createNavigationModel(options.grid, options.initialPosition, options.navigation);
   statePosition = model.getPosition();
   stateModel = model;
   stateContainer = container;

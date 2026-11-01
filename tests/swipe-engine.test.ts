@@ -1173,3 +1173,26 @@ describe('boundary actions', () => {
     expect(view.container.children).toHaveLength(0);
   });
 });
+
+describe('primary column rendering', () => {
+  it('previews and commits the same primary cell on vertical transitions', async () => {
+    const { engine, container } = setup({
+      grid: [
+        ['A1', 'A2', 'A3', 'A4', 'A5'],
+        ['B1', 'B2', 'B3', 'B4'],
+      ],
+      initialPosition: { row: 0, col: 0 },
+      navigation: { primaryColumn: 3 },
+    });
+    expect(container.querySelector('[data-tikitaki-role="up"]')?.textContent).toBe('B4');
+    const next = engine.navigate('up');
+    await finish();
+    await expect(next).resolves.toBe(true);
+    expect(current(container).textContent).toBe('B4');
+    expect(container.querySelector('[data-tikitaki-role="down"]')?.textContent).toBe('A4');
+    const previous = engine.navigate('down');
+    await finish();
+    await expect(previous).resolves.toBe(true);
+    expect(current(container).textContent).toBe('A4');
+  });
+});

@@ -227,3 +227,53 @@ describe('NavigationModel', () => {
     });
   });
 });
+
+describe('primary column navigation', () => {
+  const cells = [
+    ['pressure', 'wind', 'temperature', 'current', 'hour'],
+    ['pressure tomorrow', 'wind tomorrow', 'temperature tomorrow', 'tomorrow'],
+  ];
+
+  it('uses the primary column from every horizontal position in either direction', () => {
+    for (const col of (cells[0] ?? []).keys()) {
+      const model = createNavigationModel(cells, { row: 0, col }, { primaryColumn: 3 });
+      expect(model.getNeighbor('up')).toEqual({ row: 1, col: 3 });
+      expect(model.navigate('up')).toBe(true);
+      expect(model.navigate('down')).toBe(true);
+      expect(model.getPosition()).toEqual({ row: 0, col: 3 });
+    }
+  });
+
+  it('keeps horizontal movement and boundaries independent of the primary column', () => {
+    const options = { primaryColumn: 3 };
+    const model = createNavigationModel(cells, { row: 0, col: 3 }, options);
+    options.primaryColumn = 0;
+    expect(model.navigate('right')).toBe(true);
+    expect(model.getPosition()).toEqual({ row: 0, col: 2 });
+    expect(model.navigate('down')).toBe(false);
+    expect(model.getPosition()).toEqual({ row: 0, col: 2 });
+    model.navigate('up');
+    expect(model.getPosition()).toEqual({ row: 1, col: 3 });
+  });
+
+  it.each([-1, 0.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])('rejects invalid primary column %s', (primaryColumn) => {
+    expect(() => createNavigationModel(cells, undefined, { primaryColumn })).toThrow(RangeError);
+  });
+
+  it('requires the primary column in each row and preserves state on invalid updates', () => {
+    expect(() => createNavigationModel([['A', 'B'], ['C']], undefined, { primaryColumn: 1 })).toThrow(RangeError);
+    const model = createNavigationModel(cells, { row: 0, col: 4 }, { primaryColumn: 3 });
+    expect(() => {
+      model.updateGrid([['only']]);
+    }).toThrow(RangeError);
+    expect(model.getPosition()).toEqual({ row: 0, col: 4 });
+    expect(model.getItem({ row: 0, col: 4 })).toBe('hour');
+    model.updateGrid(cells.slice(0, 1));
+    expect(model.getNeighbor('up')).toBeNull();
+  });
+
+  it('does not change the default initial position', () => {
+    const model = createNavigationModel(cells, undefined, { primaryColumn: 3 });
+    expect(model.getPosition()).toEqual({ row: 0, col: 0 });
+  });
+});

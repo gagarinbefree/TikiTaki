@@ -29,6 +29,9 @@ export const ZERO_OFFSET: GestureOffset = Object.freeze({ x: 0, y: 0 });
 export const DIRECTIONS = Object.freeze(['up', 'down', 'left', 'right'] as const);
 /** Centralized protocol tokens, DOM attributes, styles, labels, and validation messages. */
 export const CORE_TEXT = Object.freeze({
+  invalidNavigationOptions: 'Navigation options must be an object',
+  invalidPrimaryColumn: 'Primary column must be a nonnegative safe integer',
+  primaryColumnMissing: 'Primary column must exist in every grid row',
   edgeActionFailed: 'Edge action failed',
   edgeActionDirection: 'Edge action requires a valid direction',
   edgeActionCallbacks: 'Edge action callbacks must be functions',

@@ -61,9 +61,16 @@
       const state = { requests: 0, errors: [], phase: 'idle', aborted: false };
       let finish = () => {};
       let fail = () => {};
+      const primary = new URLSearchParams(location.search).has('primary');
       const engine = createSwipeEngine({
         container,
-        grid: [['A1', 'A2'], ['B1']],
+        grid: primary
+          ? [
+              ['A1', 'A2', 'A3', 'A4', 'A5'],
+              ['B1', 'B2', 'B3', 'B4'],
+            ]
+          : [['A1', 'A2'], ['B1']],
+        ...(primary ? { navigation: { primaryColumn: 3 }, initialPosition: { row: 0, col: 3 } } : {}),
         gesture: { animationDuration: 100 },
         renderCell(item) {
           const article = document.createElement('article');
@@ -73,7 +80,7 @@
         },
         edgeAction: {
           direction: 'down',
-          enabled: (position) => position.row === 0 && position.col === 0,
+          enabled: (position) => position.row === 0 && position.col === (primary ? 3 : 0),
           onTrigger({ signal }) {
             state.requests += 1;
             state.aborted = false;

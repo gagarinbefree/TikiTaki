@@ -177,7 +177,7 @@ function readWindow<T>(source: NavigationSource<T>): Descriptor<T>[] {
       left: { row: current.row, col: current.col + 1 },
       right: { row: current.row, col: current.col - 1 },
     }[direction];
-    if (position.row !== expected.row || position.col !== expected.col) {
+    if (position.row !== expected.row || ((direction === 'left' || direction === 'right') && position.col !== expected.col)) {
       throw new RangeError(CORE_TEXT.navigationSourceReturnedANonAdjacentNeighbor);
     }
     result.push(descriptor(position, direction));

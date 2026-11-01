@@ -1,5 +1,5 @@
 export { createNavigationModel, type NavigationModel } from './navigation';
-export type { Direction, Grid, Position } from './navigation';
+export type { Direction, Grid, Position, NavigationOptions } from './navigation';
 export { DEFAULT_GESTURE_OPTIONS, createGestureEngine, type GestureEngine } from './gesture';
 export type {
   GestureAxis,

@@ -243,3 +243,26 @@ The Angular demo is AOT compiled with ngc and its libraries use the official lin
 The DOM renderer provides `animateOffset` for partial displacement using its existing frame scheduler. A same position grid update restores the held offset after cell reconciliation. Resize, coordinate clamping, and destruction release action ownership before aborting application work, so late results cannot affect a newer operation.
 
 Application callbacks own the indicator and the asynchronous task. The library has no framework, CSS, Bootstrap, or network dependency. The public action types are exported only through `tikitaki/dom` so headless consumers remain independent of DOM declarations.
+
+## Primary vertical column
+
+Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
+
+```ts
+const engine = createSwipeEngine({
+  container,
+  grid: [
+    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
+    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
+  ],
+  initialPosition: { row: 0, col: 3 },
+  navigation: { primaryColumn: 3 },
+  renderCell,
+});
+```
+
+For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
+
+Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
+
+Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.
