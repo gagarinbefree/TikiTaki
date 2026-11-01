@@ -148,6 +148,32 @@ Mouse-wheel input over a cell also navigates vertically: wheel down opens the ne
 
 Navigation promises resolve `false` at boundaries, for the current target, while busy, on cancellation, or after destruction. Commands are not queued. Invalid navigation arguments reject while the controller is alive; invalid grid replacements throw without changing the current grid. Catch promise failures in application event handlers. `onError` reports failures from engine-owned interactions. A throwing position callback can reject its operation after the position has committed.
 
+## Primary vertical column
+
+Set `navigation.primaryColumn` to the logical column opened after every successful vertical swipe. Indices start at zero, so `3` means the fourth column. The default is `0`. Horizontal swipes stay within their row, blocked movement preserves the complete position, and previous horizontal positions are not remembered. `initialPosition` is configured separately.
+
+Rows can start at different logical columns without placeholder cells. Supply `navigation.rowStartColumn` to return the column occupied by the first array item in each row. It defaults to `0` for every row.
+
+```ts
+const engine = createSwipeEngine({
+  container,
+  grid: [
+    ['A1', 'A2', 'A3', 'A4', 'A5'],
+    ['B4', 'B5'],
+    ['C4', 'C5', 'C6'],
+  ],
+  initialPosition: { row: 0, col: 3 },
+  navigation: { primaryColumn: 3, rowStartColumn: (row) => (row === 0 ? 0 : 3) },
+  renderCell,
+});
+```
+
+An upward swipe from A1, A4, or A5 opens B4. Another upward swipe opens C4. Downward swipes return to B4 and then A4. B4 has no left neighbor because that row starts at column 4. The arrays contain only actual items.
+
+For the synchronous core use `createNavigationModel(grid, initialPosition, navigationOptions)`. `NavigationOptions` is exported from `tikitaki`. All coordinates passed to `goTo` and `getItem`, and all reported positions, use logical columns. Each row must contain the primary column. Row starts and ends must be nonnegative safe integers. Invalid construction or grid replacement throws before changing the previous valid state.
+
+Boundary actions remain optional and independent of the primary column. To enable a downward pull only on A4, use `edgeAction` with `direction: 'down'` and `enabled: (position) => position.row === 0 && position.col === 3`. The application supplies `onTrigger`; other cells keep ordinary edge resistance. See [Boundary actions](#boundary-actions) for the complete asynchronous lifecycle.
+
 ### Gesture options
 
 Pass overrides through `gesture` when creating the engine, for example `gesture: { animationDuration: 200 }`.
@@ -456,26 +482,3 @@ If you want Pages for your own fork, enable Actions, select **Settings → Pages
 ## License
 
 [MIT](./LICENSE), copyright 2026 gagarinbefree. Vendored third-party assets retain their own notices.
-
-## Primary vertical column
-
-Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
-
-```ts
-const engine = createSwipeEngine({
-  container,
-  grid: [
-    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
-    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
-  ],
-  initialPosition: { row: 0, col: 3 },
-  navigation: { primaryColumn: 3 },
-  renderCell,
-});
-```
-
-For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
-
-Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
-
-Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.

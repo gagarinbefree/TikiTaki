@@ -9,6 +9,12 @@ export interface Position {
 /** Options for vertical navigation through one shared column. */
 export interface NavigationOptions {
   readonly primaryColumn?: number;
+  /**
+   * rowStartColumn. Read the logical column of the first item in a row.
+   * @param row The zero based row index in the replacement grid.
+   * @returns The nonnegative logical column where this row begins.
+   */
+  readonly rowStartColumn?: (row: number) => number;
 }
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type Grid<T> = readonly (readonly T[])[];
@@ -37,20 +43,40 @@ function assertNonEmptyDenseArray(value: unknown, label: string): asserts value 
  *
  * Copy and freeze grid structure while preserving item identity.
  * @param grid Grid rows and their cell data.
- * @param primaryColumn The column required in every row.
  * @returns The validated immutable grid snapshot.
  */
-function snapshotGrid<T>(grid: Grid<T>, primaryColumn: number): Grid<T> {
+function snapshotGrid<T>(grid: Grid<T>): Grid<T> {
   assertNonEmptyDenseArray(grid, CORE_TEXT.grid);
   const result = Object.freeze(
     grid.map((row) => {
       assertNonEmptyDenseArray(row, CORE_TEXT.gridRow);
-      if (row.length <= primaryColumn) {
-        throw new RangeError(CORE_TEXT.primaryColumnMissing);
-      }
       const result = Object.freeze([...row]);
 
       return result;
+    }),
+  );
+
+  return result;
+}
+/**
+ * snapshotRowStarts. Validate and freeze the logical start of every row.
+ * @param grid The validated dense cell arrays.
+ * @param primaryColumn The shared target column for vertical navigation.
+ * @param readStart The optional function providing each row start.
+ * @returns The immutable logical row starts for this grid snapshot.
+ */
+function snapshotRowStarts<T>(grid: Grid<T>, primaryColumn: number, readStart: NavigationOptions['rowStartColumn']): readonly number[] {
+  const result = Object.freeze(
+    grid.map((row, index) => {
+      const start: unknown = readStart?.(index) ?? 0;
+      if (typeof start !== 'number' || !Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(start + row.length - 1)) {
+        throw new RangeError(CORE_TEXT.invalidRowStartColumn);
+      }
+      if (primaryColumn < start || primaryColumn >= start + row.length) {
+        throw new RangeError(CORE_TEXT.primaryColumnMissing);
+      }
+
+      return start;
     }),
   );
 
@@ -61,10 +87,11 @@ function snapshotGrid<T>(grid: Grid<T>, primaryColumn: number): Grid<T> {
  *
  * Validate coordinates and return an immutable position snapshot.
  * @param grid Grid rows and their cell data.
- * @param position Zero based cell coordinates.
+ * @param position Zero based logical cell coordinates.
+ * @param starts The logical start column of each row.
  * @returns The resulting cell coordinates.
  */
-function checkedPosition<T>(grid: Grid<T>, position: unknown): Position {
+function checkedPosition<T>(grid: Grid<T>, position: unknown, starts: readonly number[]): Position {
   if (
     typeof position !== 'object' ||
     position === null ||
@@ -79,7 +106,8 @@ function checkedPosition<T>(grid: Grid<T>, position: unknown): Position {
     throw new RangeError(CORE_TEXT.positionCoordinatesMustBeNonNegativeSafeIntegers);
   }
   const row = grid[position.row];
-  if (row === undefined || position.col >= row.length) {
+  const start = starts[position.row] ?? 0;
+  if (row === undefined || position.col < start || position.col >= start + row.length) {
     throw new RangeError(CORE_TEXT.positionIsOutsideTheGrid);
   }
   const result = Object.freeze({ row: position.row, col: position.col });
@@ -92,9 +120,16 @@ function checkedPosition<T>(grid: Grid<T>, position: unknown): Position {
  * @param position Zero based cell coordinates.
  * @param direction The requested navigation direction.
  * @param primaryColumn The target column for vertical movement.
+ * @param starts The logical start column of each row.
  * @returns The neighboring cell coordinates, or null when no neighbor exists.
  */
-function findNeighbor<T>(grid: Grid<T>, position: Position, direction: Direction, primaryColumn: number): Position | null {
+function findNeighbor<T>(
+  grid: Grid<T>,
+  position: Position,
+  direction: Direction,
+  primaryColumn: number,
+  starts: readonly number[],
+): Position | null {
   const { row, col } = position;
   let target: Position;
   switch (direction) {
@@ -114,7 +149,8 @@ function findNeighbor<T>(grid: Grid<T>, position: Position, direction: Direction
       throw new TypeError(CORE_TEXT.directionMustBeUpDownLeftOrRight);
   }
   const targetRow = grid[target.row];
-  if (targetRow === undefined || target.col < 0 || target.col >= targetRow.length) {
+  const start = starts[target.row] ?? 0;
+  if (targetRow === undefined || target.col < start || target.col >= start + targetRow.length) {
     const result = null;
 
     return result;
@@ -196,8 +232,13 @@ export function createNavigationModel<T>(
   if (typeof candidate !== 'number' || !Number.isSafeInteger(candidate) || candidate < 0) {
     throw new RangeError(CORE_TEXT.invalidPrimaryColumn);
   }
+  const readStart = options.rowStartColumn;
+  if (readStart !== undefined && typeof readStart !== 'function') {
+    throw new TypeError(CORE_TEXT.invalidRowStartReader);
+  }
   const primaryColumn = candidate;
   let stateGrid: Grid<T>;
+  let stateStarts: readonly number[];
   let statePosition: Position;
   /**
    * getPosition
@@ -216,8 +257,8 @@ export function createNavigationModel<T>(
    * @returns The item at the validated grid coordinates.
    */
   function getItem(position: Position): T {
-    const checked = checkedPosition(stateGrid, position);
-    const result = stateGrid[checked.row]?.[checked.col] as T;
+    const checked = checkedPosition(stateGrid, position, stateStarts);
+    const result = stateGrid[checked.row]?.[checked.col - (stateStarts[checked.row] ?? 0)] as T;
 
     return result;
   }
@@ -229,7 +270,7 @@ export function createNavigationModel<T>(
    * @returns The neighboring cell coordinates, or null when no neighbor exists.
    */
   function getNeighbor(direction: Direction): Position | null {
-    const result = findNeighbor(stateGrid, statePosition, direction, primaryColumn);
+    const result = findNeighbor(stateGrid, statePosition, direction, primaryColumn, stateStarts);
 
     return result;
   }
@@ -260,7 +301,7 @@ export function createNavigationModel<T>(
    * @returns Whether the operation succeeded or the condition holds.
    */
   function goTo(position: Position): boolean {
-    const target = checkedPosition(stateGrid, position);
+    const target = checkedPosition(stateGrid, position, stateStarts);
     if (target.row === statePosition.row && target.col === statePosition.col) {
       const result = false;
 
@@ -278,18 +319,22 @@ export function createNavigationModel<T>(
    * @param grid Grid rows and their cell data.
    */
   function updateGrid(grid: Grid<T>): void {
-    const nextGrid = snapshotGrid(grid, primaryColumn);
+    const nextGrid = snapshotGrid(grid);
+    const nextStarts = snapshotRowStarts(nextGrid, primaryColumn, readStart);
     const row = Math.min(statePosition.row, nextGrid.length - 1);
     const nextRow = nextGrid[row];
     if (nextRow === undefined) {
       throw new RangeError(CORE_TEXT.gridMustContainTheSelectedRow);
     }
-    const col = Math.min(statePosition.col, nextRow.length - 1);
+    const start = nextStarts[row] ?? 0;
+    const col = Math.max(start, Math.min(statePosition.col, start + nextRow.length - 1));
     stateGrid = nextGrid;
+    stateStarts = nextStarts;
     statePosition = Object.freeze({ row, col });
   }
-  stateGrid = snapshotGrid(grid, primaryColumn);
-  statePosition = checkedPosition(stateGrid, initialPosition);
+  stateGrid = snapshotGrid(grid);
+  stateStarts = snapshotRowStarts(stateGrid, primaryColumn, readStart);
+  statePosition = checkedPosition(stateGrid, initialPosition, stateStarts);
   const api: NavigationModel<T> = { getPosition, getItem, getNeighbor, navigate, goTo, updateGrid };
 
   return api;

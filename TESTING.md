@@ -800,23 +800,4 @@ Unit and integration coverage in `tests/swipe-engine.test.ts` exercises an armed
 
 ## Primary vertical column
 
-Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
-
-```ts
-const engine = createSwipeEngine({
-  container,
-  grid: [
-    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
-    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
-  ],
-  initialPosition: { row: 0, col: 3 },
-  navigation: { primaryColumn: 3 },
-  renderCell,
-});
-```
-
-For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
-
-Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
-
-Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.
+Navigation tests cover vertical movement from every horizontal column, independent initial position, immutable options, validation, atomic failed updates, logical row starts and blocked movement before a row start. Controller tests verify that preview and committed destinations agree and that short offset rows do not mount placeholder cells. Chrome mouse and touch tests verify actual vertical swipes and a boundary action enabled only at the primary cell. Existing default column zero behavior remains covered by the original suites.

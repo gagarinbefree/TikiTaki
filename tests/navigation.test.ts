@@ -277,3 +277,42 @@ describe('primary column navigation', () => {
     expect(model.getPosition()).toEqual({ row: 0, col: 0 });
   });
 });
+
+describe('rows starting at the primary column', () => {
+  it('keeps one logical vertical column without placeholder cells in shorter rows', () => {
+    const model = createNavigationModel(
+      [['map', 'map', 'map', 'current', 'hour'], ['tomorrow', 'tomorrow hour'], ['later']],
+      { row: 0, col: 3 },
+      { primaryColumn: 3, rowStartColumn: (row) => (row === 0 ? 0 : 3) },
+    );
+    model.navigate('up');
+    expect(model.getPosition()).toEqual({ row: 1, col: 3 });
+    expect(model.getItem(model.getPosition())).toBe('tomorrow');
+    expect(model.getNeighbor('right')).toBeNull();
+    model.navigate('left');
+    expect(model.getItem(model.getPosition())).toBe('tomorrow hour');
+    model.navigate('up');
+    expect(model.getItem(model.getPosition())).toBe('later');
+    model.navigate('down');
+    expect(model.getPosition()).toEqual({ row: 1, col: 3 });
+    model.navigate('down');
+    expect(model.getItem(model.getPosition())).toBe('current');
+    model.goTo({ row: 0, col: 0 });
+    model.navigate('up');
+    expect(model.getItem(model.getPosition())).toBe('tomorrow');
+    expect(() => model.getItem({ row: 1, col: 0 })).toThrow(RangeError);
+    model.updateGrid([['map', 'map', 'map', 'current'], ['fresh tomorrow']]);
+    expect(model.getItem(model.getPosition())).toBe('fresh tomorrow');
+  });
+  it('rejects invalid row starts and snapshots their values before use', () => {
+    expect(() => createNavigationModel([['A']], undefined, { rowStartColumn: () => -1 })).toThrow(RangeError);
+    let start = 0;
+    const model = createNavigationModel([['A']], undefined, { rowStartColumn: () => start });
+    start = 3;
+    expect(model.getItem({ row: 0, col: 0 })).toBe('A');
+    expect(() => {
+      model.updateGrid([['B']]);
+    }).toThrow(RangeError);
+    expect(model.getItem({ row: 0, col: 0 })).toBe('A');
+  });
+});

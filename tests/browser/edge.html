@@ -64,13 +64,10 @@
       const primary = new URLSearchParams(location.search).has('primary');
       const engine = createSwipeEngine({
         container,
-        grid: primary
-          ? [
-              ['A1', 'A2', 'A3', 'A4', 'A5'],
-              ['B1', 'B2', 'B3', 'B4'],
-            ]
-          : [['A1', 'A2'], ['B1']],
-        ...(primary ? { navigation: { primaryColumn: 3 }, initialPosition: { row: 0, col: 3 } } : {}),
+        grid: primary ? [['A1', 'A2', 'A3', 'A4', 'A5'], ['B4']] : [['A1', 'A2'], ['B1']],
+        ...(primary
+          ? { navigation: { primaryColumn: 3, rowStartColumn: (row) => (row === 0 ? 0 : 3) }, initialPosition: { row: 0, col: 3 } }
+          : {}),
         gesture: { animationDuration: 100 },
         renderCell(item) {
           const article = document.createElement('article');

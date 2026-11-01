@@ -246,23 +246,6 @@ Application callbacks own the indicator and the asynchronous task. The library h
 
 ## Primary vertical column
 
-Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
+Navigation owns a validated immutable primary column and snapshots the logical start of each row. Cell arrays stay dense and contain only real items. The DOM renderer queries `getNeighbor` and `getItem` instead of assuming that vertical destinations start at column zero. The renderer validates adjacency by row for vertical transitions and by column for horizontal transitions. Optional row starts preserve one logical primary column even when some rows have no cells to its left.
 
-```ts
-const engine = createSwipeEngine({
-  container,
-  grid: [
-    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
-    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
-  ],
-  initialPosition: { row: 0, col: 3 },
-  navigation: { primaryColumn: 3 },
-  renderCell,
-});
-```
-
-For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
-
-Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
-
-Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.
+Grid replacement validates the new cell structure and logical ranges before changing state. Boundary actions remain independent of navigation options and are enabled by application callbacks.

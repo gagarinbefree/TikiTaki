@@ -541,23 +541,15 @@ Indicators remain application owned. Place them behind the cell hosts in the con
 
 ## Primary vertical column
 
-Set `navigation: { primaryColumn: 3 }` in `createSwipeEngine` to land on the fourth column after every successful vertical swipe. The zero based default is `0`, preserving existing navigation. Horizontal navigation and blocked boundaries keep their usual behavior. `initialPosition` remains independent and defaults to the origin.
+`createNavigationModel(grid, initialPosition?, options?)` accepts `NavigationOptions`. The DOM controller accepts the same object as `navigation`.
 
 ```ts
-const engine = createSwipeEngine({
-  container,
-  grid: [
-    ['Pressure', 'Wind', 'Temperature', 'Current', 'Hourly'],
-    ['Pressure tomorrow', 'Wind tomorrow', 'Temperature tomorrow', 'Tomorrow'],
-  ],
-  initialPosition: { row: 0, col: 3 },
-  navigation: { primaryColumn: 3 },
-  renderCell,
-});
+interface NavigationOptions {
+  readonly primaryColumn?: number;
+  readonly rowStartColumn?: (row: number) => number;
+}
 ```
 
-For the synchronous core use `createNavigationModel(grid, initialPosition, { primaryColumn: 3 })`. `NavigationOptions` is exported from `tikitaki`. The column must be a nonnegative safe integer present in every row. Construction and grid replacement validate this before changing state. Invalid replacement grids leave the previous model and rendering intact.
+Both defaults are zero. `primaryColumn` is the logical destination for every successful vertical transition. `rowStartColumn` maps each row index to the logical column of its first array item. For `[ ['A1', 'A2', 'A3', 'A4'], ['B4'] ]`, configure primary column `3` and starts `0` and `3` to avoid placeholder cells. Public positions, callbacks, `goTo`, and `getItem` use logical columns. Initial position remains independent.
 
-Vertical previews and committed targets use the same configured column. Boundary actions stay independent. Applications can enable refresh only when `position.row === 0 && position.col === 3`; other top row cells retain ordinary edge resistance.
-
-Navigation and controller tests cover both directions from map and hourly columns, immutable options, invalid updates and default compatibility. Chrome mouse and touch tests cover vertical swipes and refresh restricted to the primary cell.
+Starts are evaluated once for every row during construction and each grid replacement, then frozen with the snapshot. The function should be pure. The primary column must exist within each row range. Starts and ends must be nonnegative safe integers. Invalid updates leave the old grid and rendering intact. A successful update clamps the selected logical column into the new row range. Vertical previews use exactly the committed primary destination.

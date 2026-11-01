@@ -1196,3 +1196,18 @@ describe('primary column rendering', () => {
     expect(current(container).textContent).toBe('A4');
   });
 });
+
+it('renders a short offset row without mounting placeholders on its left', async () => {
+  const { engine, container } = setup({
+    grid: [['A1', 'A2', 'A3', 'A4'], ['B4']],
+    navigation: { primaryColumn: 3, rowStartColumn: (row) => (row === 0 ? 0 : 3) },
+    initialPosition: { row: 0, col: 0 },
+  });
+  const next = engine.navigate('up');
+  await finish();
+  await expect(next).resolves.toBe(true);
+  expect(current(container).textContent).toBe('B4');
+  expect(container.querySelector('[data-tikitaki-role="right"]')).toBeNull();
+  expect(container.querySelector('[data-tikitaki-role="left"]')).toBeNull();
+  expect(container.querySelector('[data-tikitaki-role="down"]')?.textContent).toBe('A4');
+});
