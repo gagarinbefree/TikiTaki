@@ -138,13 +138,13 @@ An unavailable transition preserves the complete position, including the column.
 
 Mouse-wheel input over a cell also navigates vertically: wheel down opens the next row, wheel up opens the previous row. A wheel burst produces at most one transition; horizontal input and browser zoom gestures are ignored.
 
-| Method                | Contract                                                                     |
-| --------------------- | ---------------------------------------------------------------------------- |
-| `getPosition()`       | Return a frozen snapshot of the committed position                           |
-| `navigate(direction)` | Animate to a neighbor; resolve `true` after the transition commits           |
-| `goTo(position)`      | Immediately show a valid target; resolve whether the position changed        |
-| `updateGrid(grid)`    | Validate and replace data, cancel motion, and clamp coordinates if necessary |
-| `destroy()`           | Release listeners, observers, mounted cells, and animation work; idempotent  |
+| Method                | Contract                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------- |
+| `getPosition()`       | Return a frozen snapshot of the committed position                                      |
+| `navigate(direction)` | Animate to a neighbor; resolve `true` after the transition commits                      |
+| `goTo(position)`      | Immediately show a valid target; resolve whether the position changed                   |
+| `updateGrid(grid)`    | Replace data and clamp coordinates; preserve a running edge action at the same position |
+| `destroy()`           | Release listeners, observers, mounted cells, and animation work; idempotent             |
 
 Navigation promises resolve `false` at boundaries, for the current target, while busy, on cancellation, or after destruction. Commands are not queued. Invalid navigation arguments reject while the controller is alive; invalid grid replacements throw without changing the current grid. Catch promise failures in application event handlers. `onError` reports failures from engine-owned interactions. A throwing position callback can reject its operation after the position has committed.
 
@@ -161,6 +161,88 @@ Pass overrides through `gesture` when creating the engine, for example `gesture:
 | `edgeResistance`    | `0.35`  | Finite ratio from `0` to `1`, inclusive         |
 
 A swipe can commit by distance or velocity. Direction changes and recent motion are taken into account. Pointer cancellation, capture loss, and container resize cancel active motion safely. See [API.md](./API.md) for detailed validation, rendering, and error semantics.
+
+### Pull to refresh and other boundary actions
+
+Configure `edgeAction` to reveal a small loading area when a user pulls beyond a missing neighbor. The current cell stays selected while your asynchronous operation runs, then slides back into place. A short pull returns without calling the operation. All four directions are supported, with one configured boundary action per engine.
+
+The engine controls the gesture and animation. Your application supplies the indicator and the asynchronous operation, so Bootstrap spinners and framework components can use their existing styles.
+
+Place the indicator inside the container before creating the engine. It remains owned by your application and appears behind the moving cells:
+
+```html
+<div id="refresh-view" style="position: relative; width: 100%; height: 100dvh">
+  <div id="refresh-indicator" role="status" aria-label="Refreshing" hidden>
+    <span class="spinner-border" aria-hidden="true"></span>
+  </div>
+</div>
+```
+
+```css
+#refresh-indicator {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+#refresh-indicator[hidden] {
+  display: none;
+}
+```
+
+The `spinner-border` class uses your application's Bootstrap stylesheet. TikiTaki adds no CSS or Bootstrap dependency.
+
+```ts
+import { createSwipeEngine } from 'tikitaki/dom';
+
+const container = document.querySelector<HTMLElement>('#refresh-view');
+const indicator = document.querySelector<HTMLElement>('#refresh-indicator');
+if (!container || !indicator) throw new Error('Missing refresh elements');
+
+const engine = createSwipeEngine({
+  container,
+  grid: [['Current content', 'Next hour'], ['Tomorrow']],
+  renderCell(item) {
+    const card = document.createElement('article');
+    card.style.height = '100%';
+    card.style.background = '#fff6dc';
+    card.textContent = item;
+
+    return card;
+  },
+  edgeAction: {
+    direction: 'down',
+    enabled: (position) => position.row === 0 && position.col === 0,
+    threshold: 48,
+    holdOffset: 64,
+    async onTrigger({ signal }): Promise<void> {
+      // Replace this URL and response handling with your application's refresh operation.
+      const response = await fetch('/api/current-content', { signal });
+      if (!response.ok) throw new Error('Refresh failed');
+      const content = await response.text();
+      engine.updateGrid([[content, 'Next hour'], ['Tomorrow']]);
+    },
+    onStateChange(state) {
+      indicator.hidden = state.phase === 'idle';
+      indicator.dataset.phase = state.phase;
+    },
+  },
+  onError(error) {
+    console.error('Refresh failed', error);
+  },
+});
+```
+
+`direction` follows finger movement, so `down` reveals the area above the first row. The default visible threshold is **72 CSS pixels** and the held loading offset is **64 CSS pixels**. Both must be positive finite numbers. The example uses a lower threshold of 48 pixels. Thresholds measure the visible elastic displacement after `edgeResistance`, rather than raw finger travel. A fast short flick alone never triggers an action. The hold offset is capped at the viewport extent.
+
+`onStateChange` receives frozen snapshots with `phase`, `direction`, `position`, `offset`, and `progress`. Phases are `pulling`, `armed`, `loading`, `returning`, and `idle`. During dragging, `offset` is the visible displacement; during loading and return, it describes the held displacement until the final `idle` snapshot. `progress` is clamped between 0 and 1. There is no initial notification; start the indicator hidden. In Vue, store these snapshots in a `shallowRef` and render your indicator in the surrounding template while using the existing cell adapter.
+
+While an action runs, repeated gestures and navigation commands are ignored. Updating data through `updateGrid` preserves a running action when the selected coordinates stay the same. Pointer cancellation or capture loss before release returns without starting work. Resize, destruction, or a grid update that clamps the selected coordinates aborts the action signal and clears the indicator; late results are ignored by the engine. Your application should pass the signal to its requests and avoid applying stale results after cancellation. Rejected refresh operations are reported through `onError`, and the cell returns to its original position so navigation remains usable.
+
+Programmatic navigation and mouse wheel input never trigger an edge action. Supply an accessible refresh button in your application when keyboard activation is needed. For a mobile web page, configure the page's scroll container with `overscroll-behavior-y: contain` to avoid competing browser refresh gestures. Physical Android verification remains a separate integration step.
 
 ### Headless usage
 

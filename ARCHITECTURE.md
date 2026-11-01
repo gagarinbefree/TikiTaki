@@ -235,3 +235,11 @@ ViewContainerRef; the adapter updates view context and destroys each view once.
 Both preserve framework context and component state, and neither creates a root
 per cell. Optional peer dependencies are isolated in their adapter packages.
 The Angular demo is AOT compiled with ngc and its libraries use the official linker.
+
+## Optional boundary action ownership
+
+`edge-action.ts` coordinates one optional boundary action through a small controller bridge. It reads elastic displacement from the gesture engine, checks the missing neighbor and application predicate, and owns a cancellation token during loading and return. Navigation coordinates and the bounded rendering window stay unchanged.
+
+The DOM renderer provides `animateOffset` for partial displacement using its existing frame scheduler. A same position grid update restores the held offset after cell reconciliation. Resize, coordinate clamping, and destruction release action ownership before aborting application work, so late results cannot affect a newer operation.
+
+Application callbacks own the indicator and the asynchronous task. The library has no framework, CSS, Bootstrap, or network dependency. The public action types are exported only through `tikitaki/dom` so headless consumers remain independent of DOM declarations.

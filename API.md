@@ -356,6 +356,7 @@ interface SwipeEngineBaseOptions<T> {
   readonly grid: Grid<T>;
   readonly initialPosition?: Position;
   readonly gesture?: Partial<GestureOptions>;
+  readonly edgeAction?: EdgeActionOptions;
   readonly onPositionChange?: (position: Position, previous: Position) => void;
   readonly onError?: (error: Error) => void;
 }
@@ -399,6 +400,7 @@ Framework-specific компоненты требуют mount/update/unmount св
 исключение и сохраняет текущую транзакцию. Валидная отменяет анимацию с false,
 освобождает capture, сбрасывает жесты и синхронизирует DOM. Callback вызывается
 только при изменении координат; смена содержимого на прежних координатах не вызывает его.
+Запущенный edgeAction на прежних координатах сохраняется вместе с открытой областью.
 Вызов updateGrid из adapter lifecycle запрещён и бросает исключение.
 
 Resize отменяет текущую транзакцию с false, сбрасывает offset/capture/жест,
@@ -511,3 +513,28 @@ view, normally from `ViewContainerRef.createEmbeddedView`. Both implement the
 core CellAdapter contract, preserve surviving component identity during updates,
 and clean up owned content on unmount. Framework commits remain asynchronous:
 use Svelte tick or Angular rendering stabilization before assertions.
+
+## Boundary actions
+
+`tikitaki/dom` exports `EdgeActionOptions`, `EdgeActionContext`, `EdgeActionState`, `EdgeActionPhase`, and the frozen `DEFAULT_EDGE_ACTION_OPTIONS` object.
+
+`SwipeEngineOptions.edgeAction` accepts one optional boundary action. `direction` is required and uses finger movement semantics. `onTrigger(context)` is required and returns `Promise<void>`. `enabled(position)` optionally restricts eligible cells. The action is available only where the selected cell has no neighbor in that direction. Missing configuration preserves ordinary elastic rollback.
+
+| Option          | Default            | Contract                                                                |
+| --------------- | ------------------ | ----------------------------------------------------------------------- |
+| `threshold`     | `72`               | Positive finite visible distance in CSS pixels after elastic resistance |
+| `holdOffset`    | `64`               | Positive finite loading displacement capped at the viewport extent      |
+| `enabled`       | All boundary cells | Callback receiving committed coordinates                                |
+| `onStateChange` | No observer        | Callback receiving an immutable state snapshot                          |
+
+States progress through `pulling`, `armed`, `loading`, `returning`, and `idle`. A release below the threshold or a cancelled pointer returns without calling `onTrigger`. Velocity does not arm an action. A direction reversal uses the final release offset. No initial state event is emitted. The snapshot includes frozen `position`, `direction`, `phase`, nonnegative `offset`, and `progress` clamped to `[0, 1]`. During settling, offset represents the held target rather than each animation frame.
+
+`onTrigger` receives frozen `{ position, direction, signal }`. The engine blocks conflicting input until the operation and return animation finish. It does not create a neighboring cell or emit `onPositionChange`. Normal navigation is unchanged when a neighbor exists. Programmatic commands and wheel input do not trigger the callback.
+
+Updating the same selected coordinates preserves an active operation and its held displacement. Resize, destruction, or a grid update that clamps the coordinates cancels the action and aborts its signal. Late completion and rejection cannot move the engine or publish stale state. Application requests must honor cancellation before applying their own results. A failed action reports through `onError` and returns normally. Indicator callback errors are reported without destroying the controller. Errors in the engine's renderer retain the renderer's terminal cleanup semantics.
+
+Indicators remain application owned. Place them behind the cell hosts in the container, or render them through the surrounding framework template. The engine never imports an application framework, spinner, stylesheet, or network client. See the [README example](./README.md#pull-to-refresh-and-other-boundary-actions).
+
+### Partial renderer motion
+
+`DOMRenderer.animateOffset(from, to, duration)` animates visible displacement without requiring a neighbor. Both offsets must be finite, axis aligned, inside the viewport bounds, and on the same axis. Duration must be finite and nonnegative. It resolves `true` after motion finishes or `false` when busy, hidden, cancelled, or destroyed. Invalid motion rejects without replacing existing work. `animate(plan)` retains its original full neighbor or zero rollback target validation.

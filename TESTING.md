@@ -791,3 +791,9 @@ neither runtime dependencies nor framework peer dependencies.
 Физический Android с Chrome пока **не проверялся** и отложен по прямому решению
 пользователя. При возвращении к нему проверить плавность, pointer capture/cancel,
 смену ориентации и размеров на устройстве. Chrome touch emulation выполнена.
+
+## Boundary action checks
+
+Unit and integration coverage in `tests/swipe-engine.test.ts` exercises an armed release, short fast pulls, eligibility, all four boundaries, pointer cancellation, capture loss, final direction changes, action errors, callback reentrancy, busy navigation, immutable state, resize, destroy, same position updates, coordinate clamping, and invalid options. `tests/dom-renderer.test.ts` checks partial displacement and validation while retaining full navigation plan checks.
+
+`tests/browser/edge-action.spec.ts` uses real Google Chrome mouse and CDP touch input. It checks visible displacement, the application owned spinner area, single request ownership, return after completion or failure, and updating the current card while loading. Run `npm run test:browser` for the complete browser gate. Physical Android testing belongs to the consuming application's integration checks.
