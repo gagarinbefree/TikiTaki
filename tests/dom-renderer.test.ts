@@ -600,3 +600,17 @@ describe('plain DOM adapter', () => {
     expect(element.parentNode).toBe(document.body);
   });
 });
+
+it('animates a partial boundary offset without requiring a neighbor', async () => {
+  const { renderer, container } = setup();
+  const motion = renderer.animateOffset({ x: 0, y: 110 }, { x: 0, y: 64 }, 300);
+  frame(0);
+  frame(300);
+  await expect(motion).resolves.toBe(true);
+  expect(container.querySelector<HTMLElement>('[data-tikitaki-role="current"]')?.style.transform).toBe('translate3d(0px, 64px, 0px)');
+  await expect(renderer.animateOffset({ x: 0, y: 64 }, { x: 20, y: 0 }, 300)).rejects.toThrow();
+  await expect(renderer.animateOffset({ x: 0, y: 64 }, { x: 0, y: 64 }, -1)).rejects.toThrow();
+  const rollback = renderer.animateOffset({ x: 0, y: 64 }, { x: 0, y: 0 }, 0);
+  frame();
+  await expect(rollback).resolves.toBe(true);
+});

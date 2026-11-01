@@ -319,6 +319,14 @@ export interface DOMRenderer {
    */
   readonly animate: (plan: GestureSettlement) => Promise<boolean>;
   /**
+   * animateOffset. Animate partial motion without committing a grid neighbor.
+   * @param from The starting displacement in CSS pixels.
+   * @param to The target displacement in CSS pixels.
+   * @param duration The animation duration in milliseconds.
+   * @returns Whether motion completed before cancellation.
+   */
+  readonly animateOffset: (from: GestureOffset, to: GestureOffset, duration: number) => Promise<boolean>;
+  /**
    * sync
    *
    * Reconcile the bounded rendering window with the current navigation snapshot.
@@ -417,13 +425,35 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
 
       return result;
     }
-    stateOffset = checked.from;
-    const result = new Promise<boolean>((resolve) => {
-      stateAnimation = { from: checked.from, to: checked.to, duration: checked.duration, start: null, resolve };
-      schedule();
-    });
+    const result = animateOffset(checked.from, checked.to, checked.duration);
 
     return result;
+  }
+  /**
+   * animateOffset. Validate and animate partial motion on a single axis.
+   * @param from The starting displacement in CSS pixels.
+   * @param to The target displacement in CSS pixels.
+   * @param duration The animation duration in milliseconds.
+   * @returns Whether motion completed before cancellation.
+   */
+  function animateOffset(from: GestureOffset, to: GestureOffset, duration: number): Promise<boolean> {
+    if (!readAcceptsMotion()) return Promise.resolve(false);
+    try {
+      const start = checkedOffset(from, stateSize);
+      const end = checkedOffset(to, stateSize);
+      if (!Number.isFinite(duration) || duration < 0 || (start.x !== 0 && end.y !== 0) || (start.y !== 0 && end.x !== 0)) {
+        throw new RangeError(CORE_TEXT.partialMotion);
+      }
+      stateOffset = start;
+      const result = new Promise<boolean>((resolve) => {
+        stateAnimation = { from: start, to: end, duration, start: null, resolve };
+        schedule();
+      });
+
+      return result;
+    } catch (error) {
+      return Promise.reject(error instanceof Error ? error : new Error(CORE_TEXT.animationValidationFailed, { cause: error }));
+    }
   }
   /**
    * sync
@@ -802,7 +832,7 @@ export function createDOMRenderer<T>(options: DOMRendererOptions<T>): DOMRendere
   } catch (error) {
     fail(error);
   }
-  const api: DOMRenderer = { getSize, setOffset, animate, sync, reset, destroy };
+  const api: DOMRenderer = { getSize, setOffset, animate, animateOffset, sync, reset, destroy };
 
   return api;
 }

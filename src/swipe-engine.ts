@@ -1,3 +1,4 @@
+import { createEdgeAction, type EdgeAction, type EdgeActionOptions } from './edge-action';
 import { CORE_TEXT, CORE_MESSAGES, POINTER_TYPES, ORIGIN_POSITION, WHEEL_IDLE_MS } from './config';
 import { createNavigationModel, type NavigationModel } from './navigation';
 import type { Direction, Grid, Position } from './navigation';
@@ -7,12 +8,13 @@ import { createDOMRenderer, type DOMRenderer } from './dom-renderer';
 import type { CellAdapter } from './dom-renderer';
 import { createDOMAdapter } from './dom-adapter';
 import { isHTMLElement } from './dom-element';
-/** Shared container, grid, gesture tuning, and synchronous callback options. */
+/** Shared container, grid, gesture tuning, and callback options. */
 interface SwipeEngineBaseOptions<T> {
   readonly container: HTMLElement;
   readonly grid: Grid<T>;
   readonly initialPosition?: Position;
   readonly gesture?: Partial<GestureOptions>;
+  readonly edgeAction?: EdgeActionOptions;
   /**
    * onPositionChange
    *
@@ -212,6 +214,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
   let stateSubscriptions: Subscription[] = [];
   let stateCapture: Capture | null = null;
   let stateTransaction: Transition | null = null;
+  let stateEdge: EdgeAction | null = null;
   let stateDestroyed = false;
   let stateMutating = true;
   let stateSuppressClick = false;
@@ -315,6 +318,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
             event.preventDefault();
           }
           stateRenderer?.setOffset(snapshot.offset);
+          stateEdge?.track(snapshot.offset);
         }
       }
     });
@@ -498,8 +502,11 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       applied = true;
       if (!isAlive()) return;
 
-      interrupt(false);
+      const preserveEdge =
+        stateEdge?.isBusy() === true && model.getPosition().row === previous.row && model.getPosition().col === previous.col;
+      interrupt(false, preserveEdge);
       renderer.sync();
+      if (preserveEdge) stateEdge?.restore();
       if (!isAlive()) return;
 
       statePosition = model.getPosition();
@@ -540,6 +547,9 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
         errors.push(error);
       }
     };
+    const edge = stateEdge;
+    stateEdge = null;
+    if (edge !== null) attempt(edge.cancel);
     const gesture = stateGesture;
     stateGesture = null;
     if (gesture !== null) {
@@ -613,7 +623,10 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
    */
   function readBusy(): boolean {
     const result =
-      stateMutating || stateTransaction !== null || (stateGesture !== null && stateGesture.getSnapshot().state !== CORE_TEXT.idle);
+      stateMutating ||
+      stateEdge?.isBusy() === true ||
+      stateTransaction !== null ||
+      (stateGesture !== null && stateGesture.getSnapshot().state !== CORE_TEXT.idle);
 
     return result;
   }
@@ -648,12 +661,12 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     stateGesture?.updateContext(context());
   }
   /**
-   * interrupt
-   *
-   * Resolve the current transaction as cancelled and release pointer ownership.
+   * interrupt. Resolve the current transaction as cancelled and release pointer ownership.
    * @param resetRenderer The reset renderer argument.
+   * @param preserveEdge Whether a running action keeps its position and displacement.
    */
-  function interrupt(resetRenderer: boolean): void {
+  function interrupt(resetRenderer: boolean, preserveEdge = false): void {
+    if (!preserveEdge) stateEdge?.cancel();
     const transaction = stateTransaction;
     stateTransaction = null;
     transaction?.resolve(false);
@@ -814,6 +827,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
 
     const plan = stateGesture?.lostPointerCapture(id) ?? null;
     releaseCapture();
+    if (plan !== null && stateEdge?.release(plan, true)) return;
     launch(plan);
   }
   /**
@@ -924,6 +938,7 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     if (gesture.getSnapshot().pointerId === null) {
       releaseCapture();
     }
+    if (plan !== null && stateEdge?.release(plan, cancelled)) return;
     launch(plan);
   }
   const input = object(options, CORE_TEXT.swipeEngineOptions);
@@ -945,6 +960,23 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
       throw new TypeError(CORE_MESSAGES.callback(key));
     }
   }
+  stateEdge = createEdgeAction(options.edgeAction, {
+    getPosition,
+    hasNeighbor: (direction) => stateModel?.getNeighbor(direction) != null,
+    getSize: () => stateRenderer?.getSize() ?? { width: 0, height: 0 },
+    animate: (from, to) =>
+      stateRenderer?.animateOffset(from, to, stateGesture?.getOptions().animationDuration ?? 0) ?? Promise.resolve(false),
+    setOffset: (offset) => {
+      stateRenderer?.setOffset(offset);
+    },
+    complete: () => {
+      stateRenderer?.reset();
+      refreshGesture();
+    },
+    report: (error) => {
+      stateReporter?.(errorFrom(error));
+    },
+  });
   const adapter = resolveAdapter(options);
   const model = createNavigationModel(options.grid, options.initialPosition);
   statePosition = model.getPosition();

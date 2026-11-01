@@ -1,4 +1,6 @@
 import type { GestureOptions, GestureOffset } from './gesture';
+/** Default visible boundary pull distances in CSS pixels. */
+export const DEFAULT_EDGE_ACTION_OPTIONS = Object.freeze({ threshold: 72, holdOffset: 64 });
 /** Immutable gesture defaults in CSS pixels, CSS pixels per millisecond, milliseconds, and a resistance ratio. */
 export const DEFAULT_GESTURE_OPTIONS: Readonly<GestureOptions> = Object.freeze({
   distanceThreshold: 80,
@@ -27,6 +29,11 @@ export const ZERO_OFFSET: GestureOffset = Object.freeze({ x: 0, y: 0 });
 export const DIRECTIONS = Object.freeze(['up', 'down', 'left', 'right'] as const);
 /** Centralized protocol tokens, DOM attributes, styles, labels, and validation messages. */
 export const CORE_TEXT = Object.freeze({
+  edgeActionFailed: 'Edge action failed',
+  edgeActionDirection: 'Edge action requires a valid direction',
+  edgeActionCallbacks: 'Edge action callbacks must be functions',
+  edgeActionDistances: 'Edge action distances must be positive finite numbers',
+  partialMotion: 'Partial motion requires one axis and a finite nonnegative duration',
   grid: 'Grid',
   gridRow: 'Grid row',
   row: 'row',

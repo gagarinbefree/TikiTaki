@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TikiTaki boundary action fixture</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        overscroll-behavior-y: contain;
+      }
+      #grid {
+        width: 300px;
+        height: 600px;
+        position: relative;
+        background: #f4ecd5;
+      }
+      #indicator {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 64px;
+        display: grid;
+        place-items: center;
+      }
+      #indicator[hidden] {
+        display: none;
+      }
+      .spinner {
+        width: 28px;
+        height: 28px;
+        border: 4px solid #496382;
+        border-right-color: transparent;
+        border-radius: 50%;
+      }
+      #indicator[data-phase='loading'] .spinner {
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      article {
+        height: 100%;
+        display: grid;
+        place-items: center;
+        background: #fff6dc;
+        font: bold 28px sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="grid">
+      <div id="indicator" role="status" aria-label="Refreshing" hidden><div class="spinner"></div></div>
+    </div>
+    <script type="module">
+      import { createSwipeEngine } from '/dist/dom';
+      const container = document.querySelector('#grid');
+      const indicator = document.querySelector('#indicator');
+      const state = { requests: 0, errors: [], phase: 'idle', aborted: false };
+      let finish = () => {};
+      let fail = () => {};
+      const engine = createSwipeEngine({
+        container,
+        grid: [['A1', 'A2'], ['B1']],
+        gesture: { animationDuration: 100 },
+        renderCell(item) {
+          const article = document.createElement('article');
+          article.textContent = item;
+
+          return article;
+        },
+        edgeAction: {
+          direction: 'down',
+          enabled: (position) => position.row === 0 && position.col === 0,
+          onTrigger({ signal }) {
+            state.requests += 1;
+            state.aborted = false;
+            signal.addEventListener(
+              'abort',
+              () => {
+                state.aborted = true;
+              },
+              { once: true },
+            );
+
+            return new Promise((resolve, reject) => {
+              finish = resolve;
+              fail = reject;
+            });
+          },
+          onStateChange(snapshot) {
+            state.phase = snapshot.phase;
+            indicator.hidden = snapshot.phase === 'idle';
+            indicator.dataset.phase = snapshot.phase;
+          },
+        },
+        onError(error) {
+          state.errors.push(error.message);
+        },
+      });
+      window.edgeFixture = {
+        state,
+        engine,
+        finish: () => {
+          finish();
+        },
+        fail: () => {
+          fail(new Error('Request failed'));
+        },
+      };
+    </script>
+  </body>
+</html>

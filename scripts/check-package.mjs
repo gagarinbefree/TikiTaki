@@ -99,7 +99,7 @@ if (false) {
   );
   await writeFile(
     join(consumer, 'browser.ts'),
-    `import { createSwipeEngine, type SwipeEngine, createDOMRenderer, type DOMRenderer, createDOMAdapter, type SwipeEngineOptions, type CellAdapter, type RendererSize } from 'tikitaki/dom';
+    `import { createSwipeEngine, type SwipeEngine, createDOMRenderer, type DOMRenderer, createDOMAdapter, type SwipeEngineOptions, type CellAdapter, type RendererSize, type EdgeActionOptions, type EdgeActionState, type EdgeActionContext, DEFAULT_EDGE_ACTION_OPTIONS } from 'tikitaki/dom';
 import { createNavigationModel, type NavigationModel } from 'tikitaki';
 if (typeof createSwipeEngine !== 'function' || typeof createDOMRenderer !== 'function' || typeof createDOMAdapter !== 'function') {
   throw new Error('DOM entry point cannot be imported without a browser');
@@ -114,13 +114,31 @@ export function mount(container: HTMLElement): DOMRenderer {
   });
   const renderer = createDOMRenderer({ container, navigation: createNavigationModel([['A1'], ['B1']]), adapter });
 
+  const motion: Promise<boolean> = renderer.animateOffset({ x: 0, y: 0 }, { x: 0, y: 64 }, 0);
+  void motion;
+
   return renderer;
 
 }
 const size: RendererSize = { width: 300, height: 600 };
+const edgeAction: EdgeActionOptions = {
+  direction: 'down',
+  threshold: DEFAULT_EDGE_ACTION_OPTIONS.threshold,
+  enabled: (position) => position.row === 0 && position.col === 0,
+  onTrigger: (context: EdgeActionContext): Promise<void> => {
+    const signal: AbortSignal = context.signal;
+    void signal;
+
+    return Promise.resolve();
+  },
+  onStateChange: (state: EdgeActionState): void => {
+    const progress: number = state.progress;
+    void progress;
+  },
+};
 export function mountEngine(container: HTMLElement): SwipeEngine<string> {
   const options: SwipeEngineOptions<string> = {
-    container, grid: [['A1'], ['B1']],
+    container, grid: [['A1'], ['B1']], edgeAction,
     renderCell(item) {
       const element = container.ownerDocument.createElement('div');
       element.textContent = item;

@@ -3,7 +3,7 @@ import { createResizeObserverMock } from './helpers/resize-observer';
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSwipeEngine, type SwipeEngine } from '../src/dom';
 import type { SwipeEngineOptions } from '../src/dom';
-import type { CellAdapter } from '../src/dom';
+import type { CellAdapter, EdgeActionContext, EdgeActionOptions, EdgeActionState } from '../src/dom';
 import type { Direction, Grid, Position } from '../src/index';
 const Observer = createResizeObserverMock();
 let frames: Map<number, FrameRequestCallback>;
@@ -835,5 +835,341 @@ describe('wheel navigation', () => {
     await finish();
     expect(inner.engine.getPosition()).toEqual({ row: 1, col: 0 });
     expect(outer.engine.getPosition()).toEqual({ row: 0, col: 9 });
+  });
+});
+
+/**
+ * deferred. Control completion of an asynchronous action in a test.
+ * @returns The pending promise and its completion callbacks.
+ */
+function deferred() {
+  let resolve: () => void = () => undefined;
+  let reject: (reason: unknown) => void = () => undefined;
+  const promise = new Promise<void>((accept, decline) => {
+    resolve = accept;
+    reject = decline;
+  });
+
+  return { promise, resolve, reject };
+}
+/**
+ * pullBoundary. Drag toward the missing upper neighbor and release the pointer.
+ * @param container The swipe container under test.
+ */
+function pullBoundary(container: HTMLElement): void {
+  pointer(container, 'pointerdown', 100, 100, 0);
+  pointer(container, 'pointermove', 100, 500, 500);
+  pointer(container, 'pointerup', 100, 500, 600);
+}
+
+describe('boundary actions', () => {
+  it('holds the current cell until the action completes and then returns without navigation', async () => {
+    const pending = deferred();
+    const trigger = vi.fn(() => pending.promise);
+    const states: string[] = [];
+    const { container, engine, changes } = setup({
+      initialPosition: { row: 0, col: 0 },
+      edgeAction: {
+        direction: 'down',
+        onTrigger: trigger,
+        onStateChange: (state) => {
+          states.push(state.phase);
+        },
+      },
+    });
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', 100, 500, 500);
+    frame();
+    expect(states).toContain('armed');
+    pointer(container, 'pointerup', 100, 500, 600);
+    expect(trigger).toHaveBeenCalledOnce();
+    await finish();
+    expect(current(container).style.transform).toBe('translate3d(0px, 64px, 0px)');
+    await expect(engine.navigate('up')).resolves.toBe(false);
+    pending.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await finish();
+    expect(current(container).style.transform).toBe('translate3d(0px, 0px, 0px)');
+    expect(states.at(-1)).toBe('idle');
+    expect(engine.getPosition()).toEqual({ row: 0, col: 0 });
+    expect(changes).not.toHaveBeenCalled();
+  });
+
+  it('returns a short pull without starting an action even when it is fast', async () => {
+    const trigger = vi.fn(() => Promise.resolve());
+    const { container } = setup({ edgeAction: { direction: 'down', onTrigger: trigger } });
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', 100, 140, 10);
+    pointer(container, 'pointerup', 100, 140, 11);
+    await finish();
+    expect(trigger).not.toHaveBeenCalled();
+    expect(current(container).style.transform).toBe('translate3d(0px, 0px, 0px)');
+  });
+
+  it('limits the action to eligible cells and leaves normal neighboring navigation intact', async () => {
+    const trigger = vi.fn(() => Promise.resolve());
+    const { container, engine } = setup({
+      edgeAction: { direction: 'down', enabled: (position) => position.col === 0, onTrigger: trigger },
+    });
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', 100, 500, 500);
+    pointer(container, 'pointerup', 100, 500, 600);
+    await finish();
+    expect(trigger).not.toHaveBeenCalled();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 9 });
+    await engine.goTo({ row: 1, col: 0 });
+    pointer(container, 'pointerdown', 100, 100, 1000);
+    pointer(container, 'pointermove', 100, 500, 1500);
+    pointer(container, 'pointerup', 100, 500, 1600);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 0 });
+    expect(trigger).not.toHaveBeenCalled();
+  });
+
+  it('recovers from a failed action and still accepts navigation', async () => {
+    const failure = new Error('Refresh failed');
+    const { container, engine, errors } = setup({ edgeAction: { direction: 'down', onTrigger: () => Promise.reject(failure) } });
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', 100, 500, 500);
+    pointer(container, 'pointerup', 100, 500, 600);
+    await finish();
+    await finish();
+    expect(errors).toHaveBeenCalledExactlyOnceWith(failure);
+    expect(current(container).style.transform).toBe('translate3d(0px, 0px, 0px)');
+    await expect(engine.goTo({ row: 1, col: 0 })).resolves.toBe(true);
+  });
+
+  it.each(['pointercancel', 'lostpointercapture'])('rolls back %s without starting work', async (event) => {
+    const trigger = vi.fn(() => Promise.resolve());
+    const states: string[] = [];
+    const { container } = setup({
+      edgeAction: {
+        direction: 'down',
+        onTrigger: trigger,
+        onStateChange: (state) => {
+          states.push(state.phase);
+        },
+      },
+    });
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', 100, 500, 500);
+    pointer(container, event, 100, 500, 600);
+    await finish();
+    expect(trigger).not.toHaveBeenCalled();
+    expect(states.at(-1)).toBe('idle');
+    expect(current(container).style.transform).toBe('translate3d(0px, 0px, 0px)');
+  });
+
+  it('aborts on destroy and ignores a late rejection without creating frames', async () => {
+    const pending = deferred();
+    let context: EdgeActionContext | undefined;
+    const states: EdgeActionState[] = [];
+    const { container, engine, errors } = setup({
+      edgeAction: {
+        direction: 'down',
+        onTrigger: (value) => {
+          context = value;
+          return pending.promise;
+        },
+        onStateChange: (state) => {
+          states.push(state);
+        },
+      },
+    });
+    pullBoundary(container);
+    expect(context?.signal.aborted).toBe(false);
+    engine.destroy();
+    expect(context?.signal.aborted).toBe(true);
+    expect(states.at(-1)?.phase).toBe('idle');
+    const count = states.length;
+    pending.reject(new Error('late network error'));
+    await finish();
+    expect(states).toHaveLength(count);
+    expect(errors).not.toHaveBeenCalled();
+    expect(frames.size).toBe(0);
+    expect(container.children).toHaveLength(0);
+  });
+
+  it('aborts on resize and restores ordinary navigation', async () => {
+    const pending = deferred();
+    let signal: AbortSignal | undefined;
+    const { container, engine, size } = setup({
+      edgeAction: {
+        direction: 'down',
+        onTrigger: (context) => {
+          signal = context.signal;
+          return pending.promise;
+        },
+      },
+    });
+    pullBoundary(container);
+    await finish();
+    size.height = 500;
+    Observer.instances[0]?.notify();
+    frame();
+    expect(signal?.aborted).toBe(true);
+    expect(current(container).style.transform).toBe('translate3d(0px, 0px, 0px)');
+    await expect(engine.goTo({ row: 1, col: 0 })).resolves.toBe(true);
+    pending.resolve();
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 1, col: 0 });
+  });
+
+  it('keeps loading through same position grid updates including updates during the hold animation', async () => {
+    const pending = deferred();
+    let signal: AbortSignal | undefined;
+    const { container, engine } = setup({
+      initialPosition: { row: 0, col: 0 },
+      edgeAction: {
+        direction: 'down',
+        onTrigger: (context) => {
+          signal = context.signal;
+          return pending.promise;
+        },
+      },
+    });
+    pullBoundary(container);
+    engine.updateGrid([['fresh', 'hour'], ['tomorrow']]);
+    frame();
+    await Promise.resolve();
+    expect(signal?.aborted).toBe(false);
+    expect(current(container).textContent).toBe('fresh');
+    expect(current(container).style.transform).toBe('translate3d(0px, 64px, 0px)');
+    pullBoundary(container);
+    await expect(engine.goTo({ row: 1, col: 0 })).resolves.toBe(false);
+    pending.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await finish();
+    expect(current(container).style.transform).toBe('translate3d(0px, 0px, 0px)');
+    await expect(engine.goTo({ row: 1, col: 0 })).resolves.toBe(true);
+  });
+
+  it('aborts if updating the grid clamps the selected cell', async () => {
+    const pending = deferred();
+    let signal: AbortSignal | undefined;
+    const { container, engine } = setup({
+      edgeAction: {
+        direction: 'down',
+        onTrigger: (context) => {
+          signal = context.signal;
+          return pending.promise;
+        },
+      },
+    });
+    pullBoundary(container);
+    engine.updateGrid([['replacement']]);
+    expect(signal?.aborted).toBe(true);
+    pending.resolve();
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 0 });
+    expect(current(container).textContent).toBe('replacement');
+  });
+
+  it('uses the final release distance after the user pulls back below the threshold', async () => {
+    const trigger = vi.fn(() => Promise.resolve());
+    const { container } = setup({ edgeAction: { direction: 'down', onTrigger: trigger } });
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', 100, 500, 500);
+    pointer(container, 'pointerup', 100, 120, 600);
+    await finish();
+    expect(trigger).not.toHaveBeenCalled();
+    expect(current(container).style.transform).toBe('translate3d(0px, 0px, 0px)');
+  });
+
+  it.each<Direction>(['up', 'down', 'left', 'right'])('supports the %s boundary without inventing neighbors', async (direction) => {
+    const pending = deferred();
+    const trigger = vi.fn(() => pending.promise);
+    const states: EdgeActionState[] = [];
+    const { container, engine } = setup({
+      grid: [['only']],
+      initialPosition: { row: 0, col: 0 },
+      edgeAction: {
+        direction,
+        threshold: 40,
+        holdOffset: 32,
+        onTrigger: trigger,
+        onStateChange: (state) => {
+          states.push(state);
+        },
+      },
+    });
+    const x = direction === 'left' ? -300 : direction === 'right' ? 500 : 100;
+    const y = direction === 'up' ? -300 : direction === 'down' ? 500 : 100;
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', x, y, 500);
+    pointer(container, 'pointerup', x, y, 600);
+    await finish();
+    expect(trigger).toHaveBeenCalledOnce();
+    expect(container.querySelectorAll('[data-tikitaki-cell]')).toHaveLength(1);
+    expect(states.at(-1)?.phase).toBe('loading');
+    expect(states.at(-1)?.offset).toBe(32);
+    expect(Object.isFrozen(states.at(-1))).toBe(true);
+    expect(Object.isFrozen(states.at(-1)?.position)).toBe(true);
+    pending.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await finish();
+    expect(states.at(-1)?.phase).toBe('idle');
+    expect(engine.getPosition()).toEqual({ row: 0, col: 0 });
+  });
+
+  it('handles synchronous action failures and indicator failures without destroying the engine', async () => {
+    const failure = new Error('sync error');
+    const { container, engine, errors } = setup({
+      edgeAction: {
+        direction: 'down',
+        onTrigger: () => {
+          throw failure;
+        },
+        onStateChange: () => {
+          throw new Error('indicator failed');
+        },
+      },
+    });
+    pullBoundary(container);
+    await finish();
+    await finish();
+    expect(errors).toHaveBeenCalledWith(failure);
+    await expect(engine.goTo({ row: 1, col: 0 })).resolves.toBe(true);
+  });
+
+  it('stops before calling the action when the loading callback destroys the engine', async () => {
+    const trigger = vi.fn(() => Promise.resolve());
+    const { engine, container } = setup({
+      edgeAction: {
+        direction: 'down',
+        onTrigger: trigger,
+        onStateChange: (state) => {
+          if (state.phase === 'loading') engine.destroy();
+        },
+      },
+    });
+    pullBoundary(container);
+    await finish();
+    expect(trigger).not.toHaveBeenCalled();
+    expect(frames.size).toBe(0);
+  });
+
+  it('does not start a boundary action for programmatic navigation', async () => {
+    const trigger = vi.fn(() => Promise.resolve());
+    const { engine } = setup({ edgeAction: { direction: 'down', onTrigger: trigger } });
+    await expect(engine.navigate('down')).resolves.toBe(false);
+    await expect(engine.goTo({ row: 0, col: 0 })).resolves.toBe(true);
+    expect(trigger).not.toHaveBeenCalled();
+  });
+
+  it.each([0, -1, NaN, Infinity, null])('rejects invalid boundary distances %s before mounting cells', (value) => {
+    const view = viewport();
+    expect(() =>
+      createSwipeEngine({
+        container: view.container,
+        grid: [['only']],
+        renderCell: () => document.createElement('div'),
+        edgeAction: { direction: 'down', threshold: value, onTrigger: () => Promise.resolve() } as EdgeActionOptions,
+      }),
+    ).toThrow();
+    expect(view.container.children).toHaveLength(0);
   });
 });
