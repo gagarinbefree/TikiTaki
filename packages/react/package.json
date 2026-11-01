@@ -1,6 +1,6 @@
 {
   "name": "@tikitaki_gagarinbefree/react",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -16,7 +16,7 @@
   ],
   "sideEffects": false,
   "peerDependencies": {
-    "tikitaki": "^0.1.15",
+    "tikitaki": "^0.1.16",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
