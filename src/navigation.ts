@@ -9,6 +9,8 @@ export interface Position {
 /** Options for vertical navigation through one shared column. */
 export interface NavigationOptions {
   readonly primaryColumn?: number;
+  /** Optional home row used for the initial cell and explicit returns. */
+  readonly primaryRow?: number;
   /**
    * rowStartColumn. Read the logical column of the first item in a row.
    * @param row The zero based row index in the replacement grid.
@@ -171,6 +173,11 @@ export interface NavigationModel<T> {
    */
   readonly getPosition: () => Position;
   /**
+   * getPrimaryPosition. Read the configured home cell.
+   * @returns The immutable primary row and column coordinates.
+   */
+  readonly getPrimaryPosition: () => Position;
+  /**
    * getItem
    *
    * Read an item after validating its coordinates against the owned grid snapshot.
@@ -219,11 +226,7 @@ export interface NavigationModel<T> {
  * @param options The optional shared primary column with zero as the default.
  * @returns Independent operations that can be called without binding a receiver.
  */
-export function createNavigationModel<T>(
-  grid: Grid<T>,
-  initialPosition: Position = ORIGIN_POSITION,
-  options: NavigationOptions = {},
-): NavigationModel<T> {
+export function createNavigationModel<T>(grid: Grid<T>, initialPosition?: Position, options: NavigationOptions = {}): NavigationModel<T> {
   const input: unknown = options;
   if (typeof input !== 'object' || input === null || Array.isArray(input)) {
     throw new TypeError(CORE_TEXT.invalidNavigationOptions);
@@ -237,14 +240,24 @@ export function createNavigationModel<T>(
     throw new TypeError(CORE_TEXT.invalidRowStartReader);
   }
   const primaryColumn = candidate;
+  const primaryRow: unknown = options.primaryRow ?? 0;
+  if (typeof primaryRow !== 'number' || !Number.isSafeInteger(primaryRow) || primaryRow < 0) {
+    throw new RangeError(CORE_TEXT.invalidPrimaryRow);
+  }
+  const primaryPosition = Object.freeze({ row: primaryRow, col: primaryColumn });
   let stateGrid: Grid<T>;
   let stateStarts: readonly number[];
   let statePosition: Position;
   /**
-   * getPosition
-   *
-   * Read the immutable last committed grid position.
-   * @returns The resulting cell coordinates.
+   * getPrimaryPosition. Read the configured home cell without moving the selection.
+   * @returns The immutable primary row and column coordinates.
+   */
+  function getPrimaryPosition(): Position {
+    return primaryPosition;
+  }
+  /**
+   * getPosition. Read the immutable last committed grid position.
+   * @returns The current cell coordinates.
    */
   function getPosition(): Position {
     return statePosition;
@@ -321,6 +334,7 @@ export function createNavigationModel<T>(
   function updateGrid(grid: Grid<T>): void {
     const nextGrid = snapshotGrid(grid);
     const nextStarts = snapshotRowStarts(nextGrid, primaryColumn, readStart);
+    checkedPosition(nextGrid, primaryPosition, nextStarts);
     const row = Math.min(statePosition.row, nextGrid.length - 1);
     const nextRow = nextGrid[row];
     if (nextRow === undefined) {
@@ -334,8 +348,15 @@ export function createNavigationModel<T>(
   }
   stateGrid = snapshotGrid(grid);
   stateStarts = snapshotRowStarts(stateGrid, primaryColumn, readStart);
-  statePosition = checkedPosition(stateGrid, initialPosition, stateStarts);
-  const api: NavigationModel<T> = { getPosition, getItem, getNeighbor, navigate, goTo, updateGrid };
+  checkedPosition(stateGrid, primaryPosition, stateStarts);
+  const supplied: unknown = initialPosition;
+  if (supplied === null) throw new TypeError(CORE_TEXT.positionMustHaveNumericRowAndColFields);
+  statePosition = checkedPosition(
+    stateGrid,
+    initialPosition ?? (options.primaryRow === undefined ? ORIGIN_POSITION : primaryPosition),
+    stateStarts,
+  );
+  const api: NavigationModel<T> = { getPosition, getPrimaryPosition, getItem, getNeighbor, navigate, goTo, updateGrid };
 
   return api;
 }

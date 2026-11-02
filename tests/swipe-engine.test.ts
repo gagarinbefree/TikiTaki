@@ -1211,3 +1211,54 @@ it('renders a short offset row without mounting placeholders on its left', async
   expect(container.querySelector('[data-tikitaki-role="left"]')).toBeNull();
   expect(container.querySelector('[data-tikitaki-role="down"]')?.textContent).toBe('A4');
 });
+
+describe('returning boundary actions to the primary cell', () => {
+  it.each([false, true])('returns after completion with rejection %s and retains the cell while waiting', async (reject) => {
+    const pending = deferred();
+    const trigger = vi.fn(() => pending.promise);
+    const { container, engine, changes, errors } = setup({
+      grid: [['year'], ['yesterday'], ['map', 'map', 'map', 'saved current']],
+      navigation: { primaryRow: 2, primaryColumn: 3, rowStartColumn: (row) => (row === 2 ? 0 : 3) },
+      initialPosition: { row: 0, col: 3 },
+      edgeAction: { direction: 'down', onTrigger: trigger, returnToPrimary: true },
+    });
+    pullBoundary(container);
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 3 });
+    expect(current(container).textContent).toBe('year');
+    await expect(engine.goTo({ row: 2, col: 3 })).resolves.toBe(false);
+    engine.updateGrid([['year'], ['yesterday'], ['map', 'map', 'map', 'fresh current']]);
+    if (reject) pending.reject(new Error('Request failed'));
+    else pending.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await finish();
+    await finish();
+    expect(engine.getPosition()).toEqual({ row: 2, col: 3 });
+    expect(current(container).textContent).toBe('fresh current');
+    expect(changes).toHaveBeenCalledOnce();
+    expect(errors).toHaveBeenCalledTimes(reject ? 1 : 0);
+  });
+
+  it('keeps the boundary cell after a short or cancelled pull', async () => {
+    const trigger = vi.fn(() => Promise.resolve());
+    const { container, engine } = setup({
+      grid: [['year'], ['today']],
+      initialPosition: { row: 0, col: 0 },
+      navigation: { primaryRow: 1 },
+      edgeAction: { direction: 'down', onTrigger: trigger, returnToPrimary: true },
+    });
+    pointer(container, 'pointerdown', 100, 100, 0);
+    pointer(container, 'pointermove', 100, 140, 10);
+    pointer(container, 'pointerup', 100, 140, 11);
+    await finish();
+    expect(trigger).not.toHaveBeenCalled();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 0 });
+    pointer(container, 'pointerdown', 100, 100, 1000);
+    pointer(container, 'pointermove', 100, 500, 1500);
+    pointer(container, 'pointercancel', 100, 500, 1600);
+    await finish();
+    expect(trigger).not.toHaveBeenCalled();
+    expect(engine.getPosition()).toEqual({ row: 0, col: 0 });
+  });
+});

@@ -188,6 +188,29 @@ Pass overrides through `gesture` when creating the engine, for example `gesture:
 
 A swipe can commit by distance or velocity. Direction changes and recent motion are taken into account. Pointer cancellation, capture loss, and container resize cancel active motion safely. See [API.md](./API.md) for detailed validation, rendering, and error semantics.
 
+### Primary row and home cell
+
+Set `navigation.primaryRow` together with `primaryColumn` to define a home cell inside the grid. Both indices start at zero. With `primaryRow: 2` and `primaryColumn: 3`, the home cell is the third row and fourth column. When `primaryRow` is supplied and `initialPosition` is omitted, the engine opens this home cell. An explicit initial position still takes precedence. Omitting `primaryRow` preserves the existing origin default.
+
+```ts
+const engine = createSwipeEngine({
+  container,
+  grid: [['year ago'], ['yesterday'], ['pressure', 'wind', 'temperature', 'today', 'hour'], ['tomorrow']],
+  navigation: { primaryRow: 2, primaryColumn: 3, rowStartColumn: (row) => (row === 2 ? 0 : 3) },
+  renderCell,
+  edgeAction: {
+    direction: 'down',
+    enabled: (position) => position.row === 0 && position.col === 3,
+    returnToPrimary: true,
+    onTrigger: async ({ signal }) => {
+      await refreshData(signal);
+    },
+  },
+});
+```
+
+Vertical gestures still move one adjacent row into the primary column. The home row does not skip intermediate rows. `returnToPrimary: true` returns there after a triggered boundary operation settles, including rejection. A short pull, pointer cancellation, resize, destruction, or a cancelled action does not return there. While loading, the boundary cell remains selected and navigation is blocked. Updating the same selected position retains the loading action. Replacement grids must still contain the configured home row and primary column and are rejected atomically otherwise. Keep any data persistence and last successful snapshot in your application; the engine neither saves nor fetches cell data. The synchronous model exposes `getPrimaryPosition()` for explicit returns through `goTo`.
+
 ### Pull to refresh and other boundary actions
 
 Configure `edgeAction` to reveal a small loading area when a user pulls beyond a missing neighbor. The current cell stays selected while your asynchronous operation runs, then slides back into place. A short pull returns without calling the operation. All four directions are supported, with one configured boundary action per engine.

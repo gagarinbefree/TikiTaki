@@ -32,6 +32,8 @@ export const CORE_TEXT = Object.freeze({
   invalidRowStartColumn: 'Row start column must define a safe nonnegative column range',
   invalidRowStartReader: 'Row start column must be a function',
   invalidNavigationOptions: 'Navigation options must be an object',
+  invalidPrimaryRow: 'Primary row must be a nonnegative safe integer inside the grid',
+  edgeActionReturn: 'Return to primary must be a boolean',
   invalidPrimaryColumn: 'Primary column must be a nonnegative safe integer',
   primaryColumnMissing: 'Primary column must exist in every grid row',
   edgeActionFailed: 'Edge action failed',

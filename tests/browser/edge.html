@@ -61,13 +61,20 @@
       const state = { requests: 0, errors: [], phase: 'idle', aborted: false };
       let finish = () => {};
       let fail = () => {};
-      const primary = new URLSearchParams(location.search).has('primary');
+      const home = new URLSearchParams(location.search).has('home');
+      const primary = home || new URLSearchParams(location.search).has('primary');
       const engine = createSwipeEngine({
         container,
-        grid: primary ? [['A1', 'A2', 'A3', 'A4', 'A5'], ['B4']] : [['A1', 'A2'], ['B1']],
-        ...(primary
-          ? { navigation: { primaryColumn: 3, rowStartColumn: (row) => (row === 0 ? 0 : 3) }, initialPosition: { row: 0, col: 3 } }
-          : {}),
+        grid: home
+          ? [['year'], ['yesterday'], ['map', 'map', 'map', 'today']]
+          : primary
+            ? [['A1', 'A2', 'A3', 'A4', 'A5'], ['B4']]
+            : [['A1', 'A2'], ['B1']],
+        ...(home
+          ? { navigation: { primaryRow: 2, primaryColumn: 3, rowStartColumn: (row) => (row === 2 ? 0 : 3) } }
+          : primary
+            ? { navigation: { primaryColumn: 3, rowStartColumn: (row) => (row === 0 ? 0 : 3) }, initialPosition: { row: 0, col: 3 } }
+            : {}),
         gesture: { animationDuration: 100 },
         renderCell(item) {
           const article = document.createElement('article');
@@ -77,6 +84,7 @@
         },
         edgeAction: {
           direction: 'down',
+          returnToPrimary: home,
           enabled: (position) => position.row === 0 && position.col === (primary ? 3 : 0),
           onTrigger({ signal }) {
             state.requests += 1;

@@ -27,6 +27,8 @@ export interface EdgeActionContext {
 /** Optional boundary action with distances measured after elastic resistance in CSS pixels. */
 export interface EdgeActionOptions {
   readonly direction: Direction;
+  /** Return to the home cell after a triggered action settles with a default of false. */
+  readonly returnToPrimary?: boolean;
   /** Positive visible pull distance required on release with a default of 72. */
   readonly threshold?: number;
   /** Positive displacement held during loading with a default of 64. */
@@ -81,9 +83,10 @@ export interface EdgeActionHost {
    */
   readonly setOffset: (offset: GestureOffset) => void;
   /**
-   * complete. Reset gesture ownership and rendered displacement.
+   * complete. Reset the gesture and optionally select the primary cell.
+   * @param returnToPrimary Whether a triggered action requests the primary cell.
    */
-  readonly complete: () => void;
+  readonly complete: (returnToPrimary: boolean) => void;
   /**
    * report. Report an operation error while keeping navigation available.
    * @param error The original error from the callback.
@@ -139,6 +142,10 @@ export function createEdgeAction(options: EdgeActionOptions | undefined, host: E
   ) {
     throw new TypeError(CORE_TEXT.edgeActionCallbacks);
   }
+  if (options.returnToPrimary !== undefined && typeof options.returnToPrimary !== 'boolean') {
+    throw new TypeError(CORE_TEXT.edgeActionReturn);
+  }
+  const returnToPrimary = options.returnToPrimary ?? false;
   const values = input as Record<string, unknown>;
   const rawThreshold = values.threshold === undefined ? DEFAULT_EDGE_ACTION_OPTIONS.threshold : values.threshold;
   const rawHoldOffset = values.holdOffset === undefined ? DEFAULT_EDGE_ACTION_OPTIONS.holdOffset : values.holdOffset;
@@ -238,12 +245,12 @@ export function createEdgeAction(options: EdgeActionOptions | undefined, host: E
       if (operation !== owner) return;
       operation = null;
       offset = ZERO_OFFSET;
-      host.complete();
       publish('idle');
+      host.complete(trigger && returnToPrimary);
     } catch (error) {
       if (operation !== owner) return;
       cancel();
-      host.complete();
+      host.complete(false);
       host.report(error);
     }
   }

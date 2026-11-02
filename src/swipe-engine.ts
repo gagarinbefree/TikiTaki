@@ -970,9 +970,13 @@ export function createSwipeEngine<T>(options: SwipeEngineOptions<T>): SwipeEngin
     setOffset: (offset) => {
       stateRenderer?.setOffset(offset);
     },
-    complete: () => {
+    complete: (returnToPrimary) => {
       stateRenderer?.reset();
       refreshGesture();
+      if (returnToPrimary && stateModel !== null && !stateDestroyed) {
+        const target = stateModel.getPrimaryPosition();
+        if (target.row !== statePosition.row || target.col !== statePosition.col) commit(target);
+      }
     },
     report: (error) => {
       stateReporter?.(errorFrom(error));

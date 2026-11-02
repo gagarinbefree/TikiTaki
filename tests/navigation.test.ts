@@ -316,3 +316,43 @@ describe('rows starting at the primary column', () => {
     expect(model.getItem({ row: 0, col: 0 })).toBe('A');
   });
 });
+
+describe('primary row anchor', () => {
+  const cells = [['year'], ['yesterday'], ['map', 'map', 'map', 'current', 'hour'], ['tomorrow']];
+  const navigation = { primaryRow: 2, primaryColumn: 3, rowStartColumn: (row: number) => (row === 2 ? 0 : 3) };
+
+  it('opens the primary cell by default and preserves adjacent vertical navigation', () => {
+    const model = createNavigationModel(cells, undefined, navigation);
+    expect(model.getPosition()).toEqual({ row: 2, col: 3 });
+    expect(model.getPrimaryPosition()).toEqual({ row: 2, col: 3 });
+    model.navigate('down');
+    expect(model.getItem(model.getPosition())).toBe('yesterday');
+    model.navigate('down');
+    expect(model.getItem(model.getPosition())).toBe('year');
+    expect(model.navigate('down')).toBe(false);
+    model.goTo(model.getPrimaryPosition());
+    expect(model.getItem(model.getPosition())).toBe('current');
+    model.navigate('up');
+    expect(model.getItem(model.getPosition())).toBe('tomorrow');
+  });
+
+  it('keeps an explicit initial position independent and retains its item on data replacement', () => {
+    const model = createNavigationModel(cells, { row: 0, col: 3 }, navigation);
+    expect(model.getItem(model.getPosition())).toBe('year');
+    model.updateGrid([['fresh year'], ['fresh yesterday'], ['map', 'map', 'map', 'fresh current'], ['fresh tomorrow']]);
+    expect(model.getItem(model.getPrimaryPosition())).toBe('fresh current');
+    expect(model.getPosition()).toEqual({ row: 0, col: 3 });
+  });
+
+  it.each([-1, 0.5, NaN, Infinity, 4])('rejects invalid primary row %s', (primaryRow) => {
+    expect(() => createNavigationModel(cells, undefined, { ...navigation, primaryRow })).toThrow(RangeError);
+  });
+
+  it('rejects replacement that removes the primary row without changing the last grid', () => {
+    const model = createNavigationModel(cells, undefined, navigation);
+    expect(() => {
+      model.updateGrid([['year']]);
+    }).toThrow(RangeError);
+    expect(model.getItem(model.getPrimaryPosition())).toBe('current');
+  });
+});

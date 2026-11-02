@@ -553,3 +553,9 @@ interface NavigationOptions {
 Both defaults are zero. `primaryColumn` is the logical destination for every successful vertical transition. `rowStartColumn` maps each row index to the logical column of its first array item. For `[ ['A1', 'A2', 'A3', 'A4'], ['B4'] ]`, configure primary column `3` and starts `0` and `3` to avoid placeholder cells. Public positions, callbacks, `goTo`, and `getItem` use logical columns. Initial position remains independent.
 
 Starts are evaluated once for every row during construction and each grid replacement, then frozen with the snapshot. The function should be pure. The primary column must exist within each row range. Starts and ends must be nonnegative safe integers. Invalid updates leave the old grid and rendering intact. A successful update clamps the selected logical column into the new row range. Vertical previews use exactly the committed primary destination.
+
+## Primary row and return destination
+
+`NavigationOptions.primaryRow?: number` is an optional nonnegative safe row index. It must exist in the initial and replacement grids. Together with `primaryColumn` it defines the home cell returned by `NavigationModel.getPrimaryPosition(): Position`. Its result is immutable. When the option is present and `initialPosition` is omitted, the home cell becomes the initial position. Existing consumers that omit the option retain the origin default. Explicit initial coordinates remain independent. Vertical movement continues through adjacent rows.
+
+`EdgeActionOptions.returnToPrimary?: boolean` defaults to `false`. When `true`, a triggered operation returns to the home cell after settling, even if its callback rejects. The indicator becomes idle before the position callback fires. Short or cancelled pulls keep their boundary cell. Aborted and destroyed operations ignore late completions. Applications own persistence and should retain their last successful home cell data during loading and failure.

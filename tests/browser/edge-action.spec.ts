@@ -150,3 +150,27 @@ test('uses the primary column for vertical swipes and refreshes only its upper b
   await expect(page.locator('#indicator')).toBeHidden();
   expect(await page.evaluate(() => window.edgeFixture.engine.getPosition())).toEqual({ row: 0, col: 3 });
 });
+
+for (const rejected of [false, true]) {
+  test(`returns from the history boundary to the primary row after rejection ${String(rejected)}`, async ({ page, context }, info) => {
+    await page.goto('/edge?home');
+    await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('today');
+    expect(await page.evaluate(() => window.edgeFixture.engine.getPosition())).toEqual({ row: 2, col: 3 });
+    await page.evaluate(() => window.edgeFixture.engine.navigate('down'));
+    await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('yesterday');
+    await page.evaluate(() => window.edgeFixture.engine.navigate('down'));
+    await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('year');
+    const release = await pull(page, context, info.project.name.includes('touch'));
+    await release();
+    await expect(page.locator('#indicator')).toHaveAttribute('data-phase', 'loading');
+    await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('year');
+    await page.evaluate((reject) => {
+      window.edgeFixture.engine.updateGrid([['year'], ['yesterday'], ['map', 'map', 'map', 'fresh today']]);
+      if (reject) window.edgeFixture.fail();
+      else window.edgeFixture.finish();
+    }, rejected);
+    await expect(page.locator('#indicator')).toBeHidden();
+    await expect(page.locator('[data-tikitaki-role="current"]')).toHaveText('fresh today');
+    expect(await page.evaluate(() => window.edgeFixture.engine.getPosition())).toEqual({ row: 2, col: 3 });
+  });
+}
